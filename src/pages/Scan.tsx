@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
@@ -14,6 +21,9 @@ const Scan = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userType, setUserType] = useState<string>("");
+  const [showAd, setShowAd] = useState(false);
+  const [pendingMode, setPendingMode] = useState<"camera" | "upload" | null>(null);
+  const [adCountdown, setAdCountdown] = useState(5);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +42,47 @@ const Scan = () => {
       });
     }
   }, [searchParams]);
+
+  // Ad countdown timer
+  useEffect(() => {
+    if (showAd && adCountdown > 0) {
+      const timer = setTimeout(() => {
+        setAdCountdown(adCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAd, adCountdown]);
+
+  const handleModeSelection = (selectedMode: "camera" | "upload") => {
+    // Check if user is eter or gast
+    const guestType = localStorage.getItem("userType");
+    const isGuest = guestType === "gast";
+    
+    if (isGuest || userType === "eter" || userType === "") {
+      // Show ad for eter and gast users
+      setPendingMode(selectedMode);
+      setShowAd(true);
+      setAdCountdown(5);
+    } else {
+      // Business users skip the ad
+      proceedWithMode(selectedMode);
+    }
+  };
+
+  const proceedWithMode = (selectedMode: "camera" | "upload") => {
+    setMode(selectedMode);
+    if (selectedMode === "upload") {
+      setTimeout(() => fileInputRef.current?.click(), 100);
+    }
+  };
+
+  const handleAdClose = () => {
+    if (adCountdown === 0 && pendingMode) {
+      setShowAd(false);
+      proceedWithMode(pendingMode);
+      setPendingMode(null);
+    }
+  };
 
   const checkUserType = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -216,7 +267,7 @@ const Scan = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card 
                     className="p-8 text-center hover:shadow-hover transition-all cursor-pointer"
-                    onClick={() => setMode("camera")}
+                    onClick={() => handleModeSelection("camera")}
                   >
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Camera className="h-8 w-8 text-primary" />
@@ -229,10 +280,7 @@ const Scan = () => {
 
                   <Card 
                     className="p-8 text-center hover:shadow-hover transition-all cursor-pointer"
-                    onClick={() => {
-                      setMode("upload");
-                      fileInputRef.current?.click();
-                    }}
+                    onClick={() => handleModeSelection("upload")}
                   >
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Upload className="h-8 w-8 text-primary" />
@@ -393,6 +441,57 @@ const Scan = () => {
           </>
         )}
       </div>
+
+      <AlertDialog open={showAd} onOpenChange={setShowAd}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-center">Gesponsorde Boodschap</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-6 py-6">
+                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-8 text-center">
+                  <div className="text-6xl mb-4">🍕</div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    Upgrade naar Premium!
+                  </h3>
+                  <p className="text-base text-muted-foreground mb-4">
+                    Geniet van onbeperkte scans zonder advertenties en krijg toegang tot exclusieve functies.
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      ✓ Onbeperkte scans
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1">
+                      ✓ Geen advertenties
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1">
+                      ✓ Premium support
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <Button
+                    onClick={handleAdClose}
+                    disabled={adCountdown > 0}
+                    size="lg"
+                    className="min-w-[200px]"
+                  >
+                    {adCountdown > 0 
+                      ? `Doorgaan in ${adCountdown}s...` 
+                      : "Doorgaan naar Scan"
+                    }
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Je wordt doorgestuurd naar de scan na deze boodschap
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
