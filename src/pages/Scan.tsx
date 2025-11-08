@@ -53,6 +53,28 @@ const Scan = () => {
     }
   }, [showAd, adCountdown]);
 
+  // Log ad shown event
+  useEffect(() => {
+    if (showAd) {
+      logAdEvent('shown');
+    }
+  }, [showAd]);
+
+  const logAdEvent = async (eventType: 'shown' | 'completed' | 'skipped', countdownValue?: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await supabase.from("ad_analytics").insert({
+        user_id: user?.id || null,
+        ad_type: 'scan_interstitial',
+        event_type: eventType,
+        countdown_value: countdownValue,
+      });
+    } catch (error) {
+      console.error("Error logging ad event:", error);
+    }
+  };
+
   const handleModeSelection = (selectedMode: "camera" | "upload") => {
     // Check if user is eter or gast
     const guestType = localStorage.getItem("userType");
@@ -78,10 +100,20 @@ const Scan = () => {
 
   const handleAdClose = () => {
     if (adCountdown === 0 && pendingMode) {
+      // Log completed view
+      logAdEvent('completed', 0);
       setShowAd(false);
       proceedWithMode(pendingMode);
       setPendingMode(null);
     }
+  };
+
+  const handleAdSkip = () => {
+    // Log skipped event with remaining countdown
+    logAdEvent('skipped', adCountdown);
+    setShowAd(false);
+    setMode("select");
+    setPendingMode(null);
   };
 
   const checkUserType = async () => {
@@ -442,7 +474,12 @@ const Scan = () => {
         )}
       </div>
 
-      <AlertDialog open={showAd} onOpenChange={setShowAd}>
+      <AlertDialog open={showAd} onOpenChange={(open) => {
+        if (!open && adCountdown > 0) {
+          handleAdSkip();
+        }
+        setShowAd(open);
+      }}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-center">Gesponsorde Boodschap</AlertDialogTitle>

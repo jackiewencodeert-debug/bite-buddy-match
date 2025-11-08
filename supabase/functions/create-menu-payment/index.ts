@@ -59,7 +59,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Fout bij aanmaken checkout:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : "Er is een onbekende fout opgetreden";
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
