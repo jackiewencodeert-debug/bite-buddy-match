@@ -13,6 +13,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AdMobService } from "@/services/admob";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -75,16 +76,36 @@ const Scan = () => {
     }
   };
 
-  const handleModeSelection = (selectedMode: "camera" | "upload") => {
+  const handleModeSelection = async (selectedMode: "camera" | "upload") => {
     // Check if user is eter or gast
     const guestType = localStorage.getItem("userType");
     const isGuest = guestType === "gast";
     
     if (isGuest || userType === "eter" || userType === "") {
-      // Show ad for eter and gast users
-      setPendingMode(selectedMode);
-      setShowAd(true);
-      setAdCountdown(5);
+      // Log ad shown event
+      await logAdEvent('shown');
+      
+      // Check if we're on native platform
+      if (AdMobService.isNative()) {
+        // Show native AdMob interstitial
+        try {
+          await AdMobService.showInterstitial();
+          // Ad was shown (or skipped), log completion and proceed
+          await logAdEvent('completed', 0);
+          proceedWithMode(selectedMode);
+        } catch (error) {
+          console.error('AdMob error:', error);
+          // Fallback to web dialog if AdMob fails
+          setPendingMode(selectedMode);
+          setShowAd(true);
+          setAdCountdown(5);
+        }
+      } else {
+        // Web platform: show custom dialog
+        setPendingMode(selectedMode);
+        setShowAd(true);
+        setAdCountdown(5);
+      }
     } else {
       // Business users skip the ad
       proceedWithMode(selectedMode);
