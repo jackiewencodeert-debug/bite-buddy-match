@@ -5,7 +5,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Shield, Plus, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Shield, Plus, X, Camera, Home } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +66,7 @@ const Profile = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userType, setUserType] = useState<string>("");
   const [isGuest, setIsGuest] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -220,12 +228,13 @@ const Profile = () => {
         };
         localStorage.setItem("guestPreferences", JSON.stringify(guestPrefs));
         
-        toast({
-          title: "Profiel opgeslagen! ✓",
-          description: "Je voorkeuren zijn tijdelijk opgeslagen.",
-        });
-        setSaving(false);
-        return;
+      toast({
+        title: "Profiel opgeslagen! ✓",
+        description: "Je voorkeuren zijn tijdelijk opgeslagen.",
+      });
+      setSaving(false);
+      setShowSuccessDialog(true);
+      return;
       }
 
       // Handle logged in user save
@@ -276,6 +285,7 @@ const Profile = () => {
         title: "Profiel opgeslagen! ✓",
         description: "Je voorkeuren zijn succesvol bijgewerkt.",
       });
+      setShowSuccessDialog(true);
     } catch (error: any) {
       console.error("Error saving preferences:", error);
       toast({
@@ -540,6 +550,42 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Voorkeuren opgeslagen! ✓</AlertDialogTitle>
+            <AlertDialogDescription>
+              Wat wil je nu doen?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              size="lg"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate("/");
+              }}
+              className="w-full"
+            >
+              <Home className="mr-2 h-5 w-5" />
+              Terug naar Hoofdpagina
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate("/scan");
+              }}
+              className="w-full"
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              Menu Scannen
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
