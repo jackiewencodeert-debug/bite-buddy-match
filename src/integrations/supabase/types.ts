@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       preferences: {
         Row: {
+          characteristics: string[] | null
           created_at: string
           id: string
           preference_type: string
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          characteristics?: string[] | null
           created_at?: string
           id?: string
           preference_type: string
@@ -30,6 +32,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          characteristics?: string[] | null
           created_at?: string
           id?: string
           preference_type?: string

@@ -3,10 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Shield, Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 const allergies = [
   { id: "noten", label: "Noten" },
@@ -26,9 +29,31 @@ const preferences = [
   { id: "kosher", label: "Kosher" },
 ];
 
+// Validation schema for custom allergies
+const customAllergySchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, { message: "Allergie naam moet minimaal 2 tekens zijn" })
+    .max(50, { message: "Allergie naam mag maximaal 50 tekens zijn" })
+    .regex(/^[a-zA-Z0-9\s\-]+$/, { message: "Alleen letters, cijfers, spaties en koppeltekens toegestaan" }),
+  characteristics: z.string()
+    .trim()
+    .min(2, { message: "Kenmerken moeten minimaal 2 tekens zijn" })
+    .max(200, { message: "Kenmerken mogen maximaal 200 tekens zijn" })
+});
+
+interface CustomAllergy {
+  id?: string;
+  name: string;
+  characteristics: string[];
+}
+
 const Profile = () => {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+  const [customAllergies, setCustomAllergies] = useState<CustomAllergy[]>([]);
+  const [newAllergyName, setNewAllergyName] = useState("");
+  const [newAllergyChars, setNewAllergyChars] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -66,20 +91,88 @@ const Profile = () => {
 
       if (prefs) {
         const allergiesList = prefs
-          .filter(p => p.preference_type === "allergie")
+          .filter(p => p.preference_type === "allergie" && !p.characteristics)
           .map(p => p.preference_value);
         const prefsList = prefs
           .filter(p => p.preference_type === "dieet")
           .map(p => p.preference_value);
+        const customList = prefs
+          .filter(p => p.preference_type === "allergie" && p.characteristics)
+          .map(p => ({
+            id: p.id,
+            name: p.preference_value,
+            characteristics: p.characteristics || []
+          }));
         
         setSelectedAllergies(allergiesList);
         setSelectedPreferences(prefsList);
+        setCustomAllergies(customList);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const addCustomAllergy = () => {
+    try {
+      // Validate input
+      customAllergySchema.parse({
+        name: newAllergyName,
+        characteristics: newAllergyChars
+      });
+
+      // Split characteristics by comma and trim
+      const charArray = newAllergyChars
+        .split(",")
+        .map(c => c.trim().toLowerCase())
+        .filter(c => c.length > 0);
+
+      if (charArray.length === 0) {
+        toast({
+          title: "Ongeldig",
+          description: "Voeg minimaal 1 kenmerk toe (gescheiden door komma's)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check for duplicates
+      if (customAllergies.some(a => a.name.toLowerCase() === newAllergyName.toLowerCase())) {
+        toast({
+          title: "Allergie bestaat al",
+          description: "Je hebt deze allergie al toegevoegd",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setCustomAllergies([...customAllergies, {
+        name: newAllergyName,
+        characteristics: charArray
+      }]);
+
+      setNewAllergyName("");
+      setNewAllergyChars("");
+
+      toast({
+        title: "Allergie toegevoegd!",
+        description: `${newAllergyName} is toegevoegd aan je lijst`,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validatiefout",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const removeCustomAllergy = (name: string) => {
+    setCustomAllergies(customAllergies.filter(a => a.name !== name));
   };
 
   const handleSave = async () => {
@@ -94,21 +187,31 @@ const Profile = () => {
         .delete()
         .eq("user_id", user.id);
 
-      // Insert allergies
+      // Insert standard allergies
       const allergyInserts = selectedAllergies.map(allergy => ({
         user_id: user.id,
         preference_type: "allergie",
         preference_value: allergy,
+        characteristics: null
       }));
 
-      // Insert preferences
+      // Insert custom allergies with characteristics
+      const customAllergyInserts = customAllergies.map(allergy => ({
+        user_id: user.id,
+        preference_type: "allergie",
+        preference_value: allergy.name,
+        characteristics: allergy.characteristics
+      }));
+
+      // Insert dietary preferences
       const prefInserts = selectedPreferences.map(pref => ({
         user_id: user.id,
         preference_type: "dieet",
         preference_value: pref,
+        characteristics: null
       }));
 
-      const allInserts = [...allergyInserts, ...prefInserts];
+      const allInserts = [...allergyInserts, ...customAllergyInserts, ...prefInserts];
       
       if (allInserts.length > 0) {
         const { error } = await supabase
@@ -194,7 +297,7 @@ const Profile = () => {
               <p className="text-muted-foreground mb-6">
                 Selecteer alle allergieën waar we rekening mee moeten houden
               </p>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
                 {allergies.map((allergy) => (
                   <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                     <Checkbox
@@ -210,6 +313,88 @@ const Profile = () => {
                     </Label>
                   </div>
                 ))}
+              </div>
+
+              {/* Custom Allergies Section */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-primary" />
+                  Eigen allergie toevoegen
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Voeg een allergie toe die niet in de lijst staat, inclusief ingrediënten die we moeten detecteren
+                </p>
+                
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="allergyName" className="text-sm font-medium">
+                      Allergie naam
+                    </Label>
+                    <Input
+                      id="allergyName"
+                      placeholder="Bijv: Sesam"
+                      value={newAllergyName}
+                      onChange={(e) => setNewAllergyName(e.target.value)}
+                      maxLength={50}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="allergyChars" className="text-sm font-medium">
+                      Kenmerken (gescheiden door komma's)
+                    </Label>
+                    <Input
+                      id="allergyChars"
+                      placeholder="Bijv: sesamzaad, sesam olie, tahini"
+                      value={newAllergyChars}
+                      onChange={(e) => setNewAllergyChars(e.target.value)}
+                      maxLength={200}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Deze ingrediënten worden gedetecteerd op menukaarten
+                    </p>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addCustomAllergy}
+                    className="w-full sm:w-auto"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Allergie Toevoegen
+                  </Button>
+                </div>
+
+                {/* Display custom allergies */}
+                {customAllergies.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <Label className="text-sm font-medium">Jouw allergieën:</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {customAllergies.map((allergy) => (
+                        <Badge
+                          key={allergy.name}
+                          variant="secondary"
+                          className="px-3 py-1 text-sm flex items-center gap-2"
+                        >
+                          <span className="font-medium">{allergy.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({allergy.characteristics.join(", ")})
+                          </span>
+                          <button
+                            onClick={() => removeCustomAllergy(allergy.name)}
+                            className="ml-1 hover:text-destructive"
+                            aria-label={`Verwijder ${allergy.name}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 
