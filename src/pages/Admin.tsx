@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Users, ScanLine, Heart, Shield } from "lucide-react";
+import { ArrowLeft, Users, ScanLine, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,28 +9,21 @@ import { useToast } from "@/hooks/use-toast";
 interface Stats {
   totalUsers: number;
   totalScans: number;
-  totalPreferences: number;
-  preferenceBreakdown: { [key: string]: number };
-  scanMethodBreakdown: { camera: number; upload: number };
+  preferences: { type: string; value: string; count: number }[];
 }
 
 const Admin = () => {
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Stats>({
-    totalUsers: 0,
-    totalScans: 0,
-    totalPreferences: 0,
-    preferenceBreakdown: {},
-    scanMethodBreakdown: { camera: 0, upload: 0 },
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAdminAndLoadStats();
+    checkAdmin();
   }, []);
 
-  const checkAdminAndLoadStats = async () => {
+  const checkAdmin = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -39,31 +32,29 @@ const Admin = () => {
         return;
       }
 
-      // Check if user is admin
+      // Check if user has admin role
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
 
-      const isAdmin = roles?.some(r => r.role === "admin");
+      const hasAdminRole = roles?.some(r => r.role === "admin");
       
-      if (!isAdmin) {
+      if (!hasAdminRole) {
         toast({
           title: "Geen toegang",
           description: "Je hebt geen admin rechten.",
           variant: "destructive",
         });
-        navigate("/profile");
+        navigate("/");
         return;
       }
 
-      // Load statistics
-      await loadStats();
+      setIsAdmin(true);
+      loadStats();
     } catch (error) {
       console.error("Error checking admin:", error);
       navigate("/auth");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -79,158 +70,161 @@ const Admin = () => {
         .from("scans")
         .select("*", { count: "exact", head: true });
 
-      // Get scan method breakdown
-      const { data: scans } = await supabase
-        .from("scans")
-        .select("scan_method");
-
-      const scanMethodBreakdown = {
-        camera: scans?.filter(s => s.scan_method === "camera").length || 0,
-        upload: scans?.filter(s => s.scan_method === "upload").length || 0,
-      };
-
-      // Get total preferences and breakdown
-      const { data: preferences } = await supabase
+      // Get preferences statistics
+      const { data: prefsData } = await supabase
         .from("preferences")
         .select("preference_type, preference_value");
 
-      const preferenceBreakdown: { [key: string]: number } = {};
-      preferences?.forEach(pref => {
+      // Count preferences
+      const preferenceCounts: Record<string, number> = {};
+      prefsData?.forEach(pref => {
         const key = `${pref.preference_type}: ${pref.preference_value}`;
-        preferenceBreakdown[key] = (preferenceBreakdown[key] || 0) + 1;
+        preferenceCounts[key] = (preferenceCounts[key] || 0) + 1;
       });
+
+      const preferences = Object.entries(preferenceCounts)
+        .map(([key, count]) => {
+          const [type, value] = key.split(": ");
+          return { type, value, count };
+        })
+        .sort((a, b) => b.count - a.count);
 
       setStats({
         totalUsers: userCount || 0,
         totalScans: scanCount || 0,
-        totalPreferences: preferences?.length || 0,
-        preferenceBreakdown,
-        scanMethodBreakdown,
+        preferences,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
       toast({
-        title: "Fout bij laden statistieken",
-        description: "Kon statistieken niet ophalen.",
+        title: "Error",
+        description: "Kon statistieken niet laden.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Dashboard laden...</p>
-        </div>
-      </div>
-    );
+  if (!isAdmin) {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/profile">
+        <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Terug naar Profiel
+            Terug
           </Button>
         </Link>
 
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Shield className="h-10 w-10 text-primary" />
-              <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Overzicht van app statistieken</p>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Statistieken laden...</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Statistics Cards */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Totaal Accounts
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{stats?.totalUsers}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Geregistreerde gebruikers
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Totaal Scans
+                  </CardTitle>
+                  <ScanLine className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{stats?.totalScans}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Menu's gescand
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Unieke Voorkeuren
+                  </CardTitle>
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">
+                    {stats?.preferences.length || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Verschillende voorkeuren
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-            <p className="text-lg text-muted-foreground">
-              Overzicht van alle gebruikers, scans en voorkeuren
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <Card className="border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Totaal Gebruikers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+            {/* Preferences Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Voorkeuren Overzicht</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stats.totalUsers}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Geregistreerde accounts
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Totaal Scans</CardTitle>
-                <ScanLine className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalScans}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Camera: {stats.scanMethodBreakdown.camera} | Upload: {stats.scanMethodBreakdown.upload}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Totaal Voorkeuren</CardTitle>
-                <Heart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalPreferences}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Opgeslagen allergieën & diëten
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Voorkeur Statistieken</CardTitle>
-              <CardDescription>
-                Overzicht van hoe vaak elke voorkeur is geselecteerd
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {Object.keys(stats.preferenceBreakdown).length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Nog geen voorkeuren opgegeven door gebruikers
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(stats.preferenceBreakdown)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([preference, count]) => (
-                      <div key={preference} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                {stats?.preferences && stats.preferences.length > 0 ? (
+                  <div className="space-y-4">
+                    {stats.preferences.map((pref, index) => (
+                      <div key={index} className="flex items-center justify-between">
                         <div className="flex-1">
-                          <p className="font-medium">{preference}</p>
+                          <p className="font-medium capitalize">
+                            {pref.type}: <span className="text-muted-foreground">{pref.value}</span>
+                          </p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <div className="w-32 bg-secondary rounded-full h-2">
+                          <div className="text-right">
+                            <p className="text-sm font-semibold">{pref.count}x</p>
+                          </div>
+                          <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                              className="bg-primary h-2 rounded-full transition-all"
+                              className="h-full bg-primary"
                               style={{
-                                width: `${(count / stats.totalPreferences) * 100}%`,
+                                width: `${Math.min(
+                                  (pref.count / (stats.preferences[0]?.count || 1)) * 100,
+                                  100
+                                )}%`,
                               }}
                             />
                           </div>
-                          <span className="font-bold text-lg min-w-[3rem] text-right">
-                            {count}x
-                          </span>
                         </div>
                       </div>
                     ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nog geen voorkeuren geregistreerd
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
