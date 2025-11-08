@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,10 +19,19 @@ const Scan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     checkUserType();
-  }, []);
+    
+    // Check for payment success
+    if (searchParams.get('payment') === 'success') {
+      toast({
+        title: "Betaling geslaagd!",
+        description: "Je kunt nu je menu scannen.",
+      });
+    }
+  }, [searchParams]);
 
   const checkUserType = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -121,6 +130,17 @@ const Scan = () => {
 
       // If business user, generate QR code
       if (userType === "eetgever" && user) {
+        // Check if payment was completed
+        if (searchParams.get('payment') !== 'success') {
+          toast({
+            title: "Betaling vereist",
+            description: "Je moet eerst betalen om een menu toe te voegen.",
+            variant: "destructive",
+          });
+          navigate("/business");
+          return;
+        }
+
         const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
         const { error } = await supabase.from("menus").insert({

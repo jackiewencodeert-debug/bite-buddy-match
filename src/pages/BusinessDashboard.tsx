@@ -20,6 +20,7 @@ const BusinessDashboard = () => {
   const [stats, setStats] = useState<MenuScanStats[]>([]);
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     checkUserTypeAndLoadData();
@@ -102,6 +103,42 @@ const BusinessDashboard = () => {
         setStats(statsArray);
         setTopAllergies(statsArray.slice(0, 5));
       }
+    }
+  };
+
+  const handleStartPayment = async () => {
+    setProcessingPayment(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Niet ingelogd",
+          description: "Log in om door te gaan",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-menu-payment", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Fout bij betaling",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -259,14 +296,34 @@ const BusinessDashboard = () => {
           </CardContent>
         </Card>
 
-        <Button 
-          className="w-full" 
-          size="lg"
-          onClick={() => navigate("/scan")}
-        >
-          <QrCode className="mr-2 h-5 w-5" />
-          Nieuw Menu Scannen
-        </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>Nieuw Menu Toevoegen</CardTitle>
+            <CardDescription>
+              Betaal €1,00 per menu om te beginnen met scannen
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={handleStartPayment}
+              disabled={processingPayment}
+            >
+              {processingPayment ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Bezig met betaling...
+                </>
+              ) : (
+                <>
+                  <QrCode className="mr-2 h-5 w-5" />
+                  Betaal €1,00 en Scan Menu
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
