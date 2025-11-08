@@ -5,6 +5,7 @@ import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -79,16 +80,37 @@ const Scan = () => {
   };
 
   // Process image
-  const processImage = () => {
-    // Simulate processing
-    toast({
-      title: "Menukaart analyseren...",
-      description: "Even geduld, we scannen de ingrediënten.",
-    });
-    
-    setTimeout(() => {
-      setScanned(true);
-    }, 1500);
+  const processImage = async () => {
+    try {
+      // Log scan to database
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await supabase.from("scans").insert({
+        user_id: user?.id || null,
+        scan_method: mode,
+      });
+
+      // Simulate processing
+      toast({
+        title: "Menukaart analyseren...",
+        description: "Even geduld, we scannen de ingrediënten.",
+      });
+      
+      setTimeout(() => {
+        setScanned(true);
+      }, 1500);
+    } catch (error) {
+      console.error("Error logging scan:", error);
+      // Continue anyway
+      toast({
+        title: "Menukaart analyseren...",
+        description: "Even geduld, we scannen de ingrediënten.",
+      });
+      
+      setTimeout(() => {
+        setScanned(true);
+      }, 1500);
+    }
   };
 
   // Cleanup on unmount
