@@ -399,118 +399,123 @@ const Profile = () => {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-4">Mijn Profiel</h1>
             <p className="text-lg text-muted-foreground">
-              Stel je allergieën en voorkeuren in voor gepersonaliseerde matches
+              {userType === "eetgever" 
+                ? "Beheer je bedrijfsinstellingen"
+                : "Stel je allergieën en voorkeuren in voor gepersonaliseerde matches"
+              }
             </p>
           </div>
 
           <div className="space-y-6">
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                🚫 Allergieën
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Selecteer alle allergieën waar we rekening mee moeten houden
-              </p>
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                {allergies.map((allergy) => (
-                  <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Checkbox
-                      id={allergy.id}
-                      checked={selectedAllergies.includes(allergy.id)}
-                      onCheckedChange={() => toggleAllergy(allergy.id)}
-                    />
-                    <Label
-                      htmlFor={allergy.id}
-                      className="text-base cursor-pointer flex-1"
-                    >
-                      {allergy.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-
-              {/* Custom Allergies Section */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-primary" />
-                  Eigen allergie toevoegen
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Voeg een allergie toe die niet in de lijst staat, inclusief ingrediënten die we moeten detecteren
+            {userType !== "eetgever" && (
+              <Card className="p-6">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                  🚫 Allergieën
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Selecteer alle allergieën waar we rekening mee moeten houden
                 </p>
-                
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="allergyName" className="text-sm font-medium">
-                      Allergie naam
-                    </Label>
-                    <Input
-                      id="allergyName"
-                      placeholder="Bijv: Sesam"
-                      value={newAllergyName}
-                      onChange={(e) => setNewAllergyName(e.target.value)}
-                      maxLength={50}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="allergyChars" className="text-sm font-medium">
-                      Kenmerken (gescheiden door komma's)
-                    </Label>
-                    <Input
-                      id="allergyChars"
-                      placeholder="Bijv: sesamzaad, sesam olie, tahini"
-                      value={newAllergyChars}
-                      onChange={(e) => setNewAllergyChars(e.target.value)}
-                      maxLength={200}
-                      className="mt-1"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Deze ingrediënten worden gedetecteerd op menukaarten
-                    </p>
-                  </div>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addCustomAllergy}
-                    className="w-full sm:w-auto"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Allergie Toevoegen
-                  </Button>
+                <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                  {allergies.map((allergy) => (
+                    <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Checkbox
+                        id={allergy.id}
+                        checked={selectedAllergies.includes(allergy.id)}
+                        onCheckedChange={() => toggleAllergy(allergy.id)}
+                      />
+                      <Label
+                        htmlFor={allergy.id}
+                        className="text-base cursor-pointer flex-1"
+                      >
+                        {allergy.label}
+                      </Label>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Display custom allergies */}
-                {customAllergies.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <Label className="text-sm font-medium">Jouw allergieën:</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {customAllergies.map((allergy) => (
-                        <Badge
-                          key={allergy.name}
-                          variant="secondary"
-                          className="px-3 py-1 text-sm flex items-center gap-2"
-                        >
-                          <span className="font-medium">{allergy.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({allergy.characteristics.join(", ")})
-                          </span>
-                          <button
-                            onClick={() => removeCustomAllergy(allergy.name)}
-                            className="ml-1 hover:text-destructive"
-                            aria-label={`Verwijder ${allergy.name}`}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
+                {/* Custom Allergies Section */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-primary" />
+                    Eigen allergie toevoegen
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Voeg een allergie toe die niet in de lijst staat, inclusief ingrediënten die we moeten detecteren
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="allergyName" className="text-sm font-medium">
+                        Allergie naam
+                      </Label>
+                      <Input
+                        id="allergyName"
+                        placeholder="Bijv: Sesam"
+                        value={newAllergyName}
+                        onChange={(e) => setNewAllergyName(e.target.value)}
+                        maxLength={50}
+                        className="mt-1"
+                      />
                     </div>
+                    
+                    <div>
+                      <Label htmlFor="allergyChars" className="text-sm font-medium">
+                        Kenmerken (gescheiden door komma's)
+                      </Label>
+                      <Input
+                        id="allergyChars"
+                        placeholder="Bijv: sesamzaad, sesam olie, tahini"
+                        value={newAllergyChars}
+                        onChange={(e) => setNewAllergyChars(e.target.value)}
+                        maxLength={200}
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Deze ingrediënten worden gedetecteerd op menukaarten
+                      </p>
+                    </div>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addCustomAllergy}
+                      className="w-full sm:w-auto"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Allergie Toevoegen
+                    </Button>
                   </div>
-                )}
-              </div>
-            </Card>
+
+                  {/* Display custom allergies */}
+                  {customAllergies.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <Label className="text-sm font-medium">Jouw allergieën:</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {customAllergies.map((allergy) => (
+                          <Badge
+                            key={allergy.name}
+                            variant="secondary"
+                            className="px-3 py-1 text-sm flex items-center gap-2"
+                          >
+                            <span className="font-medium">{allergy.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({allergy.characteristics.join(", ")})
+                            </span>
+                            <button
+                              onClick={() => removeCustomAllergy(allergy.name)}
+                              className="ml-1 hover:text-destructive"
+                              aria-label={`Verwijder ${allergy.name}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             {userType === "eetgever" && !isGuest && (
               <Card className="p-6 border-warning/50 bg-warning/5">
@@ -555,31 +560,33 @@ const Profile = () => {
               </Card>
             )}
 
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                🥗 Voorkeuren
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Kies je dieet en voedselvoorkeuren
-              </p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {preferences.map((preference) => (
-                  <div key={preference.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Checkbox
-                      id={preference.id}
-                      checked={selectedPreferences.includes(preference.id)}
-                      onCheckedChange={() => togglePreference(preference.id)}
-                    />
-                    <Label
-                      htmlFor={preference.id}
-                      className="text-base cursor-pointer flex-1"
-                    >
-                      {preference.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            {userType !== "eetgever" && (
+              <Card className="p-6">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                  🥗 Voorkeuren
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Kies je dieet en voedselvoorkeuren
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {preferences.map((preference) => (
+                    <div key={preference.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Checkbox
+                        id={preference.id}
+                        checked={selectedPreferences.includes(preference.id)}
+                        onCheckedChange={() => togglePreference(preference.id)}
+                      />
+                      <Label
+                        htmlFor={preference.id}
+                        className="text-base cursor-pointer flex-1"
+                      >
+                        {preference.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             <Card className="p-6 bg-gradient-hero border-primary/20">
               <div className="flex items-start gap-4">
