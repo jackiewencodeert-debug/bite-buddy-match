@@ -5,6 +5,8 @@ import { ArrowLeft, Users, ScanLine, Heart, TrendingUp } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface Stats {
   totalUsers: number;
@@ -27,6 +29,7 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkAdmin();
@@ -51,8 +54,8 @@ const Admin = () => {
       
       if (!hasAdminRole) {
         toast({
-          title: "Geen toegang",
-          description: "Je hebt geen admin rechten.",
+          title: t("admin.noAccess"),
+          description: t("admin.noAdminRights"),
           variant: "destructive",
         });
         navigate("/");
@@ -140,8 +143,8 @@ const Admin = () => {
     } catch (error) {
       console.error("Error loading stats:", error);
       toast({
-        title: "Error",
-        description: "Kon statistieken niet laden.",
+        title: t("common.error"),
+        description: t("admin.errorLoadingStats"),
         variant: "destructive",
       });
     } finally {
@@ -155,23 +158,24 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
+      <LanguageToggle />
       <div className="container mx-auto px-4 py-8">
         <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Terug
+            {t("common.back")}
           </Button>
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Overzicht van app statistieken</p>
+          <h1 className="text-4xl font-bold mb-2">{t("admin.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.subtitle")}</p>
         </div>
 
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Statistieken laden...</p>
+            <p className="text-muted-foreground">{t("admin.loadingStats")}</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -180,14 +184,14 @@ const Admin = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Totaal Accounts
+                    {t("admin.totalUsers")}
                   </CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{stats?.totalUsers}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Geregistreerde gebruikers
+                    {t("admin.registeredUsers")}
                   </p>
                 </CardContent>
               </Card>
@@ -195,14 +199,14 @@ const Admin = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Totaal Scans
+                    {t("admin.totalScans")}
                   </CardTitle>
                   <ScanLine className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{stats?.totalScans}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Menu's gescand
+                    {t("admin.menusScanned")}
                   </p>
                 </CardContent>
               </Card>
@@ -210,7 +214,7 @@ const Admin = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Unieke Voorkeuren
+                    {t("admin.uniquePreferences")}
                   </CardTitle>
                   <Heart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -219,7 +223,7 @@ const Admin = () => {
                     {stats?.preferences.length || 0}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Verschillende voorkeuren
+                    {t("admin.differentPreferences")}
                   </p>
                 </CardContent>
               </Card>
@@ -230,7 +234,7 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Reclame Analytics
+                  {t("admin.adAnalytics")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -238,35 +242,35 @@ const Admin = () => {
                   <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Totaal Getoond</p>
+                        <p className="text-sm text-muted-foreground mb-1">{t("admin.totalShown")}</p>
                         <p className="text-3xl font-bold">{adStats.shown}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Voltooiingspercentage</p>
+                        <p className="text-sm text-muted-foreground mb-1">{t("admin.completionRate")}</p>
                         <p className="text-3xl font-bold text-primary">{adStats.completionRate}%</p>
                       </div>
                     </div>
                     
                     <div className="grid md:grid-cols-3 gap-4 pt-4 border-t">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Volledig Bekeken</p>
+                        <p className="text-sm text-muted-foreground mb-1">{t("admin.fullyWatched")}</p>
                         <p className="text-2xl font-semibold text-green-600">{adStats.completed}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Overgeslagen</p>
+                        <p className="text-sm text-muted-foreground mb-1">{t("admin.skipped")}</p>
                         <p className="text-2xl font-semibold text-orange-600">{adStats.skipped}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Gem. Skip Countdown</p>
+                        <p className="text-sm text-muted-foreground mb-1">{t("admin.avgSkipCountdown")}</p>
                         <p className="text-2xl font-semibold">{adStats.avgSkipCountdown}s</p>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Voltooiing vs. Skip</span>
+                        <span className="text-sm font-medium">{t("admin.completionVsSkip")}</span>
                         <span className="text-sm text-muted-foreground">
-                          {adStats.completed + adStats.skipped} totaal
+                          {t("admin.total").replace("{count}", (adStats.completed + adStats.skipped).toString())}
                         </span>
                       </div>
                       <div className="w-full h-4 bg-secondary rounded-full overflow-hidden flex">
@@ -286,18 +290,18 @@ const Admin = () => {
                       <div className="flex items-center justify-between mt-2 text-xs">
                         <span className="flex items-center gap-1">
                           <span className="w-3 h-3 bg-green-600 rounded-sm"></span>
-                          Volledig ({adStats.completed})
+                          {t("admin.completed").replace("{count}", adStats.completed.toString())}
                         </span>
                         <span className="flex items-center gap-1">
                           <span className="w-3 h-3 bg-orange-600 rounded-sm"></span>
-                          Overgeslagen ({adStats.skipped})
+                          {t("admin.skippedCount").replace("{count}", adStats.skipped.toString())}
                         </span>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-8">
-                    Nog geen reclame analytics beschikbaar
+                    {t("admin.noAdAnalytics")}
                   </p>
                 )}
               </CardContent>
@@ -306,7 +310,7 @@ const Admin = () => {
             {/* Preferences Breakdown */}
             <Card>
               <CardHeader>
-                <CardTitle>Voorkeuren Overzicht</CardTitle>
+                <CardTitle>{t("admin.preferencesOverview")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {stats?.preferences && stats.preferences.length > 0 ? (
@@ -339,7 +343,7 @@ const Admin = () => {
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-8">
-                    Nog geen voorkeuren geregistreerd
+                    {t("admin.noPreferences")}
                   </p>
                 )}
               </CardContent>

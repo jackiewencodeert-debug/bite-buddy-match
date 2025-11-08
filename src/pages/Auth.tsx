@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +17,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleGuestContinue = () => {
     localStorage.setItem("userType", "gast");
@@ -84,73 +87,50 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center p-4">
+      <LanguageToggle />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            {isLogin ? "Inloggen" : "Account Aanmaken"}
+            {t("auth.welcome")}
           </CardTitle>
           <CardDescription className="text-center">
-            {isLogin
-              ? "Log in om je voorkeuren en scan-historie te bekijken"
-              : "Maak een account om je voorkeuren op te slaan"}
+            {t("auth.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">Account Type</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="text-sm font-medium">{t("auth.userType")}</label>
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="button"
                     variant={userType === "eter" ? "default" : "outline"}
                     onClick={() => setUserType("eter")}
                     disabled={loading}
-                    className="w-full"
+                    className="w-full flex flex-col h-auto py-4"
                   >
-                    Eter
+                    <span className="font-semibold">{t("auth.diner")}</span>
+                    <span className="text-xs mt-1 opacity-80">{t("auth.dinerDesc")}</span>
                   </Button>
                   <Button
                     type="button"
                     variant={userType === "eetgever" ? "default" : "outline"}
                     onClick={() => setUserType("eetgever")}
                     disabled={loading}
-                    className="w-full"
+                    className="w-full flex flex-col h-auto py-4"
                   >
-                    Bedrijf
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={userType === "gast" ? "default" : "outline"}
-                    onClick={() => setUserType("gast")}
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    Gast
+                    <span className="font-semibold">{t("auth.business")}</span>
+                    <span className="text-xs mt-1 opacity-80">{t("auth.businessDesc")}</span>
                   </Button>
                 </div>
-                {userType === "gast" && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Als gast kun je direct beginnen zonder account. Je voorkeuren worden tijdelijk opgeslagen.
-                    </p>
-                    <Button
-                      type="button"
-                      onClick={handleGuestContinue}
-                      className="w-full"
-                      disabled={loading}
-                    >
-                      Doorgaan als Gast
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
             {(isLogin || (!isLogin && userType !== "gast")) && (
               <>
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">
-                    E-mailadres
+                    {t("auth.email")}
                   </label>
                   <Input
                     id="email"
@@ -164,7 +144,7 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-sm font-medium">
-                    Wachtwoord
+                    {t("auth.password")}
                   </label>
                   <Input
                     id="password"
@@ -181,15 +161,26 @@ const Auth = () => {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Bezig...
+                      {t("common.loading")}
                     </>
                   ) : isLogin ? (
-                    "Inloggen"
+                    t("auth.signIn")
                   ) : (
-                    "Account Aanmaken"
+                    t("auth.signUp")
                   )}
                 </Button>
               </>
+            )}
+            {!isLogin && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGuestContinue}
+                className="w-full"
+                disabled={loading}
+              >
+                {t("auth.continueAsGuest")}
+              </Button>
             )}
           </form>
           <div className="mt-4 text-center text-sm">
@@ -200,8 +191,8 @@ const Auth = () => {
               disabled={loading}
             >
               {isLogin
-                ? "Nog geen account? Registreer hier"
-                : "Al een account? Log hier in"}
+                ? `${t("auth.noAccount")} ${t("auth.signUpLink")}`
+                : `${t("auth.alreadyAccount")} ${t("auth.signInLink")}`}
             </button>
           </div>
         </CardContent>

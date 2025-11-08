@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const MenuView = () => {
   const { qrCode } = useParams();
@@ -20,6 +22,7 @@ const MenuView = () => {
   const [userCustomAllergies, setUserCustomAllergies] = useState<any[]>([]);
   const [scanning, setScanning] = useState(false);
   const [matchResults, setMatchResults] = useState<any>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     loadMenuAndUser();
@@ -36,8 +39,8 @@ const MenuView = () => {
 
       if (!menuData) {
         toast({
-          title: "Menu niet gevonden",
-          description: "Deze QR-code is niet geldig.",
+          title: t("menuView.menuNotFound"),
+          description: t("menuView.invalidQR"),
           variant: "destructive",
         });
         navigate("/");
@@ -95,7 +98,7 @@ const MenuView = () => {
       }
     } catch (error: any) {
       toast({
-        title: "Fout bij laden",
+        title: t("menuView.errorLoading"),
         description: error.message,
         variant: "destructive",
       });
@@ -107,8 +110,8 @@ const MenuView = () => {
   const handleScan = async () => {
     if (!user) {
       toast({
-        title: "Inloggen vereist",
-        description: "Log in om je allergieën te vergelijken met het menu.",
+        title: t("menuView.loginRequired"),
+        description: t("menuView.loginRequiredDesc"),
       });
       navigate("/auth");
       return;
@@ -174,12 +177,12 @@ const MenuView = () => {
       }
 
       toast({
-        title: "Vergelijking compleet!",
-        description: "Je allergieën zijn vergeleken met het menu.",
+        title: t("menuView.comparisonComplete"),
+        description: t("menuView.comparisonCompleteDesc"),
       });
     } catch (error: any) {
       toast({
-        title: "Fout bij scannen",
+        title: t("menuView.errorScanning"),
         description: error.message,
         variant: "destructive",
       });
@@ -198,26 +201,27 @@ const MenuView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      <LanguageToggle />
       <div className="max-w-2xl mx-auto space-y-6">
         <Button variant="ghost" onClick={() => navigate("/")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Terug naar Home
+          {t("menuView.backToHome")}
         </Button>
 
         <Card>
           <CardHeader>
-            <CardTitle>Menu</CardTitle>
+            <CardTitle>{t("menuView.title")}</CardTitle>
             <CardDescription>
               {dishes.length > 0 
-                ? `${dishes.length} gerechten beschikbaar`
-                : "Dit menu heeft nog geen gerechten"}
+                ? t("menuView.dishesAvailable").replace("{count}", dishes.length.toString())
+                : t("menuView.noDishes")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {user && (userAllergies.length > 0 || userCustomAllergies.length > 0) ? (
               <>
                 <div>
-                  <h3 className="font-semibold mb-2">Je allergieën:</h3>
+                  <h3 className="font-semibold mb-2">{t("menuView.yourAllergies")}</h3>
                   <div className="flex flex-wrap gap-2">
                     {userAllergies.map((allergie) => (
                       <Badge key={allergie} variant="secondary">
@@ -240,19 +244,19 @@ const MenuView = () => {
                   {scanning ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Bezig met vergelijken...
+                      {t("menuView.comparing")}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Vergelijk met mijn allergieën
+                      {t("menuView.compareAllergies")}
                     </>
                   )}
                 </Button>
 
                 {matchResults && (
                   <div className="space-y-3 mt-6">
-                    <h3 className="font-semibold text-lg">Resultaten:</h3>
+                    <h3 className="font-semibold text-lg">{t("menuView.results")}</h3>
                     {matchResults.map((result: any, index: number) => {
                       const getStatusColor = () => {
                         switch (result.status) {
@@ -283,11 +287,11 @@ const MenuView = () => {
                       const getStatusText = () => {
                         switch (result.status) {
                           case "safe":
-                            return "Veilig";
+                            return t("results.safe");
                           case "caution":
-                            return "Aanpasbaar";
+                            return t("results.adjustable");
                           case "avoid":
-                            return "Bevat allergenen";
+                            return t("results.containsAllergens");
                           default:
                             return "";
                         }
@@ -316,7 +320,7 @@ const MenuView = () => {
                               </div>
                               {result.status === "avoid" && (result.matchedAllergens.length > 0 || result.matchedCustom.length > 0) && (
                                 <div className="mt-2">
-                                  <p className="text-sm font-semibold text-destructive">Gevonden allergenen:</p>
+                                  <p className="text-sm font-semibold text-destructive">{t("menuView.foundAllergens")}</p>
                                   <div className="flex flex-wrap gap-1 mt-1">
                                     {result.matchedAllergens.map((a: string) => (
                                       <Badge key={a} variant="destructive" className="text-xs">
@@ -333,7 +337,7 @@ const MenuView = () => {
                               )}
                               {result.status === "caution" && (
                                 <p className="text-sm text-warning mt-2">
-                                  Bevat andere allergenen. Vraag personeel om aanpassingen.
+                                  {t("menuView.otherAllergensWarning")}
                                 </p>
                               )}
                             </div>
@@ -387,21 +391,21 @@ const MenuView = () => {
               </div>
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                Dit menu heeft nog geen gerechten toegevoegd.
+                {t("menuView.noDishesAdded")}
               </p>
             )}
 
             {!user && dishes.length > 0 && (
               <div className="text-center space-y-4 pt-4">
                 <p className="text-muted-foreground">
-                  Log in of ga door als gast om je allergieën te vergelijken met dit menu
+                  {t("menuView.loginToCompare")}
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Button onClick={() => navigate("/auth")}>
-                    Inloggen
+                    {t("common.login")}
                   </Button>
                   <Button variant="outline" onClick={() => navigate("/auth")}>
-                    Doorgaan als Gast
+                    {t("common.continueAsGuest")}
                   </Button>
                 </div>
               </div>

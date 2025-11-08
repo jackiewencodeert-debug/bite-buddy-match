@@ -17,6 +17,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const allergies = [
   { id: "noten", label: "Noten" },
@@ -70,6 +72,7 @@ const Profile = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkAuth();
@@ -361,12 +364,13 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
+      <LanguageToggle />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <Link to="/">
             <Button variant="ghost">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Terug
+              {t("common.back")}
             </Button>
           </Link>
           
@@ -375,7 +379,7 @@ const Profile = () => {
               <Link to="/business">
                 <Button variant="outline" className="gap-2">
                   <Shield className="h-4 w-4" />
-                  Bedrijf Dashboard
+                  {t("profile.businessDashboard")}
                 </Button>
               </Link>
             )}
@@ -384,24 +388,24 @@ const Profile = () => {
               <Link to="/admin">
                 <Button variant="outline" className="gap-2">
                   <Shield className="h-4 w-4" />
-                  Admin Dashboard
+                  {t("profile.adminDashboard")}
                 </Button>
               </Link>
             )}
 
             <Button variant="outline" onClick={handleLogout} className="gap-2">
-              Uitloggen
+              {t("profile.logout")}
             </Button>
           </div>
         </div>
 
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">Mijn Profiel</h1>
+            <h1 className="text-4xl font-bold mb-4">{t("profile.title")}</h1>
             <p className="text-lg text-muted-foreground">
               {userType === "eetgever" 
-                ? "Beheer je bedrijfsinstellingen"
-                : "Stel je allergieën en voorkeuren in voor gepersonaliseerde matches"
+                ? t("profile.businessSubtitle")
+                : t("profile.subtitle")
               }
             </p>
           </div>
@@ -410,10 +414,10 @@ const Profile = () => {
             {userType !== "eetgever" && (
               <Card className="p-6">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                  🚫 Allergieën
+                  {t("profile.allergies")}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Selecteer alle allergieën waar we rekening mee moeten houden
+                  {t("profile.allergiesDesc")}
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4 mb-6">
                   {allergies.map((allergy) => (
@@ -437,20 +441,20 @@ const Profile = () => {
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     <Plus className="h-5 w-5 text-primary" />
-                    Eigen allergie toevoegen
+                    {t("profile.addCustom")}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Voeg een allergie toe die niet in de lijst staat, inclusief ingrediënten die we moeten detecteren
+                    {t("profile.customDesc")}
                   </p>
                   
                   <div className="space-y-3">
                     <div>
                       <Label htmlFor="allergyName" className="text-sm font-medium">
-                        Allergie naam
+                        {t("profile.allergyName")}
                       </Label>
                       <Input
                         id="allergyName"
-                        placeholder="Bijv: Sesam"
+                        placeholder={t("profile.allergyNamePlaceholder")}
                         value={newAllergyName}
                         onChange={(e) => setNewAllergyName(e.target.value)}
                         maxLength={50}
@@ -460,18 +464,18 @@ const Profile = () => {
                     
                     <div>
                       <Label htmlFor="allergyChars" className="text-sm font-medium">
-                        Kenmerken (gescheiden door komma's)
+                        {t("profile.characteristics")}
                       </Label>
                       <Input
                         id="allergyChars"
-                        placeholder="Bijv: sesamzaad, sesam olie, tahini"
+                        placeholder={t("profile.characteristicsPlaceholder")}
                         value={newAllergyChars}
                         onChange={(e) => setNewAllergyChars(e.target.value)}
                         maxLength={200}
                         className="mt-1"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Deze ingrediënten worden gedetecteerd op menukaarten
+                        {t("profile.characteristicsHelp")}
                       </p>
                     </div>
                     
@@ -482,14 +486,14 @@ const Profile = () => {
                       className="w-full sm:w-auto"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Allergie Toevoegen
+                      {t("profile.addAllergy")}
                     </Button>
                   </div>
 
                   {/* Display custom allergies */}
                   {customAllergies.length > 0 && (
                     <div className="mt-4 space-y-2">
-                      <Label className="text-sm font-medium">Jouw allergieën:</Label>
+                      <Label className="text-sm font-medium">{t("profile.yourAllergies")}</Label>
                       <div className="flex flex-wrap gap-2">
                         {customAllergies.map((allergy) => (
                           <Badge
@@ -563,10 +567,10 @@ const Profile = () => {
             {userType !== "eetgever" && (
               <Card className="p-6">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                  🥗 Voorkeuren
+                  {t("profile.preferences")}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Kies je dieet en voedselvoorkeuren
+                  {t("profile.preferencesDesc")}
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {preferences.map((preference) => (
@@ -612,7 +616,7 @@ const Profile = () => {
                 disabled={saving}
                 className="px-12 text-lg shadow-hover hover:scale-105 transition-all"
               >
-                {saving ? "Opslaan..." : "Opslaan"}
+                {saving ? t("profile.saving") : t("profile.save")}
               </Button>
             </div>
           </div>
@@ -622,9 +626,9 @@ const Profile = () => {
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Voorkeuren opgeslagen! ✓</AlertDialogTitle>
+            <AlertDialogTitle>{t("profile.saved")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Wat wil je nu doen?
+              {isGuest ? t("profile.savedGuestDesc") : t("profile.savedDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-3 mt-4">
@@ -637,7 +641,7 @@ const Profile = () => {
               className="w-full"
             >
               <Home className="mr-2 h-5 w-5" />
-              Terug naar Hoofdpagina
+              {t("common.back")}
             </Button>
             <Button
               size="lg"
@@ -649,7 +653,7 @@ const Profile = () => {
               className="w-full"
             >
               <Camera className="mr-2 h-5 w-5" />
-              Menu Scannen
+              {t("index.scanMenu")}
             </Button>
           </div>
         </AlertDialogContent>

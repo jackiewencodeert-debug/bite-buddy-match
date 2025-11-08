@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, QrCode, ArrowLeft, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface MenuScanStats {
   allergie: string;
@@ -21,6 +23,7 @@ const BusinessDashboard = () => {
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
   const [processingPayment, setProcessingPayment] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkUserTypeAndLoadData();
@@ -43,8 +46,8 @@ const BusinessDashboard = () => {
 
       if (profile?.user_type !== "eetgever") {
         toast({
-          title: "Geen toegang",
-          description: "Deze pagina is alleen voor bedrijven.",
+          title: t("business.noAccess"),
+          description: t("business.businessOnly"),
           variant: "destructive",
         });
         navigate("/profile");
@@ -55,7 +58,7 @@ const BusinessDashboard = () => {
       await loadMenusAndStats(user.id);
     } catch (error: any) {
       toast({
-        title: "Fout bij laden",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -113,8 +116,8 @@ const BusinessDashboard = () => {
       
       if (!session) {
         toast({
-          title: "Niet ingelogd",
-          description: "Log in om door te gaan",
+          title: t("business.notLoggedIn"),
+          description: t("business.loginToContinue"),
           variant: "destructive",
         });
         return;
@@ -133,7 +136,7 @@ const BusinessDashboard = () => {
       }
     } catch (error: any) {
       toast({
-        title: "Fout bij betaling",
+        title: t("business.paymentError"),
         description: error.message,
         variant: "destructive",
       });
@@ -157,21 +160,22 @@ const BusinessDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/profile")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Terug naar Profiel
+            {t("business.backToProfile")}
           </Button>
           <Button variant="outline" onClick={handleLogout}>
-            Uitloggen
+            {t("profile.logout")}
           </Button>
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Bedrijf Dashboard</h1>
+          <h1 className="text-3xl font-bold">{t("business.title")}</h1>
           <p className="text-muted-foreground">
-            Bekijk je menu's en scan statistieken
+            {t("business.subtitle")}
           </p>
         </div>
 
@@ -179,7 +183,7 @@ const BusinessDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">{menus.length}</CardTitle>
-              <CardDescription>Totaal Menu's</CardDescription>
+              <CardDescription>{t("business.totalMenus")}</CardDescription>
             </CardHeader>
           </Card>
           <Card>
@@ -187,13 +191,13 @@ const BusinessDashboard = () => {
               <CardTitle className="text-2xl">
                 {stats.reduce((acc, s) => acc + s.count, 0)}
               </CardTitle>
-              <CardDescription>Totaal Scans</CardDescription>
+              <CardDescription>{t("business.totalScans")}</CardDescription>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">{stats.length}</CardTitle>
-              <CardDescription>Unieke Allergieën/Voorkeuren</CardDescription>
+              <CardDescription>{t("business.uniqueAllergies")}</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -203,10 +207,10 @@ const BusinessDashboard = () => {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                <CardTitle>Top 5 Allergieën & Voorkeuren</CardTitle>
+                <CardTitle>{t("business.topAllergies")}</CardTitle>
               </div>
               <CardDescription>
-                Meest gescande allergieën en voorkeuren
+                {t("business.topAllergiesDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -230,9 +234,9 @@ const BusinessDashboard = () => {
         {stats.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Alle Allergieën & Voorkeuren</CardTitle>
+              <CardTitle>{t("business.allAllergies")}</CardTitle>
               <CardDescription>
-                Volledige lijst van gescande allergieën en voorkeuren
+                {t("business.allAllergiesDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -240,7 +244,7 @@ const BusinessDashboard = () => {
                 {stats.map((item) => (
                   <div key={item.allergie} className="flex items-center justify-between p-2 rounded border">
                     <span>{item.allergie}</span>
-                    <Badge variant="secondary">{item.count}x gescand</Badge>
+                    <Badge variant="secondary">{t("business.timesScanned").replace("{count}", item.count.toString())}</Badge>
                   </div>
                 ))}
               </div>
@@ -252,20 +256,20 @@ const BusinessDashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              <CardTitle>Mijn Menu's</CardTitle>
+              <CardTitle>{t("business.myMenus")}</CardTitle>
             </div>
             <CardDescription>
-              Beheer je gescande menu's en bekijk QR-codes
+              {t("business.myMenusDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {menus.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
-                  Je hebt nog geen menu's gescand
+                  {t("business.noMenus")}
                 </p>
                 <Button onClick={() => navigate("/scan")}>
-                  Scan je eerste menu
+                  {t("business.scanFirstMenu")}
                 </Button>
               </div>
             ) : (
@@ -275,10 +279,10 @@ const BusinessDashboard = () => {
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">
-                          Gemaakt op {new Date(menu.created_at).toLocaleDateString("nl-NL")}
+                          {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          QR Code: {menu.qr_code}
+                          {t("business.qrCode").replace("{code}", menu.qr_code)}
                         </p>
                       </div>
                       <Button
@@ -286,7 +290,7 @@ const BusinessDashboard = () => {
                         size="sm"
                         onClick={() => navigate(`/menu/${menu.qr_code}`)}
                       >
-                        Bekijk QR
+                        {t("business.viewQR")}
                       </Button>
                     </div>
                   </div>
@@ -298,9 +302,9 @@ const BusinessDashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Nieuw Menu Toevoegen</CardTitle>
+            <CardTitle>{t("business.addNewMenu")}</CardTitle>
             <CardDescription>
-              Betaal €1,00 per menu om te beginnen met scannen
+              {t("business.addNewMenuDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -313,12 +317,12 @@ const BusinessDashboard = () => {
               {processingPayment ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Bezig met betaling...
+                  {t("business.processingPayment")}
                 </>
               ) : (
                 <>
                   <QrCode className="mr-2 h-5 w-5" />
-                  Betaal €1,00 en Scan Menu
+                  {t("business.payAndScan")}
                 </>
               )}
             </Button>
