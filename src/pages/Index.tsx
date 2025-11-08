@@ -28,10 +28,10 @@ const Index = () => {
                 Menu Scannen
               </Button>
             </Link>
-            <Link to="/profile">
+            <Link to="/auth">
               <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
                 <Users className="mr-2 h-5 w-5" />
-                Mijn Profiel
+                Account
               </Button>
             </Link>
           </div>
