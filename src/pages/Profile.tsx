@@ -21,21 +21,21 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 const allergies = [
-  { id: "noten", label: "Noten" },
-  { id: "gluten", label: "Gluten" },
-  { id: "lactose", label: "Lactose" },
-  { id: "schaaldieren", label: "Schaaldieren" },
-  { id: "vis", label: "Vis" },
-  { id: "eieren", label: "Eieren" },
-  { id: "soja", label: "Soja" },
-  { id: "sulfiet", label: "Sulfiet" },
+  { id: "noten", label: "allergy.noten" },
+  { id: "gluten", label: "allergy.gluten" },
+  { id: "lactose", label: "allergy.lactose" },
+  { id: "schaaldieren", label: "allergy.schaaldieren" },
+  { id: "vis", label: "allergy.vis" },
+  { id: "eieren", label: "allergy.eieren" },
+  { id: "soja", label: "allergy.soja" },
+  { id: "sulfiet", label: "allergy.sulfiet" },
 ];
 
 const preferences = [
-  { id: "vegetarisch", label: "Vegetarisch" },
-  { id: "veganistisch", label: "Veganistisch" },
-  { id: "halal", label: "Halal" },
-  { id: "kosher", label: "Kosher" },
+  { id: "vegetarisch", label: "preference.vegetarisch" },
+  { id: "veganistisch", label: "preference.veganistisch" },
+  { id: "halal", label: "preference.halal" },
+  { id: "kosher", label: "preference.kosher" },
 ];
 
 // Validation schema for custom allergies
@@ -431,7 +431,7 @@ const Profile = () => {
                         htmlFor={allergy.id}
                         className="text-base cursor-pointer flex-1"
                       >
-                        {allergy.label}
+                        {t(allergy.label)}
                       </Label>
                     </div>
                   ))}
@@ -542,7 +542,7 @@ const Profile = () => {
                         htmlFor={`business-${allergy.id}`}
                         className="text-base cursor-pointer flex-1"
                       >
-                        {allergy.label}
+                        {t(allergy.label)}
                       </Label>
                     </div>
                   ))}
@@ -555,7 +555,7 @@ const Profile = () => {
                     <div className="flex flex-wrap gap-2">
                       {businessAllergenWarnings.map((warning) => (
                         <Badge key={warning} variant="destructive">
-                          {allergies.find(a => a.id === warning)?.label || warning}
+                          {t(allergies.find(a => a.id === warning)?.label || warning)}
                         </Badge>
                       ))}
                     </div>
@@ -584,7 +584,7 @@ const Profile = () => {
                         htmlFor={preference.id}
                         className="text-base cursor-pointer flex-1"
                       >
-                        {preference.label}
+                        {t(preference.label)}
                       </Label>
                     </div>
                   ))}

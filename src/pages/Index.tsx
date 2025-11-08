@@ -90,18 +90,18 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <FeatureCard
             icon={<Camera className="h-8 w-8 text-primary" />}
-            title="Scan & Herken"
-            description="Scan een menukaart met je camera of upload een foto. Onze AI herkent automatisch alle gerechten en ingrediënten."
+            title={t("index.feature1Title")}
+            description={t("index.feature1Desc")}
           />
           <FeatureCard
             icon={<Shield className="h-8 w-8 text-success" />}
-            title="Veiligheid Eerst"
-            description="Direct zien welke gerechten veilig zijn met ons duidelijke smiley-systeem. Geen verrassingen meer."
+            title={t("index.feature2Title")}
+            description={t("index.feature2Desc")}
           />
           <FeatureCard
             icon={<Sparkles className="h-8 w-8 text-warning" />}
-            title="Persoonlijk"
-            description="Stel je allergieën en voorkeuren in en krijg gepersonaliseerde matches voor elk restaurant."
+            title={t("index.feature3Title")}
+            description={t("index.feature3Desc")}
           />
         </div>
       </section>
@@ -110,24 +110,24 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Zo werkt het
+            {t("index.howItWorksTitle")}
           </h2>
           
           <div className="space-y-8">
             <Step
               number="1"
-              title="Stel je voorkeuren in"
-              description="Voeg je allergieën, dieetwensen en voorkeuren toe aan je profiel. Dit hoef je maar één keer te doen."
+              title={t("index.step1Title")}
+              description={t("index.step1Desc")}
             />
             <Step
               number="2"
-              title="Scan de menukaart"
-              description="Gebruik je camera om de menukaart te scannen, of upload een foto. Onze AI doet de rest."
+              title={t("index.step2Title")}
+              description={t("index.step2Desc")}
             />
             <Step
               number="3"
-              title="Zie direct wat veilig is"
-              description="Elk gerecht krijgt een smiley: 😊 veilig, 😐 aanpasbaar, of 🤢 bevat allergenen."
+              title={t("index.step3Title")}
+              description={t("index.step3Desc")}
             />
           </div>
         </div>
@@ -137,15 +137,15 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto text-center bg-gradient-warm p-12 rounded-3xl shadow-hover">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Klaar om veilig te genieten?
+            {t("index.readyTitle")}
           </h2>
           <p className="text-lg text-white/90 mb-8">
-            Start nu met scannen en ontdek wat je kunt eten
+            {t("index.readyDesc")}
           </p>
           <Link to="/scan">
             <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
               <Camera className="mr-2 h-5 w-5" />
-              Begin Nu
+              {t("index.scanMenu")}
             </Button>
           </Link>
         </div>
