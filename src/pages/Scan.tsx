@@ -17,7 +17,7 @@ import { AdMobService } from "@/services/admob";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
-  const [mode, setMode] = useState<"select" | "camera" | "upload">("select");
+  const [mode, setMode] = useState<"select" | "camera" | "upload" | "error">("select");
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -28,6 +28,7 @@ const Scan = () => {
   const [analyzedDishes, setAnalyzedDishes] = useState<any[]>([]);
   const [userAllergies, setUserAllergies] = useState<string[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -245,12 +246,14 @@ const Scan = () => {
       }
 
       if (!analysisData.isMenu) {
-        toast({
-          title: "Geen Menu Gedetecteerd",
-          description: "De afbeelding lijkt geen menu te zijn. Probeer het opnieuw met een duidelijke foto van een menu.",
-          variant: "destructive",
-        });
-        resetScan();
+        setErrorMessage("De afbeelding lijkt geen menu te zijn. Zorg ervoor dat de foto duidelijk en goed verlicht is.");
+        setMode("error");
+        return;
+      }
+
+      if (!analysisData.dishes || analysisData.dishes.length === 0) {
+        setErrorMessage("Er konden geen gerechten worden gevonden op deze afbeelding. Probeer een duidelijkere foto te maken.");
+        setMode("error");
         return;
       }
 
@@ -330,12 +333,14 @@ const Scan = () => {
       setScanned(true);
     } catch (error: any) {
       console.error("Error processing scan:", error);
-      toast({
-        title: "Fout",
-        description: error.message || "Er ging iets mis bij het analyseren van de menu.",
-        variant: "destructive",
-      });
-      resetScan();
+      setErrorMessage(
+        error.message.includes("Rate limit") 
+          ? "Er zijn te veel verzoeken gedaan. Probeer het over een paar minuten opnieuw."
+          : error.message.includes("Payment required")
+          ? "Er zijn onvoldoende credits. Voeg credits toe aan je workspace."
+          : "Er ging iets mis bij het analyseren. Controleer je internetverbinding en probeer het opnieuw."
+      );
+      setMode("error");
     }
   };
 
@@ -361,6 +366,7 @@ const Scan = () => {
     setAnalyzedDishes([]);
     setUserAllergies([]);
     setUserPreferences([]);
+    setErrorMessage("");
     stopCamera();
   };
 
@@ -512,6 +518,58 @@ const Scan = () => {
                     >
                       <Camera className="mr-2 h-5 w-5" />
                       Scannen
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {mode === "error" && (
+              <div className="max-w-2xl mx-auto">
+                <Card className="p-8">
+                  <div className="text-center space-y-6">
+                    <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
+                      <X className="h-10 w-10 text-destructive" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold mb-3">Oeps, dat ging niet goed</h2>
+                      <p className="text-muted-foreground mb-6">
+                        {errorMessage}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-muted/50 rounded-lg p-6 text-left">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-xl">💡</span>
+                        Suggesties voor betere resultaten:
+                      </h3>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>Zorg voor goede verlichting zonder schaduwen</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>Houd de camera stabiel en recht boven het menu</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>Zorg dat de tekst scherp en goed leesbaar is</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>Fotografeer het hele menu of een duidelijk deel ervan</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <Button
+                      size="lg"
+                      onClick={resetScan}
+                      className="w-full sm:w-auto"
+                    >
+                      <RotateCcw className="mr-2 h-5 w-5" />
+                      Probeer Opnieuw
                     </Button>
                   </div>
                 </Card>

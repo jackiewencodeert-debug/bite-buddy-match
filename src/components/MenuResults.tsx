@@ -48,9 +48,9 @@ const getStatusText = (status: DishStatus) => {
     case "safe":
       return "Veilig";
     case "caution":
-      return "Let op";
+      return "Aanpasbaar";
     case "avoid":
-      return "Vermijd";
+      return "Bevat Allergenen";
   }
 };
 
@@ -152,7 +152,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
           <div className="flex items-center gap-3">
             <div className="text-2xl">😐</div>
             <div>
-              <div className="font-semibold text-warning">Let op</div>
+              <div className="font-semibold text-warning">Aanpasbaar</div>
               <div className="text-sm text-muted-foreground">
                 {statusCounts.caution || 0} gerechten
               </div>
@@ -163,7 +163,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
           <div className="flex items-center gap-3">
             <div className="text-2xl">🤢</div>
             <div>
-              <div className="font-semibold text-destructive">Vermijd</div>
+              <div className="font-semibold text-destructive">Bevat Allergenen</div>
               <div className="text-sm text-muted-foreground">
                 {statusCounts.avoid || 0} gerechten
               </div>
