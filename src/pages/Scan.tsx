@@ -25,6 +25,9 @@ const Scan = () => {
   const [showAd, setShowAd] = useState(false);
   const [pendingMode, setPendingMode] = useState<"camera" | "upload" | null>(null);
   const [adCountdown, setAdCountdown] = useState(5);
+  const [analyzedDishes, setAnalyzedDishes] = useState<any[]>([]);
+  const [userAllergies, setUserAllergies] = useState<string[]>([]);
+  const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -228,11 +231,68 @@ const Scan = () => {
       }
 
       toast({
-        title: "Menukaart analyseren...",
-        description: "Even geduld, we scannen de ingrediënten.",
+        title: "Analyseren...",
+        description: "De AI analyseert je menu. Dit kan even duren.",
       });
 
-      // If business user, generate QR code
+      // Call the AI edge function to analyze the menu
+      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
+        body: { imageBase64: capturedImage }
+      });
+
+      if (analysisError) {
+        throw analysisError;
+      }
+
+      if (!analysisData.isMenu) {
+        toast({
+          title: "Geen Menu Gedetecteerd",
+          description: "De afbeelding lijkt geen menu te zijn. Probeer het opnieuw met een duidelijke foto van een menu.",
+          variant: "destructive",
+        });
+        resetScan();
+        return;
+      }
+
+      // Get user allergies and preferences
+      let allergies: string[] = [];
+      let preferences: string[] = [];
+
+      if (user) {
+        const { data: prefs } = await supabase
+          .from("preferences")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (prefs) {
+          allergies = prefs
+            .filter(p => p.preference_type === "allergie")
+            .map(p => p.preference_value);
+          preferences = prefs
+            .filter(p => p.preference_type === "dieet")
+            .map(p => p.preference_value);
+        }
+      } else {
+        // Guest user - get from localStorage
+        const guestPrefs = localStorage.getItem("guestPreferences");
+        if (guestPrefs) {
+          const prefs = JSON.parse(guestPrefs);
+          allergies = prefs.allergies || [];
+          preferences = prefs.preferences || [];
+        }
+      }
+
+      // Process dishes and add IDs
+      const processedDishes = analysisData.dishes.map((dish: any, index: number) => ({
+        ...dish,
+        id: `dish-${index}`,
+      }));
+
+      setAnalyzedDishes(processedDishes);
+      setUserAllergies(allergies);
+      setUserPreferences(preferences);
+
+      // If business user, generate QR code and save to database
       if (userType === "eetgever" && user) {
         // Check if payment was completed
         if (searchParams.get('payment') !== 'success') {
@@ -255,22 +315,27 @@ const Scan = () => {
 
         if (!error) {
           setQrCode(generatedQrCode);
+          toast({
+            title: "QR Code Gegenereerd! ✓",
+            description: `${processedDishes.length} gerechten gevonden en opgeslagen.`,
+          });
         }
+      } else {
+        toast({
+          title: "Menu Geanalyseerd! ✓",
+          description: `${processedDishes.length} gerechten gevonden en vergeleken met je voorkeuren.`,
+        });
       }
       
-      setTimeout(() => {
-        setScanned(true);
-      }, 1500);
-    } catch (error) {
+      setScanned(true);
+    } catch (error: any) {
       console.error("Error processing scan:", error);
       toast({
-        title: "Menukaart analyseren...",
-        description: "Even geduld, we scannen de ingrediënten.",
+        title: "Fout",
+        description: error.message || "Er ging iets mis bij het analyseren van de menu.",
+        variant: "destructive",
       });
-      
-      setTimeout(() => {
-        setScanned(true);
-      }, 1500);
+      resetScan();
     }
   };
 
@@ -293,6 +358,9 @@ const Scan = () => {
     setMode("select");
     setScanned(false);
     setQrCode(null);
+    setAnalyzedDishes([]);
+    setUserAllergies([]);
+    setUserPreferences([]);
     stopCamera();
   };
 
@@ -489,7 +557,11 @@ const Scan = () => {
                 </Card>
               </div>
             ) : (
-              <MenuResults />
+              <MenuResults 
+                dishes={analyzedDishes}
+                userAllergies={userAllergies}
+                userPreferences={userPreferences}
+              />
             )}
           </>
         )}

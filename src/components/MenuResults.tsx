@@ -4,50 +4,22 @@ import { Badge } from "@/components/ui/badge";
 type DishStatus = "safe" | "caution" | "avoid";
 
 interface Dish {
-  id: number;
+  id: string;
   name: string;
   ingredients: string[];
-  status: DishStatus;
-  price: string;
+  allergens?: string[];
+  dietary_info?: string[];
+  status?: DishStatus;
+  foundAllergens?: string[];
+  price?: string;
+  description?: string;
 }
 
-const mockDishes: Dish[] = [
-  {
-    id: 1,
-    name: "Gegrilde Kip Salade",
-    ingredients: ["kip", "sla", "tomaat", "komkommer"],
-    status: "safe",
-    price: "€12,50",
-  },
-  {
-    id: 2,
-    name: "Pizza Margherita",
-    ingredients: ["kaas", "tomaat", "basilicum"],
-    status: "caution",
-    price: "€10,00",
-  },
-  {
-    id: 3,
-    name: "Pasta Carbonara",
-    ingredients: ["pasta", "room", "spek", "ei"],
-    status: "avoid",
-    price: "€13,50",
-  },
-  {
-    id: 4,
-    name: "Groente Wrap",
-    ingredients: ["wrap", "groenten", "hummus"],
-    status: "safe",
-    price: "€9,50",
-  },
-  {
-    id: 5,
-    name: "Caesar Salade",
-    ingredients: ["sla", "kip", "kaas", "croutons"],
-    status: "caution",
-    price: "€11,00",
-  },
-];
+interface MenuResultsProps {
+  dishes: Dish[];
+  userAllergies?: string[];
+  userPreferences?: string[];
+}
 
 const getStatusEmoji = (status: DishStatus) => {
   switch (status) {
@@ -82,18 +54,43 @@ const getStatusText = (status: DishStatus) => {
   }
 };
 
-export const MenuResults = () => {
+export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }: MenuResultsProps) => {
+  // Calculate status for each dish based on user allergies
+  const dishesWithStatus = dishes.map(dish => {
+    if (dish.status) return dish;
+    
+    // Check if any dish allergens match user allergies
+    const foundAllergens = dish.allergens?.filter(allergen => 
+      userAllergies.some(userAllergy => 
+        allergen.toLowerCase().includes(userAllergy.toLowerCase()) ||
+        userAllergy.toLowerCase().includes(allergen.toLowerCase())
+      )
+    ) || [];
+
+    let status: DishStatus = "safe";
+    if (foundAllergens.length > 0) {
+      status = "avoid";
+    }
+
+    return { ...dish, status, foundAllergens };
+  });
+
+  const statusCounts = dishesWithStatus.reduce((acc, dish) => {
+    acc[dish.status!] = (acc[dish.status!] || 0) + 1;
+    return acc;
+  }, {} as Record<DishStatus, number>);
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-2">Menu Resultaten</h2>
         <p className="text-muted-foreground">
-          Gebaseerd op je allergieën en voorkeuren
+          {dishes.length} gerechten gevonden - Gebaseerd op jouw voorkeuren en allergieën
         </p>
       </div>
 
       <div className="grid gap-4">
-        {mockDishes.map((dish) => (
+        {dishesWithStatus.map((dish) => (
           <Card
             key={dish.id}
             className="p-6 hover:shadow-hover transition-all"
@@ -101,14 +98,17 @@ export const MenuResults = () => {
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4 flex-1">
                 <div className="text-4xl flex-shrink-0">
-                  {getStatusEmoji(dish.status)}
+                  {getStatusEmoji(dish.status!)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-semibold mb-2">{dish.name}</h3>
+                  {dish.description && (
+                    <p className="text-sm text-muted-foreground mb-2">{dish.description}</p>
+                  )}
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {dish.ingredients.map((ingredient) => (
+                    {dish.ingredients.map((ingredient, idx) => (
                       <Badge
-                        key={ingredient}
+                        key={`${ingredient}-${idx}`}
                         variant="secondary"
                         className="text-xs"
                       >
@@ -116,14 +116,21 @@ export const MenuResults = () => {
                       </Badge>
                     ))}
                   </div>
-                  <Badge className={getStatusColor(dish.status)}>
-                    {getStatusText(dish.status)}
+                  {dish.foundAllergens && dish.foundAllergens.length > 0 && (
+                    <p className="text-sm text-destructive font-medium mb-2">
+                      ⚠️ Bevat: {dish.foundAllergens.join(", ")}
+                    </p>
+                  )}
+                  <Badge className={getStatusColor(dish.status!)}>
+                    {getStatusText(dish.status!)}
                   </Badge>
                 </div>
               </div>
-              <div className="text-lg font-semibold text-muted-foreground flex-shrink-0">
-                {dish.price}
-              </div>
+              {dish.price && (
+                <div className="text-lg font-semibold text-muted-foreground flex-shrink-0">
+                  {dish.price}
+                </div>
+              )}
             </div>
           </Card>
         ))}
@@ -136,7 +143,7 @@ export const MenuResults = () => {
             <div>
               <div className="font-semibold text-success">Veilig</div>
               <div className="text-sm text-muted-foreground">
-                {mockDishes.filter((d) => d.status === "safe").length} gerechten
+                {statusCounts.safe || 0} gerechten
               </div>
             </div>
           </div>
@@ -147,7 +154,7 @@ export const MenuResults = () => {
             <div>
               <div className="font-semibold text-warning">Let op</div>
               <div className="text-sm text-muted-foreground">
-                {mockDishes.filter((d) => d.status === "caution").length} gerechten
+                {statusCounts.caution || 0} gerechten
               </div>
             </div>
           </div>
@@ -158,7 +165,7 @@ export const MenuResults = () => {
             <div>
               <div className="font-semibold text-destructive">Vermijd</div>
               <div className="text-sm text-muted-foreground">
-                {mockDishes.filter((d) => d.status === "avoid").length} gerechten
+                {statusCounts.avoid || 0} gerechten
               </div>
             </div>
           </div>
