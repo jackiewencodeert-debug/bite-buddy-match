@@ -11,10 +11,19 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<"eter" | "eetgever">("eter");
+  const [userType, setUserType] = useState<"eter" | "eetgever" | "gast">("eter");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleGuestContinue = () => {
+    localStorage.setItem("userType", "gast");
+    toast({
+      title: "Welkom als gast!",
+      description: "Je kunt nu direct beginnen met scannen.",
+    });
+    navigate("/profile");
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -91,7 +100,7 @@ const Auth = () => {
             {!isLogin && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Account Type</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button
                     type="button"
                     variant={userType === "eter" ? "default" : "outline"}
@@ -99,7 +108,7 @@ const Auth = () => {
                     disabled={loading}
                     className="w-full"
                   >
-                    Eter (Klant)
+                    Eter
                   </Button>
                   <Button
                     type="button"
@@ -108,52 +117,80 @@ const Auth = () => {
                     disabled={loading}
                     className="w-full"
                   >
-                    Eetgever (Bedrijf)
+                    Bedrijf
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={userType === "gast" ? "default" : "outline"}
+                    onClick={() => setUserType("gast")}
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    Gast
                   </Button>
                 </div>
+                {userType === "gast" && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Als gast kun je direct beginnen zonder account. Je voorkeuren worden tijdelijk opgeslagen.
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={handleGuestContinue}
+                      className="w-full"
+                      disabled={loading}
+                    >
+                      Doorgaan als Gast
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                E-mailadres
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="naam@voorbeeld.nl"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Wachtwoord
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={6}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Bezig...
-                </>
-              ) : isLogin ? (
-                "Inloggen"
-              ) : (
-                "Account Aanmaken"
-              )}
-            </Button>
+            {(isLogin || (!isLogin && userType !== "gast")) && (
+              <>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    E-mailadres
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="naam@voorbeeld.nl"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    Wachtwoord
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Bezig...
+                    </>
+                  ) : isLogin ? (
+                    "Inloggen"
+                  ) : (
+                    "Account Aanmaken"
+                  )}
+                </Button>
+              </>
+            )}
           </form>
           <div className="mt-4 text-center text-sm">
             <button

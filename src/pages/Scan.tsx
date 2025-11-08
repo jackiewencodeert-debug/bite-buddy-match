@@ -105,11 +105,13 @@ const Scan = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Log scan to database
-      await supabase.from("scans").insert({
-        user_id: user?.id || null,
-        scan_method: mode,
-      });
+      // Only log scan to database if user is logged in
+      if (user) {
+        await supabase.from("scans").insert({
+          user_id: user.id,
+          scan_method: mode,
+        });
+      }
 
       toast({
         title: "Menukaart analyseren...",

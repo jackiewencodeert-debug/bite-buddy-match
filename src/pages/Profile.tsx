@@ -58,6 +58,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userType, setUserType] = useState<string>("");
+  const [isGuest, setIsGuest] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -67,6 +68,26 @@ const Profile = () => {
 
   const checkAuth = async () => {
     try {
+      // Check if user is guest
+      const guestType = localStorage.getItem("userType");
+      if (guestType === "gast") {
+        setIsGuest(true);
+        setUserType("gast");
+        
+        // Load guest preferences from localStorage
+        const guestPrefs = localStorage.getItem("guestPreferences");
+        if (guestPrefs) {
+          const prefs = JSON.parse(guestPrefs);
+          setSelectedAllergies(prefs.allergies || []);
+          setSelectedPreferences(prefs.preferences || []);
+          setCustomAllergies(prefs.customAllergies || []);
+        }
+        
+        setLoading(false);
+        return;
+      }
+
+      // Check if regular user is logged in
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -190,6 +211,24 @@ const Profile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Handle guest save
+      if (isGuest) {
+        const guestPrefs = {
+          allergies: selectedAllergies,
+          preferences: selectedPreferences,
+          customAllergies: customAllergies
+        };
+        localStorage.setItem("guestPreferences", JSON.stringify(guestPrefs));
+        
+        toast({
+          title: "Profiel opgeslagen! ✓",
+          description: "Je voorkeuren zijn tijdelijk opgeslagen.",
+        });
+        setSaving(false);
+        return;
+      }
+
+      // Handle logged in user save
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -261,6 +300,26 @@ const Profile = () => {
     );
   };
 
+  const handleLogout = async () => {
+    if (isGuest) {
+      // Clear guest data
+      localStorage.removeItem("userType");
+      localStorage.removeItem("guestPreferences");
+      toast({
+        title: "Sessie beëindigd",
+        description: "Je gastvoorkeuren zijn gewist.",
+      });
+      navigate("/");
+    } else {
+      await supabase.auth.signOut();
+      toast({
+        title: "Uitgelogd",
+        description: "Je bent succesvol uitgelogd.",
+      });
+      navigate("/");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center">
@@ -284,7 +343,7 @@ const Profile = () => {
           </Link>
           
           <div className="flex gap-2">
-            {userType === "eetgever" && (
+            {userType === "eetgever" && !isGuest && (
               <Link to="/business">
                 <Button variant="outline" className="gap-2">
                   <Shield className="h-4 w-4" />
@@ -301,6 +360,10 @@ const Profile = () => {
                 </Button>
               </Link>
             )}
+
+            <Button variant="outline" onClick={handleLogout} className="gap-2">
+              Uitloggen
+            </Button>
           </div>
         </div>
 
@@ -451,10 +514,14 @@ const Profile = () => {
               <div className="flex items-start gap-4">
                 <div className="text-3xl">💡</div>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-2">Je voorkeuren worden opgeslagen</h3>
+                  <h3 className="font-semibold mb-2">
+                    {isGuest ? "Je voorkeuren worden tijdelijk opgeslagen" : "Je voorkeuren worden opgeslagen"}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Na het opslaan worden al je scans automatisch gecontroleerd tegen deze voorkeuren. 
-                    Je kunt ze altijd aanpassen als je wilt.
+                    {isGuest 
+                      ? "Als gast worden je voorkeuren alleen voor deze sessie opgeslagen. Maak een account om je voorkeuren permanent op te slaan."
+                      : "Na het opslaan worden al je scans automatisch gecontroleerd tegen deze voorkeuren. Je kunt ze altijd aanpassen als je wilt."
+                    }
                   </p>
                 </div>
               </div>
