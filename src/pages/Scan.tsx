@@ -17,13 +17,14 @@ import { AdMobService } from "@/services/admob";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
-  const [mode, setMode] = useState<"select" | "camera" | "upload" | "error">("select");
+  const [mode, setMode] = useState<"select" | "camera" | "upload" | "multiple" | "error">("select");
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [multipleImages, setMultipleImages] = useState<string[]>([]);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userType, setUserType] = useState<string>("");
   const [showAd, setShowAd] = useState(false);
-  const [pendingMode, setPendingMode] = useState<"camera" | "upload" | null>(null);
+  const [pendingMode, setPendingMode] = useState<"camera" | "upload" | "multiple" | null>(null);
   const [adCountdown, setAdCountdown] = useState(5);
   const [analyzedDishes, setAnalyzedDishes] = useState<any[]>([]);
   const [userAllergies, setUserAllergies] = useState<string[]>([]);
@@ -32,6 +33,7 @@ const Scan = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const multipleFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -80,7 +82,7 @@ const Scan = () => {
     }
   };
 
-  const handleModeSelection = async (selectedMode: "camera" | "upload") => {
+  const handleModeSelection = async (selectedMode: "camera" | "upload" | "multiple") => {
     // Check if user is eter or gast
     const guestType = localStorage.getItem("userType");
     const isGuest = guestType === "gast";
@@ -116,10 +118,12 @@ const Scan = () => {
     }
   };
 
-  const proceedWithMode = (selectedMode: "camera" | "upload") => {
+  const proceedWithMode = (selectedMode: "camera" | "upload" | "multiple") => {
     setMode(selectedMode);
     if (selectedMode === "upload") {
       setTimeout(() => fileInputRef.current?.click(), 100);
+    } else if (selectedMode === "multiple") {
+      setTimeout(() => multipleFileInputRef.current?.click(), 100);
     }
   };
 
@@ -218,7 +222,54 @@ const Scan = () => {
     }
   };
 
-  // Process image
+  // Handle multiple file uploads
+  const handleMultipleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const readers = Array.from(files).map(file => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve(e.target?.result as string);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(images => {
+        setMultipleImages(prev => [...prev, ...images]);
+        toast({
+          title: `${images.length} foto${images.length > 1 ? "'s" : ""} toegevoegd`,
+          description: `Totaal: ${multipleImages.length + images.length} foto's`,
+        });
+      });
+    }
+  };
+
+  // Add camera photo to multiple images
+  const addCameraPhotoToMultiple = () => {
+    if (capturedImage) {
+      setMultipleImages(prev => [...prev, capturedImage]);
+      toast({
+        title: "Foto toegevoegd!",
+        description: `Totaal: ${multipleImages.length + 1} foto's`,
+      });
+      setCapturedImage(null);
+      setCameraActive(false);
+      stopCamera();
+    }
+  };
+
+  // Remove image from multiple images
+  const removeImageFromMultiple = (index: number) => {
+    setMultipleImages(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Foto verwijderd",
+      description: `Nog ${multipleImages.length - 1} foto's over`,
+    });
+  };
+
+  // Process image(s)
   const processImage = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -231,14 +282,20 @@ const Scan = () => {
         });
       }
 
+      const imagesToProcess = mode === "multiple" ? multipleImages : [capturedImage];
+      const imageCount = imagesToProcess.length;
+
       toast({
         title: "Analyseren...",
-        description: "De AI analyseert je menu. Dit kan even duren.",
+        description: `De AI analyseert ${imageCount} foto${imageCount > 1 ? "'s" : ""}. Dit kan even duren.`,
       });
 
-      // Call the AI edge function to analyze the menu
+      // Call the AI edge function to analyze the menu(s)
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
-        body: { imageBase64: capturedImage }
+        body: { 
+          images: imagesToProcess,
+          isMultiple: mode === "multiple"
+        }
       });
 
       if (analysisError) {
@@ -360,6 +417,7 @@ const Scan = () => {
 
   const resetScan = () => {
     setCapturedImage(null);
+    setMultipleImages([]);
     setMode("select");
     setScanned(false);
     setQrCode(null);
@@ -391,7 +449,7 @@ const Scan = () => {
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-3 gap-6">
                   <Card 
                     className="p-8 text-center hover:shadow-hover transition-all cursor-pointer"
                     onClick={() => handleModeSelection("camera")}
@@ -417,6 +475,19 @@ const Scan = () => {
                       Upload een foto of PDF
                     </p>
                   </Card>
+
+                  <Card 
+                    className="p-8 text-center hover:shadow-hover transition-all cursor-pointer border-primary/50"
+                    onClick={() => handleModeSelection("multiple")}
+                  >
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Upload className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Meerdere Foto's</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Combineer verschillende pagina's
+                    </p>
+                  </Card>
                 </div>
 
                 <input
@@ -424,6 +495,15 @@ const Scan = () => {
                   type="file"
                   accept="image/*,.pdf"
                   onChange={handleFileUpload}
+                  className="hidden"
+                />
+
+                <input
+                  ref={multipleFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleMultipleFileUpload}
                   className="hidden"
                 />
 
@@ -484,7 +564,7 @@ const Scan = () => {
               </div>
             )}
 
-            {capturedImage && (
+            {capturedImage && mode !== "multiple" && (
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-6">
                   <h1 className="text-3xl font-bold mb-2">Controleer je foto</h1>
@@ -521,6 +601,76 @@ const Scan = () => {
                     </Button>
                   </div>
                 </Card>
+              </div>
+            )}
+
+            {mode === "multiple" && (
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-6">
+                  <h1 className="text-3xl font-bold mb-2">Meerdere Foto's</h1>
+                  <p className="text-muted-foreground">
+                    {multipleImages.length > 0 
+                      ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} toegevoegd`
+                      : "Voeg foto's van verschillende menupagina's toe"
+                    }
+                  </p>
+                </div>
+
+                {multipleImages.length > 0 && (
+                  <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {multipleImages.map((image, index) => (
+                      <Card key={index} className="overflow-hidden relative group">
+                        <img
+                          src={image}
+                          alt={`Menu pagina ${index + 1}`}
+                          className="w-full h-48 object-cover"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImageFromMultiple(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
+                          Pagina {index + 1}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-4">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => multipleFileInputRef.current?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-5 w-5" />
+                    Meer Foto's Toevoegen
+                  </Button>
+
+                  {multipleImages.length > 0 && (
+                    <Button
+                      size="lg"
+                      onClick={processImage}
+                      className="w-full bg-primary hover:bg-primary/90"
+                    >
+                      <Camera className="mr-2 h-5 w-5" />
+                      Scan {multipleImages.length} Foto{multipleImages.length > 1 ? "'s" : ""}
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    onClick={resetScan}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Terug
+                  </Button>
+                </div>
               </div>
             )}
 

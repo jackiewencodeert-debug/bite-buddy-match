@@ -12,36 +12,20 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { images, isMultiple } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    if (!imageBase64) {
-      throw new Error("No image provided");
+    if (!images || images.length === 0) {
+      throw new Error("No images provided");
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: "You are a menu analysis assistant. Analyze menu images and extract dish information in a structured format. Return only valid JSON."
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analyze this image and determine if it's a restaurant menu. If it is, extract ALL dishes with the following information for each dish:
+    const systemPrompt = `You are a menu analysis assistant. Analyze menu images and extract dish information in a structured format. Return only valid JSON.
+
+Analyze ${isMultiple ? 'these images of different menu pages' : 'this image'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
 - name: dish name
 - ingredients: array of ingredients (in Dutch if possible)
 - allergens: array of allergens found (noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet)
@@ -64,54 +48,90 @@ Return in this exact JSON format:
   ]
 }
 
-If it's not a menu, return {"isMenu": false, "dishes": []}`
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageBase64
+${isMultiple ? 'Combine all dishes from all menu pages into one array. Do not duplicate dishes.' : ''}
+If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": []}`;
+
+    // Process images
+    let allDishes: any[] = [];
+    let foundMenu = false;
+
+    for (const imageBase64 of images) {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageBase64
+                  }
                 }
-              }
-            ]
-          }
-        ]
-      }),
-    });
+              ]
+            }
+          ]
+        }),
+      });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw new Error(`AI gateway error: ${response.status}`);
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (!content) {
+        continue;
       }
-      throw new Error(`AI gateway error: ${response.status}`);
+
+      // Parse the JSON response
+      let parsedContent;
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (e) {
+        console.error("Failed to parse AI response:", content);
+        continue;
+      }
+
+      if (parsedContent.isMenu) {
+        foundMenu = true;
+        allDishes = allDishes.concat(parsedContent.dishes || []);
+      }
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("No response from AI");
-    }
-
-    // Parse the JSON response
-    let parsedContent;
-    try {
-      parsedContent = JSON.parse(content);
-    } catch (e) {
-      console.error("Failed to parse AI response:", content);
-      throw new Error("Invalid AI response format");
-    }
+    // Remove duplicate dishes based on name
+    const uniqueDishes = allDishes.filter((dish, index, self) =>
+      index === self.findIndex((d) => d.name.toLowerCase() === dish.name.toLowerCase())
+    );
 
     return new Response(
-      JSON.stringify(parsedContent),
+      JSON.stringify({
+        isMenu: foundMenu,
+        dishes: uniqueDishes
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
