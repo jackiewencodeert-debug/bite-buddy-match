@@ -59,6 +59,7 @@ const Profile = () => {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
   const [customAllergies, setCustomAllergies] = useState<CustomAllergy[]>([]);
+  const [businessAllergenWarnings, setBusinessAllergenWarnings] = useState<string[]>([]);
   const [newAllergyName, setNewAllergyName] = useState("");
   const [newAllergyChars, setNewAllergyChars] = useState("");
   const [loading, setLoading] = useState(true);
@@ -103,15 +104,18 @@ const Profile = () => {
         return;
       }
 
-      // Load user profile to check user_type
+      // Load user profile to check user_type and business warnings
       const { data: profile } = await supabase
         .from("profiles")
-        .select("user_type")
+        .select("user_type, business_allergen_warnings")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setUserType(profile.user_type);
+        if (profile.user_type === "eetgever" && profile.business_allergen_warnings) {
+          setBusinessAllergenWarnings(profile.business_allergen_warnings);
+        }
       }
 
       // Check if user is admin
@@ -281,6 +285,14 @@ const Profile = () => {
         if (error) throw error;
       }
 
+      // Update business allergen warnings if user is a business
+      if (userType === "eetgever") {
+        await supabase
+          .from("profiles")
+          .update({ business_allergen_warnings: businessAllergenWarnings })
+          .eq("id", user.id);
+      }
+
       toast({
         title: "Profiel opgeslagen! ✓",
         description: "Je voorkeuren zijn succesvol bijgewerkt.",
@@ -307,6 +319,12 @@ const Profile = () => {
   const togglePreference = (id: string) => {
     setSelectedPreferences(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+  };
+
+  const toggleBusinessAllergen = (allergen: string) => {
+    setBusinessAllergenWarnings(prev =>
+      prev.includes(allergen) ? prev.filter(a => a !== allergen) : [...prev, allergen]
     );
   };
 
@@ -493,6 +511,49 @@ const Profile = () => {
                 )}
               </div>
             </Card>
+
+            {userType === "eetgever" && !isGuest && (
+              <Card className="p-6 border-warning/50 bg-warning/5">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                  ⚠️ Bedrijf Allergie Waarschuwingen
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Selecteer allergenen die je <strong>niet kunt voorkomen</strong> in je keuken. 
+                  Deze worden automatisch aan alle gerechten toegevoegd.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {allergies.map((allergy) => (
+                    <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <Checkbox
+                        id={`business-${allergy.id}`}
+                        checked={businessAllergenWarnings.includes(allergy.id)}
+                        onCheckedChange={() => toggleBusinessAllergen(allergy.id)}
+                      />
+                      <Label
+                        htmlFor={`business-${allergy.id}`}
+                        className="text-base cursor-pointer flex-1"
+                      >
+                        {allergy.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                {businessAllergenWarnings.length > 0 && (
+                  <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <p className="text-sm font-semibold text-destructive mb-2">
+                      Actieve waarschuwingen:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {businessAllergenWarnings.map((warning) => (
+                        <Badge key={warning} variant="destructive">
+                          {allergies.find(a => a.id === warning)?.label || warning}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            )}
 
             <Card className="p-6">
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">

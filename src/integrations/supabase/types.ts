@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      dishes: {
+        Row: {
+          allergens: string[] | null
+          created_at: string
+          description: string | null
+          dietary_info: string[] | null
+          id: string
+          ingredients: string[] | null
+          is_available: boolean | null
+          menu_id: string
+          name: string
+          price: string | null
+          updated_at: string
+        }
+        Insert: {
+          allergens?: string[] | null
+          created_at?: string
+          description?: string | null
+          dietary_info?: string[] | null
+          id?: string
+          ingredients?: string[] | null
+          is_available?: boolean | null
+          menu_id: string
+          name: string
+          price?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allergens?: string[] | null
+          created_at?: string
+          description?: string | null
+          dietary_info?: string[] | null
+          id?: string
+          ingredients?: string[] | null
+          is_available?: boolean | null
+          menu_id?: string
+          name?: string
+          price?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dishes_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_scans: {
         Row: {
           allergies_checked: string[] | null
@@ -120,6 +170,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          business_allergen_warnings: string[] | null
           created_at: string
           email: string
           id: string
@@ -127,6 +178,7 @@ export type Database = {
           user_type: Database["public"]["Enums"]["user_type"]
         }
         Insert: {
+          business_allergen_warnings?: string[] | null
           created_at?: string
           email: string
           id: string
@@ -134,6 +186,7 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
         }
         Update: {
+          business_allergen_warnings?: string[] | null
           created_at?: string
           email?: string
           id?: string

@@ -18,6 +18,7 @@ const Scan = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkUserType();
@@ -340,13 +341,8 @@ const Scan = () => {
                     <div>
                       <h2 className="text-2xl font-bold mb-2">Menu succesvol gescand!</h2>
                       <p className="text-muted-foreground">
-                        Je QR-code is gegenereerd. Klanten kunnen deze scannen om het menu te vergelijken met hun allergieën.
+                        Voeg nu je gerechten en ingrediënten toe voor een gedetailleerd menu.
                       </p>
-                    </div>
-                    
-                    <div className="p-4 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-2">QR Code:</p>
-                      <p className="font-mono font-semibold">{qrCode}</p>
                     </div>
 
                     <div className="flex gap-3 justify-center">
@@ -354,16 +350,19 @@ const Scan = () => {
                         <RotateCcw className="mr-2 h-4 w-4" />
                         Nieuw Menu Scannen
                       </Button>
-                      <Link to={`/menu/${qrCode}`}>
-                        <Button>
-                          Bekijk QR-Code
-                        </Button>
-                      </Link>
-                      <Link to="/business">
-                        <Button variant="secondary">
-                          Naar Dashboard
-                        </Button>
-                      </Link>
+                      <Button onClick={async () => {
+                        const { data: menuData } = await supabase
+                          .from("menus")
+                          .select("id")
+                          .eq("qr_code", qrCode)
+                          .single();
+                        
+                        if (menuData) {
+                          navigate(`/menu/${menuData.id}/edit`);
+                        }
+                      }}>
+                        Gerechten Toevoegen
+                      </Button>
                     </div>
                   </div>
                 </Card>
