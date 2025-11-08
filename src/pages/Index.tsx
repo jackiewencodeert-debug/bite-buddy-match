@@ -1,8 +1,38 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Sparkles, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Camera, Shield, Sparkles, Users, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Uitgelogd",
+      description: "Je bent succesvol uitgelogd.",
+    });
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       {/* Hero Section */}
@@ -28,12 +58,24 @@ const Index = () => {
                 Menu Scannen
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                <Users className="mr-2 h-5 w-5" />
-                Account
+            {user ? (
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 transition-all hover:scale-105"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-5 w-5" />
+                Uitloggen
               </Button>
-            </Link>
+            ) : (
+              <Link to="/auth">
+                <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                  <Users className="mr-2 h-5 w-5" />
+                  Account
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
