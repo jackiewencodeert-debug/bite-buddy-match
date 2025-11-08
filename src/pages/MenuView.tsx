@@ -135,17 +135,29 @@ const MenuView = () => {
           );
         });
 
+        const matchedAllergens = dishAllergens.filter((a: string) => userAllergies.includes(a));
+        const matchedCustom = userCustomAllergies.filter((ca: any) => 
+          ca.characteristics.some((char: string) => 
+            dishIngredients.some((ing: string) => 
+              ing.toLowerCase().includes(char.toLowerCase())
+            )
+          )
+        ).map((ca: any) => ca.name);
+
+        // Determine status: avoid (contains allergens), caution (might be adaptable), safe
+        let status = "safe";
+        if (hasUserAllergy || hasCustomAllergyMatch) {
+          status = "avoid";
+        } else if (dishAllergens.length > 0) {
+          // Has allergens but not user's specific ones - might be adaptable
+          status = "caution";
+        }
+
         return {
           dish,
-          status: hasUserAllergy || hasCustomAllergyMatch ? "unsafe" : "safe",
-          matchedAllergens: dishAllergens.filter((a: string) => userAllergies.includes(a)),
-          matchedCustom: userCustomAllergies.filter((ca: any) => 
-            ca.characteristics.some((char: string) => 
-              dishIngredients.some((ing: string) => 
-                ing.toLowerCase().includes(char.toLowerCase())
-              )
-            )
-          ).map((ca: any) => ca.name)
+          status,
+          matchedAllergens,
+          matchedCustom
         };
       });
 
@@ -241,50 +253,99 @@ const MenuView = () => {
                 {matchResults && (
                   <div className="space-y-3 mt-6">
                     <h3 className="font-semibold text-lg">Resultaten:</h3>
-                    {matchResults.map((result: any, index: number) => (
-                      <Card key={index} className={`p-4 ${result.status === "unsafe" ? "border-destructive/50 bg-destructive/5" : "border-success/50 bg-success/5"}`}>
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-2xl">{result.status === "safe" ? "✅" : "⚠️"}</span>
-                              <h4 className="font-semibold">{result.dish.name}</h4>
-                            </div>
-                            {result.dish.description && (
-                              <p className="text-sm text-muted-foreground mb-2">{result.dish.description}</p>
-                            )}
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              {result.dish.ingredients.map((ing: string, i: number) => (
-                                <Badge key={i} variant="outline" className="text-xs">
-                                  {ing}
-                                </Badge>
-                              ))}
-                            </div>
-                            {result.status === "unsafe" && (
-                              <div className="mt-2">
-                                <p className="text-sm font-semibold text-destructive">Gevonden allergenen:</p>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {result.matchedAllergens.map((a: string) => (
-                                    <Badge key={a} variant="destructive" className="text-xs">
-                                      {a}
-                                    </Badge>
-                                  ))}
-                                  {result.matchedCustom.map((c: string) => (
-                                    <Badge key={c} variant="destructive" className="text-xs">
-                                      {c}
-                                    </Badge>
-                                  ))}
+                    {matchResults.map((result: any, index: number) => {
+                      const getStatusColor = () => {
+                        switch (result.status) {
+                          case "safe":
+                            return "border-success/50 bg-success/5";
+                          case "caution":
+                            return "border-warning/50 bg-warning/5";
+                          case "avoid":
+                            return "border-destructive/50 bg-destructive/5";
+                          default:
+                            return "";
+                        }
+                      };
+
+                      const getStatusEmoji = () => {
+                        switch (result.status) {
+                          case "safe":
+                            return "😊";
+                          case "caution":
+                            return "😐";
+                          case "avoid":
+                            return "🤢";
+                          default:
+                            return "";
+                        }
+                      };
+
+                      const getStatusText = () => {
+                        switch (result.status) {
+                          case "safe":
+                            return "Veilig";
+                          case "caution":
+                            return "Aanpasbaar";
+                          case "avoid":
+                            return "Bevat allergenen";
+                          default:
+                            return "";
+                        }
+                      };
+
+                      return (
+                        <Card key={index} className={`p-4 ${getStatusColor()}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-2xl">{getStatusEmoji()}</span>
+                                <div>
+                                  <h4 className="font-semibold">{result.dish.name}</h4>
+                                  <p className="text-xs text-muted-foreground">{getStatusText()}</p>
                                 </div>
                               </div>
+                              {result.dish.description && (
+                                <p className="text-sm text-muted-foreground mb-2">{result.dish.description}</p>
+                              )}
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {result.dish.ingredients.map((ing: string, i: number) => (
+                                  <Badge key={i} variant="outline" className="text-xs">
+                                    {ing}
+                                  </Badge>
+                                ))}
+                              </div>
+                              {result.status === "avoid" && (result.matchedAllergens.length > 0 || result.matchedCustom.length > 0) && (
+                                <div className="mt-2">
+                                  <p className="text-sm font-semibold text-destructive">Gevonden allergenen:</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {result.matchedAllergens.map((a: string) => (
+                                      <Badge key={a} variant="destructive" className="text-xs">
+                                        {a}
+                                      </Badge>
+                                    ))}
+                                    {result.matchedCustom.map((c: string) => (
+                                      <Badge key={c} variant="destructive" className="text-xs">
+                                        {c}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {result.status === "caution" && (
+                                <p className="text-sm text-warning mt-2">
+                                  Bevat andere allergenen. Vraag personeel om aanpassingen.
+                                </p>
+                              )}
+                            </div>
+                            {result.dish.price && (
+                              <span className="font-semibold text-muted-foreground">
+                                {result.dish.price}
+                              </span>
                             )}
                           </div>
-                          {result.dish.price && (
-                            <span className="font-semibold text-muted-foreground">
-                              {result.dish.price}
-                            </span>
-                          )}
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </>
