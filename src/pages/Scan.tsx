@@ -14,6 +14,8 @@ import { MenuResults } from "@/components/MenuResults";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdMobService } from "@/services/admob";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -37,6 +39,7 @@ const Scan = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkUserType();
@@ -430,11 +433,13 @@ const Scan = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
+      <LanguageToggle />
+      
       <div className="container mx-auto px-4 py-8">
         <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Terug
+            {t("scan.back")}
           </Button>
         </Link>
 
@@ -443,9 +448,9 @@ const Scan = () => {
             {mode === "select" && (
               <div className="max-w-2xl mx-auto">
                 <div className="text-center mb-8">
-                  <h1 className="text-4xl font-bold mb-4">Menu Scannen</h1>
+                  <h1 className="text-4xl font-bold mb-4">{t("scan.title")}</h1>
                   <p className="text-lg text-muted-foreground">
-                    Kies hoe je de menukaart wilt uploaden
+                    {t("scan.subtitle")}
                   </p>
                 </div>
 
@@ -457,9 +462,9 @@ const Scan = () => {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Camera className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Camera</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t("scan.camera")}</h3>
                     <p className="text-muted-foreground">
-                      Scan direct met je camera
+                      {t("scan.cameraDesc")}
                     </p>
                   </Card>
 
@@ -470,9 +475,9 @@ const Scan = () => {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Upload className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Upload</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t("scan.upload")}</h3>
                     <p className="text-muted-foreground">
-                      Upload een foto of PDF
+                      {t("scan.uploadDesc")}
                     </p>
                   </Card>
 
@@ -483,9 +488,9 @@ const Scan = () => {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Upload className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Meerdere Foto's</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t("scan.multiple")}</h3>
                     <p className="text-muted-foreground text-sm">
-                      Combineer verschillende pagina's
+                      {t("scan.multipleDesc")}
                     </p>
                   </Card>
                 </div>

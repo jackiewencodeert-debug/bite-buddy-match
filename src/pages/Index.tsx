@@ -4,11 +4,14 @@ import { Camera, Shield, Sparkles, Users, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Check current session
@@ -35,27 +38,29 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
+      <LanguageToggle />
+      
       {/* Hero Section */}
       <section className="container mx-auto px-4 pt-20 pb-16">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>Veilig eten begint hier</span>
+            <span>{t("index.title")}</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-            Scan. Match. Geniet.
+            {t("index.title")}
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Scan een menukaart en ontdek direct welke gerechten veilig zijn voor jouw allergieën en voorkeuren
+            {t("index.subtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link to="/scan">
               <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
                 <Camera className="mr-2 h-5 w-5" />
-                Menu Scannen
+                {t("index.scanMenu")}
               </Button>
             </Link>
             {user ? (
@@ -66,13 +71,13 @@ const Index = () => {
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-5 w-5" />
-                Uitloggen
+                {t("profile.logout")}
               </Button>
             ) : (
               <Link to="/auth">
                 <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
                   <Users className="mr-2 h-5 w-5" />
-                  Account
+                  {t("auth.signIn")}
                 </Button>
               </Link>
             )}
