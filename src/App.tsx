@@ -8,6 +8,8 @@ import Scan from "./pages/Scan";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import BusinessDashboard from "./pages/BusinessDashboard";
+import MenuView from "./pages/MenuView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/business" element={<BusinessDashboard />} />
+          <Route path="/menu/:qrCode" element={<MenuView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

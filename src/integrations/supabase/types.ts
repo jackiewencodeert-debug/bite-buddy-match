@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      menu_scans: {
+        Row: {
+          allergies_checked: string[] | null
+          id: string
+          menu_id: string
+          preferences_checked: string[] | null
+          scanned_at: string
+          scanner_user_id: string | null
+        }
+        Insert: {
+          allergies_checked?: string[] | null
+          id?: string
+          menu_id: string
+          preferences_checked?: string[] | null
+          scanned_at?: string
+          scanner_user_id?: string | null
+        }
+        Update: {
+          allergies_checked?: string[] | null
+          id?: string
+          menu_id?: string
+          preferences_checked?: string[] | null
+          scanned_at?: string
+          scanner_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_scans_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_scans_scanner_user_id_fkey"
+            columns: ["scanner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menus: {
+        Row: {
+          business_user_id: string
+          created_at: string
+          id: string
+          menu_data: Json | null
+          menu_image_url: string | null
+          qr_code: string
+        }
+        Insert: {
+          business_user_id: string
+          created_at?: string
+          id?: string
+          menu_data?: Json | null
+          menu_image_url?: string | null
+          qr_code: string
+        }
+        Update: {
+          business_user_id?: string
+          created_at?: string
+          id?: string
+          menu_data?: Json | null
+          menu_image_url?: string | null
+          qr_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menus_business_user_id_fkey"
+            columns: ["business_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       preferences: {
         Row: {
           characteristics: string[] | null
@@ -47,18 +124,21 @@ export type Database = {
           email: string
           id: string
           updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
         }
         Insert: {
           created_at?: string
           email: string
           id: string
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
       }
@@ -121,6 +201,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      user_type: "eter" | "eetgever"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -249,6 +330,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      user_type: ["eter", "eetgever"],
     },
   },
 } as const

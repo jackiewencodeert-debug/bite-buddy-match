@@ -57,6 +57,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userType, setUserType] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -71,6 +72,17 @@ const Profile = () => {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Load user profile to check user_type
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_type")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setUserType(profile.user_type);
       }
 
       // Check if user is admin
@@ -271,14 +283,25 @@ const Profile = () => {
             </Button>
           </Link>
           
-          {isAdmin && (
-            <Link to="/admin">
-              <Button variant="outline" className="gap-2">
-                <Shield className="h-4 w-4" />
-                Admin Dashboard
-              </Button>
-            </Link>
-          )}
+          <div className="flex gap-2">
+            {userType === "eetgever" && (
+              <Link to="/business">
+                <Button variant="outline" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Bedrijf Dashboard
+                </Button>
+              </Link>
+            )}
+            
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin Dashboard
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="max-w-3xl mx-auto">

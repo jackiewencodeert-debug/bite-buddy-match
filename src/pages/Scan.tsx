@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,10 +12,31 @@ const Scan = () => {
   const [mode, setMode] = useState<"select" | "camera" | "upload">("select");
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [userType, setUserType] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    checkUserType();
+  }, []);
+
+  const checkUserType = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_type")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile) {
+        setUserType(profile.user_type);
+      }
+    }
+  };
 
   // Start camera
   const startCamera = async () => {
@@ -82,26 +103,39 @@ const Scan = () => {
   // Process image
   const processImage = async () => {
     try {
-      // Log scan to database
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Log scan to database
       await supabase.from("scans").insert({
         user_id: user?.id || null,
         scan_method: mode,
       });
 
-      // Simulate processing
       toast({
         title: "Menukaart analyseren...",
         description: "Even geduld, we scannen de ingrediënten.",
       });
+
+      // If business user, generate QR code
+      if (userType === "eetgever" && user) {
+        const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        const { error } = await supabase.from("menus").insert({
+          business_user_id: user.id,
+          qr_code: generatedQrCode,
+          menu_image_url: capturedImage,
+        });
+
+        if (!error) {
+          setQrCode(generatedQrCode);
+        }
+      }
       
       setTimeout(() => {
         setScanned(true);
       }, 1500);
     } catch (error) {
-      console.error("Error logging scan:", error);
-      // Continue anyway
+      console.error("Error processing scan:", error);
       toast({
         title: "Menukaart analyseren...",
         description: "Even geduld, we scannen de ingrediënten.",
@@ -130,6 +164,8 @@ const Scan = () => {
   const resetScan = () => {
     setCapturedImage(null);
     setMode("select");
+    setScanned(false);
+    setQrCode(null);
     stopCamera();
   };
 
@@ -291,7 +327,49 @@ const Scan = () => {
             )}
           </>
         ) : (
-          <MenuResults />
+          <>
+            {userType === "eetgever" && qrCode ? (
+              <div className="max-w-2xl mx-auto">
+                <Card className="p-8">
+                  <div className="text-center space-y-6">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <Camera className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Menu succesvol gescand!</h2>
+                      <p className="text-muted-foreground">
+                        Je QR-code is gegenereerd. Klanten kunnen deze scannen om het menu te vergelijken met hun allergieën.
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-2">QR Code:</p>
+                      <p className="font-mono font-semibold">{qrCode}</p>
+                    </div>
+
+                    <div className="flex gap-3 justify-center">
+                      <Button variant="outline" onClick={resetScan}>
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Nieuw Menu Scannen
+                      </Button>
+                      <Link to={`/menu/${qrCode}`}>
+                        <Button>
+                          Bekijk QR-Code
+                        </Button>
+                      </Link>
+                      <Link to="/business">
+                        <Button variant="secondary">
+                          Naar Dashboard
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            ) : (
+              <MenuResults />
+            )}
+          </>
         )}
       </div>
     </div>

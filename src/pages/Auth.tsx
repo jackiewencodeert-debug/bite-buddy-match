@@ -11,6 +11,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState<"eter" | "eetgever">("eter");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,6 +49,9 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/profile`,
+            data: {
+              user_type: userType,
+            },
           },
         });
 
@@ -84,6 +88,31 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Account Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant={userType === "eter" ? "default" : "outline"}
+                    onClick={() => setUserType("eter")}
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    Eter (Klant)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={userType === "eetgever" ? "default" : "outline"}
+                    onClick={() => setUserType("eetgever")}
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    Eetgever (Bedrijf)
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 E-mailadres
