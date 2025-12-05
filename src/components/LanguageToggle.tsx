@@ -11,7 +11,11 @@ const languages = [
   { code: "de", flag: "🇩🇪", name: "Deutsch" },
 ] as const;
 
-export const LanguageToggle = () => {
+interface LanguageToggleProps {
+  fixed?: boolean;
+}
+
+export const LanguageToggle = ({ fixed = true }: LanguageToggleProps) => {
   const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,7 +34,10 @@ export const LanguageToggle = () => {
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative z-50">
+    <div 
+      ref={dropdownRef} 
+      className={`z-50 ${fixed ? "fixed top-4 right-4" : "relative"}`}
+    >
       <Button
         variant="outline"
         size="sm"
