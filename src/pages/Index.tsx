@@ -46,7 +46,7 @@ const Index = () => {
               <Sparkles className="h-4 w-4" />
               <span>{t("index.title")}</span>
             </div>
-            <LanguageToggle />
+            <LanguageToggle fixed={false} />
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
