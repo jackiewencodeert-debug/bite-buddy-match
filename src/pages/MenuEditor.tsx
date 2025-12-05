@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Plus, X, Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface Dish {
   id?: string;
@@ -30,6 +32,7 @@ const MenuEditor = () => {
   const { menuId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -80,7 +83,7 @@ const MenuEditor = () => {
       }
     } catch (error: any) {
       toast({
-        title: "Fout bij laden",
+        title: t("editor.loadError"),
         description: error.message,
         variant: "destructive",
       });
@@ -118,8 +121,8 @@ const MenuEditor = () => {
   const addDish = async () => {
     if (!newDish.name || newDish.ingredients.length === 0) {
       toast({
-        title: "Onvolledig",
-        description: "Vul minimaal een naam en ingrediënten in",
+        title: t("editor.incomplete"),
+        description: t("editor.incompleteDesc"),
         variant: "destructive",
       });
       return;
@@ -143,8 +146,8 @@ const MenuEditor = () => {
       if (error) throw error;
 
       toast({
-        title: "Gerecht toegevoegd!",
-        description: `${newDish.name} is toegevoegd aan het menu`,
+        title: t("editor.dishAdded"),
+        description: t("editor.dishAddedDesc").replace("{name}", newDish.name),
       });
 
       // Reset form
@@ -160,7 +163,7 @@ const MenuEditor = () => {
       loadMenuAndDishes();
     } catch (error: any) {
       toast({
-        title: "Fout bij opslaan",
+        title: t("editor.saveError"),
         description: error.message,
         variant: "destructive",
       });
@@ -183,25 +186,27 @@ const MenuEditor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      <LanguageToggle />
+      
       <div className="max-w-4xl mx-auto space-y-6">
         <Button variant="ghost" onClick={() => navigate("/business")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Terug naar Dashboard
+          {t("editor.backToDashboard")}
         </Button>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Menu Bewerken</h1>
+          <h1 className="text-3xl font-bold">{t("editor.title")}</h1>
           <p className="text-muted-foreground">
-            Voeg gerechten toe en specificeer ingrediënten en allergenen
+            {t("editor.subtitle")}
           </p>
         </div>
 
         {businessAllergens.length > 0 && (
           <Card className="border-warning/50 bg-warning/5">
             <CardHeader>
-              <CardTitle className="text-warning">⚠️ Standaard Allergenen</CardTitle>
+              <CardTitle className="text-warning">⚠️ {t("editor.defaultAllergens")}</CardTitle>
               <CardDescription>
-                Deze allergenen worden automatisch aan alle gerechten toegevoegd
+                {t("editor.defaultAllergensDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -218,20 +223,20 @@ const MenuEditor = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Nieuw Gerecht Toevoegen</CardTitle>
+            <CardTitle>{t("editor.addDish")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Naam Gerecht *</Label>
+                <Label>{t("editor.dishName")} *</Label>
                 <Input
-                  placeholder="Bijv. Caesar Salade"
+                  placeholder={t("editor.dishNamePlaceholder")}
                   value={newDish.name}
                   onChange={(e) => setNewDish({ ...newDish, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Prijs</Label>
+                <Label>{t("editor.price")}</Label>
                 <Input
                   placeholder="€12,50"
                   value={newDish.price}
@@ -241,19 +246,19 @@ const MenuEditor = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Beschrijving</Label>
+              <Label>{t("editor.description")}</Label>
               <Textarea
-                placeholder="Korte beschrijving van het gerecht"
+                placeholder={t("editor.descriptionPlaceholder")}
                 value={newDish.description}
                 onChange={(e) => setNewDish({ ...newDish, description: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Ingrediënten *</Label>
+              <Label>{t("editor.ingredients")} *</Label>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Voeg ingrediënt toe"
+                  placeholder={t("editor.addIngredient")}
                   value={newIngredient}
                   onChange={(e) => setNewIngredient(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addIngredient())}
@@ -280,7 +285,7 @@ const MenuEditor = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Extra Allergenen (naast standaard)</Label>
+              <Label>{t("editor.extraAllergens")}</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {commonAllergens.map((allergen) => (
                   <div key={allergen} className="flex items-center space-x-2">
@@ -302,12 +307,12 @@ const MenuEditor = () => {
               {saving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Opslaan...
+                  {t("editor.saving")}
                 </>
               ) : (
                 <>
                   <Plus className="mr-2 h-4 w-4" />
-                  Gerecht Toevoegen
+                  {t("editor.addDishBtn")}
                 </>
               )}
             </Button>
@@ -317,7 +322,7 @@ const MenuEditor = () => {
         {dishes.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Toegevoegde Gerechten ({dishes.length})</CardTitle>
+              <CardTitle>{t("editor.addedDishes")} ({dishes.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {dishes.map((dish) => (
@@ -359,7 +364,7 @@ const MenuEditor = () => {
 
         <Button onClick={finishEditing} size="lg" className="w-full">
           <Save className="mr-2 h-5 w-5" />
-          Klaar met Bewerken
+          {t("editor.finishEditing")}
         </Button>
       </div>
     </div>

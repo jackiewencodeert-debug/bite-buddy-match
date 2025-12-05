@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type DishStatus = "safe" | "caution" | "avoid";
 
@@ -43,18 +44,20 @@ const getStatusColor = (status: DishStatus) => {
   }
 };
 
-const getStatusText = (status: DishStatus) => {
-  switch (status) {
-    case "safe":
-      return "Veilig";
-    case "caution":
-      return "Aanpasbaar";
-    case "avoid":
-      return "Bevat Allergenen";
-  }
-};
-
 export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }: MenuResultsProps) => {
+  const { t } = useLanguage();
+
+  const getStatusText = (status: DishStatus) => {
+    switch (status) {
+      case "safe":
+        return t("results.safe");
+      case "caution":
+        return t("results.adjustable");
+      case "avoid":
+        return t("results.containsAllergens");
+    }
+  };
+
   // Calculate status for each dish based on user allergies
   const dishesWithStatus = dishes.map(dish => {
     if (dish.status) return dish;
@@ -83,9 +86,9 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">Menu Resultaten</h2>
+        <h2 className="text-3xl font-bold mb-2">{t("results.title")}</h2>
         <p className="text-muted-foreground">
-          {dishes.length} gerechten gevonden - Gebaseerd op jouw voorkeuren en allergieën
+          {t("results.found").replace("{count}", String(dishes.length))}
         </p>
       </div>
 
@@ -118,7 +121,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
                   </div>
                   {dish.foundAllergens && dish.foundAllergens.length > 0 && (
                     <p className="text-sm text-destructive font-medium mb-2">
-                      ⚠️ Bevat: {dish.foundAllergens.join(", ")}
+                      {t("results.contains")} {dish.foundAllergens.join(", ")}
                     </p>
                   )}
                   <Badge className={getStatusColor(dish.status!)}>
@@ -141,9 +144,9 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
           <div className="flex items-center gap-3">
             <div className="text-2xl">😊</div>
             <div>
-              <div className="font-semibold text-success">Veilig</div>
+              <div className="font-semibold text-success">{t("results.safe")}</div>
               <div className="text-sm text-muted-foreground">
-                {statusCounts.safe || 0} gerechten
+                {statusCounts.safe || 0} {t("results.dishes")}
               </div>
             </div>
           </div>
@@ -152,9 +155,9 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
           <div className="flex items-center gap-3">
             <div className="text-2xl">😐</div>
             <div>
-              <div className="font-semibold text-warning">Aanpasbaar</div>
+              <div className="font-semibold text-warning">{t("results.adjustable")}</div>
               <div className="text-sm text-muted-foreground">
-                {statusCounts.caution || 0} gerechten
+                {statusCounts.caution || 0} {t("results.dishes")}
               </div>
             </div>
           </div>
@@ -163,9 +166,9 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
           <div className="flex items-center gap-3">
             <div className="text-2xl">🤢</div>
             <div>
-              <div className="font-semibold text-destructive">Bevat Allergenen</div>
+              <div className="font-semibold text-destructive">{t("results.containsAllergens")}</div>
               <div className="text-sm text-muted-foreground">
-                {statusCounts.avoid || 0} gerechten
+                {statusCounts.avoid || 0} {t("results.dishes")}
               </div>
             </div>
           </div>
