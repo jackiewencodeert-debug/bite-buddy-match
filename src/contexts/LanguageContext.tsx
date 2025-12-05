@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type Language = "nl" | "en";
+type Language = "nl" | "en" | "fr" | "es" | "de";
 
 interface LanguageContextType {
   language: Language;
@@ -10,7 +10,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const translations = {
+const translations: Record<Language, Record<string, string>> = {
   nl: {
     // Index page
     "index.title": "Vind je perfecte maaltijd",
@@ -510,13 +510,91 @@ const translations = {
     "common.add": "Add",
     "common.login": "Sign In",
     "common.continueAsGuest": "Continue as Guest",
+  },
+  fr: {
+    "index.title": "Trouvez votre repas idéal",
+    "index.subtitle": "Associez vos allergies et préférences avec les restaurants",
+    "index.scanMenu": "Scanner le Menu",
+    "index.myProfile": "Mon Profil",
+    "index.signIn": "Se Connecter",
+    "index.feature1Title": "Scanner & Reconnaître",
+    "index.feature1Desc": "Scannez les menus avec votre caméra et laissez l'IA analyser les ingrédients",
+    "index.feature2Title": "Sécurité Avant Tout",
+    "index.feature2Desc": "Recevez des avertissements clairs pour vos allergies spécifiques",
+    "index.feature3Title": "Personnel",
+    "index.feature3Desc": "Enregistrez vos allergies et préférences pour des vérifications plus rapides",
+    "index.howItWorksTitle": "Comment ça marche",
+    "index.howItWorksDesc": "Dîner en sécurité en 3 étapes simples",
+    "index.step1Title": "Définissez vos préférences",
+    "index.step1Desc": "Ajoutez vos allergies et préférences à votre profil. Vous n'avez à le faire qu'une fois.",
+    "index.step2Title": "Scannez le menu",
+    "index.step2Desc": "Utilisez votre caméra pour scanner le menu. Notre IA fait le reste.",
+    "index.step3Title": "Voyez ce qui est sûr",
+    "index.step3Desc": "Chaque plat reçoit un smiley: 😊 sûr, 😐 adaptable, ou 🤢 contient des allergènes.",
+    "index.readyTitle": "Prêt à déguster en sécurité?",
+    "index.readyDesc": "Commencez à scanner et découvrez des repas sûrs",
+    "profile.logout": "Déconnexion",
+    "auth.signIn": "Se Connecter",
+    "common.loading": "Chargement...",
+  },
+  es: {
+    "index.title": "Encuentra tu comida perfecta",
+    "index.subtitle": "Combina tus alergias y preferencias con restaurantes",
+    "index.scanMenu": "Escanear Menú",
+    "index.myProfile": "Mi Perfil",
+    "index.signIn": "Iniciar Sesión",
+    "index.feature1Title": "Escanear y Reconocer",
+    "index.feature1Desc": "Escanea menús con tu cámara y deja que la IA analice los ingredientes",
+    "index.feature2Title": "Seguridad Primero",
+    "index.feature2Desc": "Recibe advertencias claras para tus alergias específicas",
+    "index.feature3Title": "Personal",
+    "index.feature3Desc": "Guarda tus alergias y preferencias para verificaciones más rápidas",
+    "index.howItWorksTitle": "Cómo funciona",
+    "index.howItWorksDesc": "Cena segura en 3 simples pasos",
+    "index.step1Title": "Configura tus preferencias",
+    "index.step1Desc": "Agrega tus alergias y preferencias a tu perfil. Solo tienes que hacerlo una vez.",
+    "index.step2Title": "Escanea el menú",
+    "index.step2Desc": "Usa tu cámara para escanear el menú. Nuestra IA hace el resto.",
+    "index.step3Title": "Ve qué es seguro",
+    "index.step3Desc": "Cada plato recibe un emoji: 😊 seguro, 😐 adaptable, o 🤢 contiene alérgenos.",
+    "index.readyTitle": "¿Listo para disfrutar con seguridad?",
+    "index.readyDesc": "Empieza a escanear y descubre comidas seguras",
+    "profile.logout": "Cerrar Sesión",
+    "auth.signIn": "Iniciar Sesión",
+    "common.loading": "Cargando...",
+  },
+  de: {
+    "index.title": "Finde deine perfekte Mahlzeit",
+    "index.subtitle": "Verbinde deine Allergien und Vorlieben mit Restaurants",
+    "index.scanMenu": "Menü Scannen",
+    "index.myProfile": "Mein Profil",
+    "index.signIn": "Anmelden",
+    "index.feature1Title": "Scannen & Erkennen",
+    "index.feature1Desc": "Scannen Sie Menüs mit Ihrer Kamera und lassen Sie KI die Zutaten analysieren",
+    "index.feature2Title": "Sicherheit Zuerst",
+    "index.feature2Desc": "Erhalten Sie klare Warnungen für Ihre spezifischen Allergien",
+    "index.feature3Title": "Persönlich",
+    "index.feature3Desc": "Speichern Sie Ihre Allergien und Vorlieben für schnellere Überprüfungen",
+    "index.howItWorksTitle": "So funktioniert es",
+    "index.howItWorksDesc": "Sicheres Essen in 3 einfachen Schritten",
+    "index.step1Title": "Lege deine Präferenzen fest",
+    "index.step1Desc": "Fügen Sie Ihre Allergien und Vorlieben zu Ihrem Profil hinzu. Sie müssen dies nur einmal tun.",
+    "index.step2Title": "Scannen Sie das Menü",
+    "index.step2Desc": "Verwenden Sie Ihre Kamera, um das Menü zu scannen. Unsere KI erledigt den Rest.",
+    "index.step3Title": "Sehen Sie sofort, was sicher ist",
+    "index.step3Desc": "Jedes Gericht bekommt ein Smiley: 😊 sicher, 😐 anpassbar, oder 🤢 enthält Allergene.",
+    "index.readyTitle": "Bereit, sicher zu genießen?",
+    "index.readyDesc": "Starten Sie jetzt mit dem Scannen und entdecken Sie sichere Mahlzeiten",
+    "profile.logout": "Abmelden",
+    "auth.signIn": "Anmelden",
+    "common.loading": "Laden...",
   }
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem("language");
-    return (saved === "en" || saved === "nl") ? saved : "nl";
+    return (saved === "en" || saved === "nl" || saved === "fr" || saved === "es" || saved === "de") ? saved : "nl";
   });
 
   useEffect(() => {
@@ -528,7 +606,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language][key] || translations["en"][key] || translations["nl"][key] || key;
   };
 
   return (

@@ -38,14 +38,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
-      <LanguageToggle />
-      
       {/* Hero Section */}
       <section className="container mx-auto px-4 pt-20 pb-16">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 text-sm font-medium text-primary">
-            <Sparkles className="h-4 w-4" />
-            <span>{t("index.title")}</span>
+          <div className="flex items-center justify-center gap-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 text-sm font-medium text-primary">
+              <Sparkles className="h-4 w-4" />
+              <span>{t("index.title")}</span>
+            </div>
+            <LanguageToggle />
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
