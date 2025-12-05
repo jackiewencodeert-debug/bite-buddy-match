@@ -60,7 +60,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/profile`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
               user_type: userType,
             },
