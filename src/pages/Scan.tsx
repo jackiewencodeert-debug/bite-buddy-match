@@ -539,11 +539,11 @@ const Scan = () => {
                 />
 
                 <div className="mt-8 p-6 bg-muted/50 rounded-xl border border-border">
-                  <h4 className="font-semibold mb-2">💡 Tips voor beste resultaten:</h4>
+                  <h4 className="font-semibold mb-2">{t("scan.tipsTitle")}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Zorg voor goede verlichting</li>
-                    <li>Houd de camera stabiel</li>
-                    <li>Zorg dat de tekst goed leesbaar is</li>
+                    <li>{t("scan.tip1")}</li>
+                    <li>{t("scan.tip2")}</li>
+                    <li>{t("scan.tip3")}</li>
                   </ul>
                 </div>
               </div>
@@ -552,9 +552,9 @@ const Scan = () => {
             {mode === "camera" && !capturedImage && (
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">Maak een foto</h1>
+                  <h1 className="text-3xl font-bold mb-2">{t("scan.makePhoto")}</h1>
                   <p className="text-muted-foreground">
-                    Positioneer de menukaart in beeld
+                    {t("scan.position")}
                   </p>
                 </div>
 
@@ -577,7 +577,7 @@ const Scan = () => {
                             className="bg-background/20 backdrop-blur-sm hover:bg-background/40"
                           >
                             <X className="mr-2 h-5 w-5" />
-                            Annuleren
+                            {t("scan.cancel")}
                           </Button>
                           <Button
                             size="lg"
@@ -585,7 +585,7 @@ const Scan = () => {
                             className="bg-primary hover:bg-primary/90"
                           >
                             <Camera className="mr-2 h-5 w-5" />
-                            Foto Maken
+                            {t("scan.takePhoto")}
                           </Button>
                         </div>
                       </div>
@@ -598,9 +598,9 @@ const Scan = () => {
             {capturedImage && mode !== "multiple" && (
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">Controleer je foto</h1>
+                  <h1 className="text-3xl font-bold mb-2">{t("scan.checkPhoto")}</h1>
                   <p className="text-muted-foreground">
-                    Is de menukaart goed leesbaar?
+                    {t("scan.readable")}
                   </p>
                 </div>
 
@@ -620,7 +620,7 @@ const Scan = () => {
                       onClick={resetScan}
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      Opnieuw
+                      {t("scan.retry")}
                     </Button>
                     <Button
                       size="lg"
@@ -628,7 +628,7 @@ const Scan = () => {
                       className="bg-primary hover:bg-primary/90"
                     >
                       <Camera className="mr-2 h-5 w-5" />
-                      Scannen
+                      {t("scan.scanButton")}
                     </Button>
                   </div>
                 </Card>
@@ -638,11 +638,11 @@ const Scan = () => {
             {mode === "multiple" && (
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">Meerdere Foto's</h1>
+                  <h1 className="text-3xl font-bold mb-2">{t("scan.multipleTitle")}</h1>
                   <p className="text-muted-foreground">
                     {multipleImages.length > 0 
-                      ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} toegevoegd`
-                      : "Voeg foto's van verschillende menupagina's toe"
+                      ? t("scan.photosAdded").replace("{count}", multipleImages.length.toString()).replace("{s}", multipleImages.length > 1 ? "'s" : "")
+                      : t("scan.addPhotos")
                     }
                   </p>
                 </div>
@@ -665,7 +665,7 @@ const Scan = () => {
                           <X className="h-4 w-4" />
                         </Button>
                         <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
-                          Pagina {index + 1}
+                          {t("scan.page")} {index + 1}
                         </div>
                       </Card>
                     ))}
@@ -680,7 +680,7 @@ const Scan = () => {
                     className="w-full"
                   >
                     <Upload className="mr-2 h-5 w-5" />
-                    Meer Foto's Toevoegen
+                    {t("scan.addMore")}
                   </Button>
 
                   {multipleImages.length > 0 && (
@@ -690,7 +690,7 @@ const Scan = () => {
                       className="w-full bg-primary hover:bg-primary/90"
                     >
                       <Camera className="mr-2 h-5 w-5" />
-                      Scan {multipleImages.length} Foto{multipleImages.length > 1 ? "'s" : ""}
+                      {t("scan.scanMultiple").replace("{count}", multipleImages.length.toString()).replace("{s}", multipleImages.length > 1 ? "'s" : "")}
                     </Button>
                   )}
 
@@ -699,7 +699,7 @@ const Scan = () => {
                     onClick={resetScan}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Terug
+                    {t("common.back")}
                   </Button>
                 </div>
               </div>
@@ -713,7 +713,7 @@ const Scan = () => {
                       <X className="h-10 w-10 text-destructive" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold mb-3">Oeps, dat ging niet goed</h2>
+                      <h2 className="text-2xl font-bold mb-3">{t("scan.errorTitle")}</h2>
                       <p className="text-muted-foreground mb-6">
                         {errorMessage}
                       </p>
@@ -722,24 +722,24 @@ const Scan = () => {
                     <div className="bg-muted/50 rounded-lg p-6 text-left">
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
                         <span className="text-xl">💡</span>
-                        Suggesties voor betere resultaten:
+                        {t("scan.suggestionsTitle").replace("💡 ", "")}
                       </h3>
                       <ul className="space-y-2 text-sm text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>Zorg voor goede verlichting zonder schaduwen</span>
+                          <span>{t("scan.suggestion1")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>Houd de camera stabiel en recht boven het menu</span>
+                          <span>{t("scan.suggestion2")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>Zorg dat de tekst scherp en goed leesbaar is</span>
+                          <span>{t("scan.suggestion3")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>Fotografeer het hele menu of een duidelijk deel ervan</span>
+                          <span>{t("scan.suggestion4")}</span>
                         </li>
                       </ul>
                     </div>
@@ -750,7 +750,7 @@ const Scan = () => {
                       className="w-full sm:w-auto"
                     >
                       <RotateCcw className="mr-2 h-5 w-5" />
-                      Probeer Opnieuw
+                      {t("scan.tryAgain")}
                     </Button>
                   </div>
                 </Card>
