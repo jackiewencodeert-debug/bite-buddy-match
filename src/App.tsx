@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Scan from "./pages/Scan";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import Admin from "./pages/Admin";
 import BusinessDashboard from "./pages/BusinessDashboard";
 import MenuView from "./pages/MenuView";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/scan" element={<Scan />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/business" element={<BusinessDashboard />} />
             <Route path="/menu/:qrCode" element={<MenuView />} />
