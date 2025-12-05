@@ -90,6 +90,17 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.suggestion3": "Zorg dat de tekst scherp en goed leesbaar is",
     "scan.suggestion4": "Fotografeer het hele menu of een duidelijk deel ervan",
     
+    // Ad dialog
+    "ad.sponsoredMessage": "Gesponsorde Boodschap",
+    "ad.upgradeToPremium": "Upgrade naar Premium!",
+    "ad.upgradeDesc": "Geniet van onbeperkte scans zonder advertenties en krijg toegang tot exclusieve functies.",
+    "ad.unlimitedScans": "Onbeperkte scans",
+    "ad.noAds": "Geen advertenties",
+    "ad.premiumSupport": "Premium support",
+    "ad.continueIn": "Doorgaan in {seconds}s...",
+    "ad.continueToScan": "Doorgaan naar Scan",
+    "ad.redirectMessage": "Je wordt doorgestuurd naar de scan na deze boodschap",
+    
     // Menu Results
     "results.title": "Menu Resultaten",
     "results.found": "{count} gerechten gevonden - Gebaseerd op jouw voorkeuren en allergieën",
@@ -339,6 +350,17 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.suggestion2": "Hold the camera steady and directly above the menu",
     "scan.suggestion3": "Make sure the text is sharp and clearly readable",
     "scan.suggestion4": "Photograph the entire menu or a clear portion of it",
+    
+    // Ad dialog
+    "ad.sponsoredMessage": "Sponsored Message",
+    "ad.upgradeToPremium": "Upgrade to Premium!",
+    "ad.upgradeDesc": "Enjoy unlimited scans without ads and get access to exclusive features.",
+    "ad.unlimitedScans": "Unlimited scans",
+    "ad.noAds": "No ads",
+    "ad.premiumSupport": "Premium support",
+    "ad.continueIn": "Continue in {seconds}s...",
+    "ad.continueToScan": "Continue to Scan",
+    "ad.redirectMessage": "You will be redirected to the scan after this message",
     
     // Menu Results
     "results.title": "Menu Results",
@@ -590,6 +612,17 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.suggestion3": "Assurez-vous que le texte est net et lisible",
     "scan.suggestion4": "Photographiez le menu entier ou une partie claire",
     
+    // Ad dialog
+    "ad.sponsoredMessage": "Message Sponsorisé",
+    "ad.upgradeToPremium": "Passez à Premium!",
+    "ad.upgradeDesc": "Profitez de scans illimités sans publicités et accédez aux fonctionnalités exclusives.",
+    "ad.unlimitedScans": "Scans illimités",
+    "ad.noAds": "Sans publicités",
+    "ad.premiumSupport": "Support premium",
+    "ad.continueIn": "Continuer dans {seconds}s...",
+    "ad.continueToScan": "Continuer vers le Scan",
+    "ad.redirectMessage": "Vous serez redirigé vers le scan après ce message",
+    
     // Menu Results
     "results.title": "Résultats du Menu",
     "results.found": "{count} plats trouvés - Basé sur vos préférences et allergies",
@@ -840,6 +873,17 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.suggestion3": "Asegúrate de que el texto esté nítido y legible",
     "scan.suggestion4": "Fotografía el menú completo o una parte clara",
     
+    // Ad dialog
+    "ad.sponsoredMessage": "Mensaje Patrocinado",
+    "ad.upgradeToPremium": "¡Actualiza a Premium!",
+    "ad.upgradeDesc": "Disfruta de escaneos ilimitados sin anuncios y accede a funciones exclusivas.",
+    "ad.unlimitedScans": "Escaneos ilimitados",
+    "ad.noAds": "Sin anuncios",
+    "ad.premiumSupport": "Soporte premium",
+    "ad.continueIn": "Continuar en {seconds}s...",
+    "ad.continueToScan": "Continuar al Escaneo",
+    "ad.redirectMessage": "Serás redirigido al escaneo después de este mensaje",
+    
     // Menu Results
     "results.title": "Resultados del Menú",
     "results.found": "{count} platos encontrados - Basado en tus preferencias y alergias",
@@ -1089,6 +1133,17 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.suggestion2": "Halten Sie die Kamera ruhig und direkt über dem Menü",
     "scan.suggestion3": "Stellen Sie sicher, dass der Text scharf und lesbar ist",
     "scan.suggestion4": "Fotografieren Sie das gesamte Menü oder einen klaren Teil davon",
+    
+    // Ad dialog
+    "ad.sponsoredMessage": "Gesponserte Nachricht",
+    "ad.upgradeToPremium": "Upgrade auf Premium!",
+    "ad.upgradeDesc": "Genießen Sie unbegrenzte Scans ohne Werbung und erhalten Sie Zugang zu exklusiven Funktionen.",
+    "ad.unlimitedScans": "Unbegrenzte Scans",
+    "ad.noAds": "Keine Werbung",
+    "ad.premiumSupport": "Premium-Support",
+    "ad.continueIn": "Weiter in {seconds}s...",
+    "ad.continueToScan": "Weiter zum Scan",
+    "ad.redirectMessage": "Sie werden nach dieser Nachricht zum Scan weitergeleitet",
     
     // Menu Results
     "results.title": "Menü Ergebnisse",

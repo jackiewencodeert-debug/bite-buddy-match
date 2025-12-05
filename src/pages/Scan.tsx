@@ -814,28 +814,28 @@ const Scan = () => {
       }}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-center">Gesponsorde Boodschap</AlertDialogTitle>
+            <AlertDialogTitle className="text-2xl text-center">{t("ad.sponsoredMessage")}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-6 py-6">
                 <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-8 text-center">
                   <div className="text-6xl mb-4">🍕</div>
                   <h3 className="text-xl font-semibold mb-3 text-foreground">
-                    Upgrade naar Premium!
+                    {t("ad.upgradeToPremium")}
                   </h3>
                   <p className="text-base text-muted-foreground mb-4">
-                    Geniet van onbeperkte scans zonder advertenties en krijg toegang tot exclusieve functies.
+                    {t("ad.upgradeDesc")}
                   </p>
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
-                      ✓ Onbeperkte scans
+                      ✓ {t("ad.unlimitedScans")}
                     </span>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      ✓ Geen advertenties
+                      ✓ {t("ad.noAds")}
                     </span>
                     <span>•</span>
                     <span className="inline-flex items-center gap-1">
-                      ✓ Premium support
+                      ✓ {t("ad.premiumSupport")}
                     </span>
                   </div>
                 </div>
@@ -848,12 +848,12 @@ const Scan = () => {
                     className="min-w-[200px]"
                   >
                     {adCountdown > 0 
-                      ? `Doorgaan in ${adCountdown}s...` 
-                      : "Doorgaan naar Scan"
+                      ? t("ad.continueIn").replace("{seconds}", String(adCountdown))
+                      : t("ad.continueToScan")
                     }
                   </Button>
                   <p className="text-xs text-muted-foreground mt-3">
-                    Je wordt doorgestuurd naar de scan na deze boodschap
+                    {t("ad.redirectMessage")}
                   </p>
                 </div>
               </div>
