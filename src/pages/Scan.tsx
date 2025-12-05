@@ -370,19 +370,45 @@ const Scan = () => {
 
         const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
-        const { error } = await supabase.from("menus").insert({
-          business_user_id: user.id,
-          qr_code: generatedQrCode,
-          menu_image_url: capturedImage,
-        });
+        // Insert menu and get the ID back
+        const { data: menuData, error: menuError } = await supabase
+          .from("menus")
+          .insert({
+            business_user_id: user.id,
+            qr_code: generatedQrCode,
+            menu_image_url: capturedImage,
+          })
+          .select('id')
+          .single();
 
-        if (!error) {
-          setQrCode(generatedQrCode);
-          toast({
-            title: "QR Code Gegenereerd! ✓",
-            description: `${processedDishes.length} gerechten gevonden en opgeslagen.`,
-          });
+        if (menuError) {
+          throw menuError;
         }
+
+        // Insert all dishes with the menu_id
+        const dishesToInsert = processedDishes.map((dish: any) => ({
+          menu_id: menuData.id,
+          name: dish.name,
+          description: dish.description || '',
+          price: dish.price || '',
+          ingredients: dish.ingredients || [],
+          allergens: dish.allergens || [],
+          dietary_info: dish.dietary_info || [],
+        }));
+
+        const { error: dishesError } = await supabase
+          .from("dishes")
+          .insert(dishesToInsert);
+
+        if (dishesError) {
+          console.error("Error saving dishes:", dishesError);
+        }
+
+        setQrCode(generatedQrCode);
+        toast({
+          title: "QR Code Gegenereerd! ✓",
+          description: `${processedDishes.length} gerechten gevonden en opgeslagen.`,
+        });
       } else {
         toast({
           title: "Menu Geanalyseerd! ✓",
