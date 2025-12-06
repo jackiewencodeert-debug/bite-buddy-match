@@ -727,14 +727,6 @@ const Scan = () => {
                       {t("scan.scanMultiple").replace("{count}", multipleImages.length.toString()).replace("{s}", multipleImages.length > 1 ? "'s" : "")}
                     </Button>
                   )}
-
-                  <Button
-                    variant="ghost"
-                    onClick={() => setMode("select")}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    {t("common.back")}
-                  </Button>
                 </div>
               </div>
             )}
