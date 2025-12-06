@@ -70,6 +70,7 @@ const Profile = () => {
   const [userType, setUserType] = useState<string>("");
   const [isGuest, setIsGuest] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showAllergyPicker, setShowAllergyPicker] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -419,23 +420,65 @@ const Profile = () => {
                 <p className="text-muted-foreground mb-6">
                   {t("profile.allergiesDesc")}
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                  {allergies.map((allergy) => (
-                    <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Checkbox
-                        id={allergy.id}
-                        checked={selectedAllergies.includes(allergy.id)}
-                        onCheckedChange={() => toggleAllergy(allergy.id)}
-                      />
-                      <Label
-                        htmlFor={allergy.id}
-                        className="text-base cursor-pointer flex-1"
-                      >
-                        {t(allergy.label)}
-                      </Label>
+                
+                {/* Display selected allergies */}
+                {selectedAllergies.length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAllergies.map((allergyId) => {
+                        const allergy = allergies.find(a => a.id === allergyId);
+                        return (
+                          <Badge
+                            key={allergyId}
+                            variant="secondary"
+                            className="px-3 py-2 text-sm flex items-center gap-2"
+                          >
+                            <span>{allergy ? t(allergy.label) : allergyId}</span>
+                            <button
+                              onClick={() => toggleAllergy(allergyId)}
+                              className="ml-1 hover:text-destructive"
+                              aria-label={`Verwijder ${allergyId}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {/* Add allergy button/bar */}
+                <button
+                  onClick={() => setShowAllergyPicker(!showAllergyPicker)}
+                  className="w-full flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 transition-colors text-primary font-medium"
+                >
+                  <Plus className="h-5 w-5" />
+                  {t("profile.addAllergyButton")}
+                </button>
+
+                {/* Expandable allergy picker */}
+                {showAllergyPicker && (
+                  <div className="mt-4 p-4 rounded-lg bg-muted/30 border border-border">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {allergies.map((allergy) => (
+                        <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Checkbox
+                            id={allergy.id}
+                            checked={selectedAllergies.includes(allergy.id)}
+                            onCheckedChange={() => toggleAllergy(allergy.id)}
+                          />
+                          <Label
+                            htmlFor={allergy.id}
+                            className="text-base cursor-pointer flex-1"
+                          >
+                            {t(allergy.label)}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Custom Allergies Section */}
                 <div className="border-t pt-6">
