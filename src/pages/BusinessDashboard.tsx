@@ -22,7 +22,6 @@ const BusinessDashboard = () => {
   const [stats, setStats] = useState<MenuScanStats[]>([]);
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
-  const [processingPayment, setProcessingPayment] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -106,42 +105,6 @@ const BusinessDashboard = () => {
         setStats(statsArray);
         setTopAllergies(statsArray.slice(0, 5));
       }
-    }
-  };
-
-  const handleStartPayment = async () => {
-    setProcessingPayment(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: t("business.notLoggedIn"),
-          description: t("business.loginToContinue"),
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("create-menu-payment", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error: any) {
-      toast({
-        title: t("business.paymentError"),
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingPayment(false);
     }
   };
 
@@ -304,27 +267,17 @@ const BusinessDashboard = () => {
           <CardHeader>
             <CardTitle>{t("business.addNewMenu")}</CardTitle>
             <CardDescription>
-              {t("business.addNewMenuDesc")}
+              {t("business.addNewMenuDescFree")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button 
               className="w-full" 
               size="lg"
-              onClick={handleStartPayment}
-              disabled={processingPayment}
+              onClick={() => navigate("/scan")}
             >
-              {processingPayment ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {t("business.processingPayment")}
-                </>
-              ) : (
-                <>
-                  <QrCode className="mr-2 h-5 w-5" />
-                  {t("business.payAndScan")}
-                </>
-              )}
+              <QrCode className="mr-2 h-5 w-5" />
+              {t("business.scanMenu")}
             </Button>
           </CardContent>
         </Card>

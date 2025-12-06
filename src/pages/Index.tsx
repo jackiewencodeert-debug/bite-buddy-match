@@ -27,6 +27,19 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const handleGuestContinue = () => {
+    localStorage.setItem("userType", "gast");
+    // Set guest expiry time (24 hours from now)
+    const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+    localStorage.setItem("guestExpiry", expiryTime.toString());
+    
+    toast({
+      title: t("auth.guestWelcome"),
+      description: t("auth.guestWelcomeDesc"),
+    });
+    navigate("/profile");
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({
@@ -75,12 +88,23 @@ const Index = () => {
                 {t("profile.logout")}
               </Button>
             ) : (
-              <Link to="/auth">
-                <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+              <>
+                <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  className="text-lg px-8 transition-all hover:scale-105"
+                  onClick={handleGuestContinue}
+                >
                   <Users className="mr-2 h-5 w-5" />
-                  {t("auth.signIn")}
+                  {t("auth.continueAsGuest")}
                 </Button>
-              </Link>
+                <Link to="/auth">
+                  <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                    <Users className="mr-2 h-5 w-5" />
+                    {t("auth.signIn")}
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>
