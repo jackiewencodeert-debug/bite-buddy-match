@@ -46,8 +46,8 @@ const Index = () => {
 
   const handleGuestContinue = () => {
     localStorage.setItem("userType", "gast");
-    // Set guest expiry time (24 hours from now)
-    const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+    // Set guest expiry time (12 hours from now)
+    const expiryTime = Date.now() + 12 * 60 * 60 * 1000;
     localStorage.setItem("guestExpiry", expiryTime.toString());
     
     toast({
@@ -58,6 +58,13 @@ const Index = () => {
   };
 
   const handleLogout = async () => {
+    // Clear guest data if guest
+    if (isGuest) {
+      localStorage.removeItem("userType");
+      localStorage.removeItem("guestExpiry");
+      localStorage.removeItem("guestPreferences");
+      setIsGuest(false);
+    }
     await supabase.auth.signOut();
     toast({
       title: "Uitgelogd",
@@ -96,17 +103,15 @@ const Index = () => {
                     {t("index.scanMenu")}
                   </Button>
                 </Link>
-                {user && (
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="text-lg px-8 transition-all hover:scale-105"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    {t("profile.logout")}
-                  </Button>
-                )}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg px-8 transition-all hover:scale-105"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-5 w-5" />
+                  {t("profile.logout")}
+                </Button>
               </>
             ) : (
               <>
