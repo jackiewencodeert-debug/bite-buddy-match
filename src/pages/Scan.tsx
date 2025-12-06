@@ -707,29 +707,15 @@ const Scan = () => {
                 />
 
                 <div className="flex flex-col gap-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={() => multipleFileInputRef.current?.click()}
-                      className="w-full"
-                    >
-                      <Upload className="mr-2 h-5 w-5" />
-                      {t("scan.addMore")}
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={() => {
-                        setMode("camera");
-                        setCapturedImage(null);
-                      }}
-                      className="w-full"
-                    >
-                      <Camera className="mr-2 h-5 w-5" />
-                      {t("scan.camera")}
-                    </Button>
-                  </div>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => multipleFileInputRef.current?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-5 w-5" />
+                    {t("scan.addMore")}
+                  </Button>
 
                   {multipleImages.length > 0 && (
                     <Button
@@ -744,7 +730,7 @@ const Scan = () => {
 
                   <Button
                     variant="ghost"
-                    onClick={resetScan}
+                    onClick={() => setMode("select")}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     {t("common.back")}
