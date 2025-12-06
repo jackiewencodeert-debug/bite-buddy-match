@@ -91,12 +91,12 @@ const Index = () => {
               <>
                 <Button 
                   size="lg" 
-                  variant="secondary" 
+                  variant="outline" 
                   className="text-lg px-8 transition-all hover:scale-105"
                   onClick={handleGuestContinue}
                 >
                   <Users className="mr-2 h-5 w-5" />
-                  {t("auth.continueAsGuest")}
+                  {t("auth.guest")}
                 </Button>
                 <Link to="/auth">
                   <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
