@@ -357,16 +357,6 @@ const Scan = () => {
 
       // If business user, generate QR code and save to database
       if (userType === "eetgever" && user) {
-        // Check if payment was completed
-        if (searchParams.get('payment') !== 'success') {
-          toast({
-            title: "Betaling vereist",
-            description: "Je moet eerst betalen om een menu toe te voegen.",
-            variant: "destructive",
-          });
-          navigate("/business");
-          return;
-        }
 
         const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
@@ -573,15 +563,50 @@ const Scan = () => {
                           <Button
                             size="lg"
                             variant="outline"
-                            onClick={resetScan}
+                            onClick={() => {
+                              stopCamera();
+                              if (multipleImages.length > 0) {
+                                setMode("multiple");
+                              } else {
+                                resetScan();
+                              }
+                            }}
                             className="bg-background/20 backdrop-blur-sm hover:bg-background/40"
                           >
                             <X className="mr-2 h-5 w-5" />
-                            {t("scan.cancel")}
+                            {multipleImages.length > 0 ? t("scan.back") : t("scan.cancel")}
                           </Button>
                           <Button
                             size="lg"
-                            onClick={capturePhoto}
+                            onClick={() => {
+                              if (videoRef.current) {
+                                const canvas = document.createElement("canvas");
+                                canvas.width = videoRef.current.videoWidth;
+                                canvas.height = videoRef.current.videoHeight;
+                                const ctx = canvas.getContext("2d");
+                                
+                                if (ctx) {
+                                  ctx.drawImage(videoRef.current, 0, 0);
+                                  const imageData = canvas.toDataURL("image/jpeg", 0.9);
+                                  
+                                  if (multipleImages.length > 0 || mode === "camera") {
+                                    // Add to multiple images if we came from multiple mode
+                                    if (multipleImages.length > 0) {
+                                      setMultipleImages(prev => [...prev, imageData]);
+                                      toast({
+                                        title: "Foto toegevoegd!",
+                                        description: `Totaal: ${multipleImages.length + 1} foto's`,
+                                      });
+                                      stopCamera();
+                                      setMode("multiple");
+                                    } else {
+                                      setCapturedImage(imageData);
+                                      stopCamera();
+                                    }
+                                  }
+                                }
+                              }
+                            }}
                             className="bg-primary hover:bg-primary/90"
                           >
                             <Camera className="mr-2 h-5 w-5" />
@@ -673,15 +698,29 @@ const Scan = () => {
                 )}
 
                 <div className="flex flex-col gap-4">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => multipleFileInputRef.current?.click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-5 w-5" />
-                    {t("scan.addMore")}
-                  </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => multipleFileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-5 w-5" />
+                      {t("scan.addMore")}
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => {
+                        setMode("camera");
+                        setCapturedImage(null);
+                      }}
+                      className="w-full"
+                    >
+                      <Camera className="mr-2 h-5 w-5" />
+                      {t("scan.camera")}
+                    </Button>
+                  </div>
 
                   {multipleImages.length > 0 && (
                     <Button

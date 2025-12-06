@@ -21,12 +21,40 @@ const Auth = () => {
 
   const handleGuestContinue = () => {
     localStorage.setItem("userType", "gast");
+    // Set guest expiry time (24 hours from now)
+    const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+    localStorage.setItem("guestExpiry", expiryTime.toString());
+    
+    // Log guest registration to database
+    logGuestRegistration();
+    
     toast({
-      title: "Welkom als gast!",
-      description: "Je kunt nu direct beginnen met scannen.",
+      title: t("auth.guestWelcome"),
+      description: t("auth.guestWelcomeDesc"),
     });
     navigate("/profile");
   };
+
+  const logGuestRegistration = async () => {
+    try {
+      await supabase.from("scans").insert({
+        user_id: null,
+        scan_method: "guest_registration",
+      });
+    } catch (error) {
+      console.error("Error logging guest registration:", error);
+    }
+  };
+
+  // Check and clear expired guest data
+  useEffect(() => {
+    const guestExpiry = localStorage.getItem("guestExpiry");
+    if (guestExpiry && Date.now() > parseInt(guestExpiry)) {
+      localStorage.removeItem("userType");
+      localStorage.removeItem("guestExpiry");
+      localStorage.removeItem("guestPreferences");
+    }
+  }, []);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -178,17 +206,6 @@ const Auth = () => {
                   )}
                 </Button>
               </>
-            )}
-            {!isLogin && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGuestContinue}
-                className="w-full"
-                disabled={loading}
-              >
-                {t("auth.continueAsGuest")}
-              </Button>
             )}
           </form>
           <div className="mt-4 text-center text-sm">
