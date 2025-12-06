@@ -9,11 +9,26 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
 
   useEffect(() => {
+    // Check if guest user
+    const guestType = localStorage.getItem("userType");
+    const guestExpiry = localStorage.getItem("guestExpiry");
+    
+    if (guestType === "gast" && guestExpiry && Date.now() < parseInt(guestExpiry)) {
+      setIsGuest(true);
+    } else if (guestExpiry && Date.now() > parseInt(guestExpiry)) {
+      // Clear expired guest data
+      localStorage.removeItem("userType");
+      localStorage.removeItem("guestExpiry");
+      localStorage.removeItem("guestPreferences");
+      setIsGuest(false);
+    }
+
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -26,6 +41,8 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const isLoggedIn = user || isGuest;
 
   const handleGuestContinue = () => {
     localStorage.setItem("userType", "gast");
@@ -71,22 +88,26 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link to="/scan">
-              <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                <Camera className="mr-2 h-5 w-5" />
-                {t("index.scanMenu")}
-              </Button>
-            </Link>
-            {user ? (
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-lg px-8 transition-all hover:scale-105"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-5 w-5" />
-                {t("profile.logout")}
-              </Button>
+            {isLoggedIn ? (
+              <>
+                <Link to="/scan">
+                  <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                    <Camera className="mr-2 h-5 w-5" />
+                    {t("index.scanMenu")}
+                  </Button>
+                </Link>
+                {user && (
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="text-lg px-8 transition-all hover:scale-105"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    {t("profile.logout")}
+                  </Button>
+                )}
+              </>
             ) : (
               <>
                 <Button 
