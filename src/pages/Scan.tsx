@@ -470,7 +470,7 @@ const Scan = () => {
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 gap-6">
                   <Card 
                     className="p-8 text-center hover:shadow-hover transition-all cursor-pointer"
                     onClick={() => handleModeSelection("camera")}
@@ -481,19 +481,6 @@ const Scan = () => {
                     <h3 className="text-xl font-semibold mb-2">{t("scan.camera")}</h3>
                     <p className="text-muted-foreground">
                       {t("scan.cameraDesc")}
-                    </p>
-                  </Card>
-
-                  <Card 
-                    className="p-8 text-center hover:shadow-hover transition-all cursor-pointer"
-                    onClick={() => handleModeSelection("upload")}
-                  >
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Upload className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">{t("scan.upload")}</h3>
-                    <p className="text-muted-foreground">
-                      {t("scan.uploadDesc")}
                     </p>
                   </Card>
 
