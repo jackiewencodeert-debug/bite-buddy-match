@@ -139,6 +139,8 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.saved": "Profiel opgeslagen! ✓",
     "profile.savedDesc": "Je voorkeuren zijn succesvol bijgewerkt.",
     "profile.savedGuestDesc": "Je voorkeuren zijn tijdelijk opgeslagen.",
+    "profile.validationError": "Niet compleet",
+    "profile.selectAtLeastOne": "Selecteer minstens 1 allergie of 1 voorkeur",
     
     // Auth page
     "auth.welcome": "Welkom bij Bite Buddy",
@@ -409,6 +411,8 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.saved": "Profile saved! ✓",
     "profile.savedDesc": "Your preferences have been updated successfully.",
     "profile.savedGuestDesc": "Your preferences have been temporarily saved.",
+    "profile.validationError": "Incomplete",
+    "profile.selectAtLeastOne": "Select at least 1 allergy or 1 preference",
     
     // Auth page
     "auth.welcome": "Welcome to Bite Buddy",
@@ -679,6 +683,8 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.saved": "Profil enregistré! ✓",
     "profile.savedDesc": "Vos préférences ont été mises à jour.",
     "profile.savedGuestDesc": "Vos préférences ont été temporairement enregistrées.",
+    "profile.validationError": "Incomplet",
+    "profile.selectAtLeastOne": "Sélectionnez au moins 1 allergie ou 1 préférence",
     
     // Auth page
     "auth.welcome": "Bienvenue sur Bite Buddy",
@@ -949,6 +955,8 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.saved": "¡Perfil guardado! ✓",
     "profile.savedDesc": "Tus preferencias han sido actualizadas.",
     "profile.savedGuestDesc": "Tus preferencias han sido guardadas temporalmente.",
+    "profile.validationError": "Incompleto",
+    "profile.selectAtLeastOne": "Selecciona al menos 1 alergia o 1 preferencia",
     
     // Auth page
     "auth.welcome": "Bienvenido a Bite Buddy",
@@ -1219,6 +1227,8 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.saved": "Profil gespeichert! ✓",
     "profile.savedDesc": "Ihre Vorlieben wurden aktualisiert.",
     "profile.savedGuestDesc": "Ihre Vorlieben wurden temporär gespeichert.",
+    "profile.validationError": "Unvollständig",
+    "profile.selectAtLeastOne": "Wählen Sie mindestens 1 Allergie oder 1 Präferenz",
     
     // Auth page
     "auth.welcome": "Willkommen bei Bite Buddy",

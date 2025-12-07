@@ -225,6 +225,19 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    // Validate at least 1 allergy or 1 preference is selected
+    const hasAllergy = selectedAllergies.length > 0 || customAllergies.length > 0;
+    const hasPreference = selectedPreferences.length > 0;
+    
+    if (!hasAllergy && !hasPreference) {
+      toast({
+        title: t("profile.validationError"),
+        description: t("profile.selectAtLeastOne"),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       // Handle guest save
