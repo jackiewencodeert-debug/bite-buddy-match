@@ -32,8 +32,10 @@ const translations: Record<Language, Record<string, string>> = {
     "index.step2Desc": "Gebruik je camera om de menukaart te scannen, of upload een foto. Onze AI doet de rest.",
     "index.step3Title": "Zie direct wat veilig is",
     "index.step3Desc": "Elk gerecht krijgt een smiley: 😊 veilig, 😐 aanpasbaar, of 🤢 bevat allergenen.",
-    "index.readyTitle": "Klaar om veilig te genieten?",
+    "index.readyTitle": "Klaar om te genieten?",
     "index.readyDesc": "Begin nu met scannen en ontdek veilige maaltijden",
+    "index.readyTitleLoggedOut": "Klaar om te genieten?",
+    "index.readyDescLoggedOut": "Begin met scannen na het inloggen",
     
     // Allergies
     "allergy.noten": "Noten",
@@ -300,8 +302,10 @@ const translations: Record<Language, Record<string, string>> = {
     "index.step2Desc": "Use your camera to scan the menu, or upload a photo. Our AI does the rest.",
     "index.step3Title": "See immediately what's safe",
     "index.step3Desc": "Each dish gets a smiley: 😊 safe, 😐 adjustable, or 🤢 contains allergens.",
-    "index.readyTitle": "Ready to enjoy safely?",
+    "index.readyTitle": "Ready to enjoy?",
     "index.readyDesc": "Start scanning now and discover safe meals",
+    "index.readyTitleLoggedOut": "Ready to enjoy?",
+    "index.readyDescLoggedOut": "Start scanning after logging in",
     
     // Allergies
     "allergy.noten": "Nuts",
@@ -568,8 +572,10 @@ const translations: Record<Language, Record<string, string>> = {
     "index.step2Desc": "Utilisez votre caméra pour scanner le menu. Notre IA fait le reste.",
     "index.step3Title": "Voyez ce qui est sûr",
     "index.step3Desc": "Chaque plat reçoit un smiley: 😊 sûr, 😐 adaptable, ou 🤢 contient des allergènes.",
-    "index.readyTitle": "Prêt à déguster en sécurité?",
+    "index.readyTitle": "Prêt à déguster?",
     "index.readyDesc": "Commencez à scanner et découvrez des repas sûrs",
+    "index.readyTitleLoggedOut": "Prêt à déguster?",
+    "index.readyDescLoggedOut": "Commencez à scanner après vous être connecté",
     
     // Allergies
     "allergy.noten": "Noix",
@@ -836,8 +842,10 @@ const translations: Record<Language, Record<string, string>> = {
     "index.step2Desc": "Usa tu cámara para escanear el menú. Nuestra IA hace el resto.",
     "index.step3Title": "Ve qué es seguro",
     "index.step3Desc": "Cada plato recibe un emoji: 😊 seguro, 😐 adaptable, o 🤢 contiene alérgenos.",
-    "index.readyTitle": "¿Listo para disfrutar con seguridad?",
+    "index.readyTitle": "¿Listo para disfrutar?",
     "index.readyDesc": "Empieza a escanear y descubre comidas seguras",
+    "index.readyTitleLoggedOut": "¿Listo para disfrutar?",
+    "index.readyDescLoggedOut": "Comienza a escanear después de iniciar sesión",
     
     // Allergies
     "allergy.noten": "Frutos secos",
@@ -1104,8 +1112,10 @@ const translations: Record<Language, Record<string, string>> = {
     "index.step2Desc": "Verwenden Sie Ihre Kamera, um das Menü zu scannen. Unsere KI erledigt den Rest.",
     "index.step3Title": "Sehen Sie sofort, was sicher ist",
     "index.step3Desc": "Jedes Gericht bekommt ein Smiley: 😊 sicher, 😐 anpassbar, oder 🤢 enthält Allergene.",
-    "index.readyTitle": "Bereit, sicher zu genießen?",
+    "index.readyTitle": "Bereit zu genießen?",
     "index.readyDesc": "Starten Sie jetzt mit dem Scannen und entdecken Sie sichere Mahlzeiten",
+    "index.readyTitleLoggedOut": "Bereit zu genießen?",
+    "index.readyDescLoggedOut": "Scannen Sie nach dem Anmelden",
     
     // Allergies
     "allergy.noten": "Nüsse",
