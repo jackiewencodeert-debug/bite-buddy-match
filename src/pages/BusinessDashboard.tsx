@@ -205,9 +205,6 @@ const BusinessDashboard = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t("common.back")}
           </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            {t("profile.logout")}
-          </Button>
         </div>
 
         <div className="space-y-2">
