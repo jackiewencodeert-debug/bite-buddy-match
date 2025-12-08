@@ -71,18 +71,31 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
 
+        // Check user type and redirect accordingly
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("id", data.user.id)
+          .single();
+
         toast({
           title: "Welkom terug!",
           description: "Je bent succesvol ingelogd.",
         });
-        navigate("/profile");
+
+        // Redirect business users to business dashboard
+        if (profile?.user_type === "eetgever") {
+          navigate("/business");
+        } else {
+          navigate("/profile");
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
