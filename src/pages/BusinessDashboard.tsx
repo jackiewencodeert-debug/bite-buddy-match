@@ -10,108 +10,102 @@ import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarCh
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 interface MenuScanStats {
   allergie: string;
   count: number;
 }
-
 const BusinessDashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(true);
   const [menus, setMenus] = useState<any[]>([]);
-  const [menuScanCounts, setMenuScanCounts] = useState<{ [key: string]: number }>({});
+  const [menuScanCounts, setMenuScanCounts] = useState<{
+    [key: string]: number;
+  }>({});
   const [stats, setStats] = useState<MenuScanStats[]>([]);
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
-  const { t } = useLanguage();
-  
+  const {
+    t
+  } = useLanguage();
+
   // Dialog states
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [menuName, setMenuName] = useState("");
   const [creatingMenu, setCreatingMenu] = useState(false);
-
   useEffect(() => {
     checkUserTypeAndLoadData();
   }, []);
-
   const checkUserTypeAndLoadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate("/auth");
         return;
       }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_type")
-        .eq("id", user.id)
-        .single();
-
+      const {
+        data: profile
+      } = await supabase.from("profiles").select("user_type").eq("id", user.id).single();
       if (profile?.user_type !== "eetgever") {
         toast({
           title: t("business.noAccess"),
           description: t("business.businessOnly"),
-          variant: "destructive",
+          variant: "destructive"
         });
         navigate("/profile");
         return;
       }
-
       setUserType(profile.user_type);
       await loadMenusAndStats(user.id);
     } catch (error: any) {
       toast({
         title: t("common.error"),
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const loadMenusAndStats = async (userId: string) => {
     // Load menus
-    const { data: menusData } = await supabase
-      .from("menus")
-      .select("*")
-      .eq("business_user_id", userId)
-      .order("created_at", { ascending: false });
-
+    const {
+      data: menusData
+    } = await supabase.from("menus").select("*").eq("business_user_id", userId).order("created_at", {
+      ascending: false
+    });
     setMenus(menusData || []);
 
     // Load scan statistics
     if (menusData && menusData.length > 0) {
       const menuIds = menusData.map(m => m.id);
-      
-      const { data: scansData } = await supabase
-        .from("menu_scans")
-        .select("menu_id, allergies_checked, preferences_checked")
-        .in("menu_id", menuIds);
-
+      const {
+        data: scansData
+      } = await supabase.from("menu_scans").select("menu_id, allergies_checked, preferences_checked").in("menu_id", menuIds);
       if (scansData) {
         // Count scans per menu
-        const scanCounts: { [key: string]: number } = {};
-        menuIds.forEach(id => { scanCounts[id] = 0; });
+        const scanCounts: {
+          [key: string]: number;
+        } = {};
+        menuIds.forEach(id => {
+          scanCounts[id] = 0;
+        });
         scansData.forEach(scan => {
           scanCounts[scan.menu_id] = (scanCounts[scan.menu_id] || 0) + 1;
         });
         setMenuScanCounts(scanCounts);
         // Count allergies and preferences
-        const allergyCount: { [key: string]: number } = {};
-        
+        const allergyCount: {
+          [key: string]: number;
+        } = {};
         scansData.forEach(scan => {
           scan.allergies_checked?.forEach((allergy: string) => {
             allergyCount[allergy] = (allergyCount[allergy] || 0) + 1;
@@ -120,64 +114,59 @@ const BusinessDashboard = () => {
             allergyCount[pref] = (allergyCount[pref] || 0) + 1;
           });
         });
-
-        const statsArray = Object.entries(allergyCount)
-          .map(([allergie, count]) => ({ allergie, count }))
-          .sort((a, b) => b.count - a.count);
-
+        const statsArray = Object.entries(allergyCount).map(([allergie, count]) => ({
+          allergie,
+          count
+        })).sort((a, b) => b.count - a.count);
         setStats(statsArray);
         setTopAllergies(statsArray.slice(0, 5));
       }
     }
   };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
-
   const handleAddMenu = () => {
     setMenuName("");
     setShowNameDialog(true);
   };
-
   const handleStartMenu = async () => {
     if (!menuName.trim()) {
       toast({
         title: t("common.error"),
         description: t("business.enterMenuName"),
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setShowNameDialog(false);
     setShowMethodDialog(true);
   };
-
   const handleMethodSelect = async (method: "scan" | "manual") => {
     setCreatingMenu(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
       const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Create the menu in database
-      const { data: menuData, error } = await supabase
-        .from("menus")
-        .insert({
-          business_user_id: user.id,
-          qr_code: generatedQrCode,
-          menu_data: { name: menuName.trim() }
-        })
-        .select('id')
-        .single();
-
+      const {
+        data: menuData,
+        error
+      } = await supabase.from("menus").insert({
+        business_user_id: user.id,
+        qr_code: generatedQrCode,
+        menu_data: {
+          name: menuName.trim()
+        }
+      }).select('id').single();
       if (error) throw error;
-
       setShowMethodDialog(false);
-
       if (method === "scan") {
         // Navigate to scan page with menu context
         navigate(`/menu/${menuData.id}/edit?method=scan`);
@@ -189,23 +178,18 @@ const BusinessDashboard = () => {
       toast({
         title: t("common.error"),
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setCreatingMenu(false);
     }
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
       <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
@@ -237,21 +221,17 @@ const BusinessDashboard = () => {
               <CardDescription>{t("business.totalScans")}</CardDescription>
             </CardHeader>
           </Card>
-          <Card 
-            className="cursor-pointer hover:border-primary/50 transition-colors"
-            onClick={() => navigate("/business/statistics")}
-          >
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/business/statistics")}>
             <CardHeader>
               <CardTitle className="text-2xl flex items-center justify-center">
                 <BarChart3 className="h-8 w-8 text-primary" />
               </CardTitle>
-              <CardDescription>{t("business.statistics")}</CardDescription>
+              <CardDescription className="text-center text-base font-medium text-warning-foreground">{t("business.statistics")}</CardDescription>
             </CardHeader>
           </Card>
         </div>
 
-        {topAllergies.length > 0 && (
-          <Card>
+        {topAllergies.length > 0 && <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -263,8 +243,7 @@ const BusinessDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {topAllergies.map((item, index) => (
-                  <div key={item.allergie} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                {topAllergies.map((item, index) => <div key={item.allergie} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="text-lg font-semibold">
                         #{index + 1}
@@ -272,15 +251,12 @@ const BusinessDashboard = () => {
                       <span className="font-medium">{item.allergie}</span>
                     </div>
                     <Badge>{item.count}x</Badge>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
-        {stats.length > 0 && (
-          <Card>
+        {stats.length > 0 && <Card>
             <CardHeader>
               <CardTitle>{t("business.allAllergies")}</CardTitle>
               <CardDescription>
@@ -289,16 +265,13 @@ const BusinessDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-2">
-                {stats.map((item) => (
-                  <div key={item.allergie} className="flex items-center justify-between p-2 rounded border">
+                {stats.map(item => <div key={item.allergie} className="flex items-center justify-between p-2 rounded border">
                     <span>{item.allergie}</span>
                     <Badge variant="secondary">{t("business.timesScanned").replace("{count}", item.count.toString())}</Badge>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         <Card>
           <CardHeader>
@@ -311,8 +284,7 @@ const BusinessDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {menus.length === 0 ? (
-              <div className="text-center py-8">
+            {menus.length === 0 ? <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
                   {t("business.noMenus")}
                 </p>
@@ -320,14 +292,13 @@ const BusinessDashboard = () => {
                   <Plus className="mr-2 h-4 w-4" />
                   {t("business.addMenu")}
                 </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
+              </div> : <div className="space-y-4">
                 <div className="grid gap-4">
-                  {menus.map((menu) => {
-                    const menuData = menu.menu_data as { name?: string } | null;
-                    return (
-                      <div key={menu.id} className="p-4 rounded-lg border bg-card">
+                  {menus.map(menu => {
+                const menuData = menu.menu_data as {
+                  name?: string;
+                } | null;
+                return <div key={menu.id} className="p-4 rounded-lg border bg-card">
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-semibold">
@@ -342,26 +313,17 @@ const BusinessDashboard = () => {
                               <Eye className="h-4 w-4" />
                               <span>{menuScanCounts[menu.id] || 0}</span>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate(`/menu/${menu.id}/edit`)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => navigate(`/menu/${menu.id}/edit`)}>
                               <Edit3 className="h-4 w-4 mr-1" />
                               {t("business.editMenu")}
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate(`/menu/${menu.qr_code}`)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => navigate(`/menu/${menu.qr_code}`)}>
                               {t("business.viewQR")}
                             </Button>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      </div>;
+              })}
                 </div>
                 <div className="flex justify-center">
                   <Button onClick={handleAddMenu} variant="outline" size="sm">
@@ -369,8 +331,7 @@ const BusinessDashboard = () => {
                     {t("business.addMenu")}
                   </Button>
                 </div>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
@@ -388,19 +349,9 @@ const BusinessDashboard = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="menuName">{t("business.menuNameLabel")}</Label>
-              <Input
-                id="menuName"
-                placeholder={t("business.menuNamePlaceholder")}
-                value={menuName}
-                onChange={(e) => setMenuName(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleStartMenu()}
-              />
+              <Input id="menuName" placeholder={t("business.menuNamePlaceholder")} value={menuName} onChange={e => setMenuName(e.target.value)} onKeyPress={e => e.key === "Enter" && handleStartMenu()} />
             </div>
-            <Button 
-              onClick={handleStartMenu} 
-              className="w-full"
-              disabled={!menuName.trim()}
-            >
+            <Button onClick={handleStartMenu} className="w-full" disabled={!menuName.trim()}>
               {t("business.start")}
             </Button>
           </div>
@@ -417,10 +368,7 @@ const BusinessDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Card 
-              className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary"
-              onClick={() => !creatingMenu && handleMethodSelect("scan")}
-            >
+            <Card className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary" onClick={() => !creatingMenu && handleMethodSelect("scan")}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <Camera className="h-6 w-6 text-primary" />
@@ -433,10 +381,7 @@ const BusinessDashboard = () => {
                 </div>
               </div>
             </Card>
-            <Card 
-              className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary"
-              onClick={() => !creatingMenu && handleMethodSelect("manual")}
-            >
+            <Card className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary" onClick={() => !creatingMenu && handleMethodSelect("manual")}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <Edit3 className="h-6 w-6 text-primary" />
@@ -450,15 +395,11 @@ const BusinessDashboard = () => {
               </div>
             </Card>
           </div>
-          {creatingMenu && (
-            <div className="flex items-center justify-center py-2">
+          {creatingMenu && <div className="flex items-center justify-center py-2">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            </div>
-          )}
+            </div>}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default BusinessDashboard;
