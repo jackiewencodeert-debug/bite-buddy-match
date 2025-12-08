@@ -268,6 +268,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.dishAddedDesc": "{name} is toegevoegd aan het menu",
     "editor.loadError": "Fout bij laden",
     "editor.saveError": "Fout bij opslaan",
+    "editor.validationError": "Validatiefout",
+    "editor.invalidIngredient": "Ongeldig ingrediënt",
+    "editor.maxIngredients": "Maximaal 30 ingrediënten toegestaan",
     
     // Common
     "common.loading": "Laden...",
@@ -540,6 +543,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.dishAddedDesc": "{name} has been added to the menu",
     "editor.loadError": "Error loading",
     "editor.saveError": "Error saving",
+    "editor.validationError": "Validation error",
+    "editor.invalidIngredient": "Invalid ingredient",
+    "editor.maxIngredients": "Maximum 30 ingredients allowed",
     
     // Common
     "common.loading": "Loading...",
@@ -812,6 +818,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.dishAddedDesc": "{name} a été ajouté au menu",
     "editor.loadError": "Erreur de chargement",
     "editor.saveError": "Erreur d'enregistrement",
+    "editor.validationError": "Erreur de validation",
+    "editor.invalidIngredient": "Ingrédient invalide",
+    "editor.maxIngredients": "Maximum 30 ingrédients autorisés",
     
     // Common
     "common.loading": "Chargement...",
@@ -1084,6 +1093,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.dishAddedDesc": "{name} ha sido añadido al menú",
     "editor.loadError": "Error al cargar",
     "editor.saveError": "Error al guardar",
+    "editor.validationError": "Error de validación",
+    "editor.invalidIngredient": "Ingrediente inválido",
+    "editor.maxIngredients": "Máximo 30 ingredientes permitidos",
     
     // Common
     "common.loading": "Cargando...",
@@ -1356,6 +1368,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.dishAddedDesc": "{name} wurde dem Menü hinzugefügt",
     "editor.loadError": "Fehler beim Laden",
     "editor.saveError": "Fehler beim Speichern",
+    "editor.validationError": "Validierungsfehler",
+    "editor.invalidIngredient": "Ungültige Zutat",
+    "editor.maxIngredients": "Maximal 30 Zutaten erlaubt",
     
     // Common
     "common.loading": "Laden...",

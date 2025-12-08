@@ -12,6 +12,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { z } from "zod";
+
+// Validation schema for dish inputs
+const dishSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  description: z.string().max(500, "Description must be less than 500 characters").optional(),
+  price: z.string().max(20, "Price must be less than 20 characters").regex(/^(€?\s?\d{1,6}([,.]\d{1,2})?)?$/, "Invalid price format").optional(),
+  ingredients: z.array(z.string().trim().max(50, "Ingredient must be less than 50 characters")).min(1, "At least one ingredient required").max(30, "Maximum 30 ingredients allowed"),
+  allergens: z.array(z.string().max(50)).max(20),
+  dietary_info: z.array(z.string().max(50)).max(10),
+});
+
+const ingredientSchema = z.string().trim().min(1, "Ingredient cannot be empty").max(50, "Ingredient must be less than 50 characters");
 
 interface Dish {
   id?: string;
@@ -93,13 +106,30 @@ const MenuEditor = () => {
   };
 
   const addIngredient = () => {
-    if (newIngredient.trim()) {
-      setNewDish({
-        ...newDish,
-        ingredients: [...newDish.ingredients, newIngredient.trim()]
+    const result = ingredientSchema.safeParse(newIngredient);
+    if (!result.success) {
+      toast({
+        title: t("editor.validationError"),
+        description: result.error.errors[0]?.message || t("editor.invalidIngredient"),
+        variant: "destructive",
       });
-      setNewIngredient("");
+      return;
     }
+    
+    if (newDish.ingredients.length >= 30) {
+      toast({
+        title: t("editor.validationError"),
+        description: t("editor.maxIngredients"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setNewDish({
+      ...newDish,
+      ingredients: [...newDish.ingredients, result.data]
+    });
+    setNewIngredient("");
   };
 
   const removeIngredient = (index: number) => {
@@ -119,10 +149,14 @@ const MenuEditor = () => {
   };
 
   const addDish = async () => {
-    if (!newDish.name || newDish.ingredients.length === 0) {
+    // Validate dish with zod schema
+    const validationResult = dishSchema.safeParse(newDish);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
-        title: t("editor.incomplete"),
-        description: t("editor.incompleteDesc"),
+        title: t("editor.validationError"),
+        description: firstError?.message || t("editor.incompleteDesc"),
         variant: "destructive",
       });
       return;
@@ -130,17 +164,18 @@ const MenuEditor = () => {
 
     setSaving(true);
     try {
+      const validatedDish = validationResult.data;
       // Add business-wide allergens to this dish
-      const allAllergens = [...new Set([...newDish.allergens, ...businessAllergens])];
+      const allAllergens = [...new Set([...validatedDish.allergens, ...businessAllergens])];
 
       const { error } = await supabase.from("dishes").insert({
         menu_id: menuId,
-        name: newDish.name,
-        description: newDish.description,
-        price: newDish.price,
-        ingredients: newDish.ingredients,
+        name: validatedDish.name,
+        description: validatedDish.description || "",
+        price: validatedDish.price || "",
+        ingredients: validatedDish.ingredients,
         allergens: allAllergens,
-        dietary_info: newDish.dietary_info
+        dietary_info: validatedDish.dietary_info
       });
 
       if (error) throw error;
