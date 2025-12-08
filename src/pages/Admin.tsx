@@ -37,7 +37,10 @@ interface AccountStats {
 
 interface UsageDataPoint {
   label: string;
-  users: number;
+  registrations: number;
+  scans: number;
+  menuScans: number;
+  total: number;
 }
 
 interface UserProfile {
@@ -165,11 +168,30 @@ const Admin = () => {
 
   const loadUsageData = async () => {
     try {
-      const { data: scans } = await supabase
-        .from("scans")
-        .select("created_at, user_id");
+      // Fetch all activity data
+      const [scansResult, profilesResult, menuScansResult] = await Promise.all([
+        supabase.from("scans").select("created_at"),
+        supabase.from("profiles").select("created_at"),
+        supabase.from("menu_scans").select("scanned_at")
+      ]);
 
-      if (!scans) return;
+      const scans = scansResult.data || [];
+      const profiles = profilesResult.data || [];
+      const menuScans = menuScansResult.data || [];
+
+      const countInRange = (
+        items: { created_at?: string; scanned_at?: string }[],
+        start: Date,
+        end: Date,
+        dateField: 'created_at' | 'scanned_at'
+      ) => {
+        return items.filter(item => {
+          const dateValue = dateField === 'created_at' ? item.created_at : item.scanned_at;
+          if (!dateValue) return false;
+          const date = new Date(dateValue);
+          return date >= start && date < end;
+        }).length;
+      };
 
       if (viewMode === "month") {
         const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
@@ -179,16 +201,17 @@ const Admin = () => {
           const startOfDay = new Date(selectedYear, selectedMonth, day);
           const endOfDay = new Date(selectedYear, selectedMonth, day + 1);
           
-          const usersOnDay = new Set(
-            scans
-              .filter(scan => {
-                const scanDate = new Date(scan.created_at);
-                return scanDate >= startOfDay && scanDate < endOfDay;
-              })
-              .map(scan => scan.user_id || "anonymous")
-          ).size;
+          const registrationsCount = countInRange(profiles, startOfDay, endOfDay, 'created_at');
+          const scansCount = countInRange(scans, startOfDay, endOfDay, 'created_at');
+          const menuScansCount = countInRange(menuScans, startOfDay, endOfDay, 'scanned_at');
           
-          dataPoints.push({ label: day.toString(), users: usersOnDay });
+          dataPoints.push({ 
+            label: day.toString(), 
+            registrations: registrationsCount,
+            scans: scansCount,
+            menuScans: menuScansCount,
+            total: registrationsCount + scansCount + menuScansCount
+          });
         }
         
         setUsageData(dataPoints);
@@ -200,16 +223,17 @@ const Admin = () => {
           const endOfWeek = new Date(startOfWeek);
           endOfWeek.setDate(endOfWeek.getDate() + 7);
           
-          const usersInWeek = new Set(
-            scans
-              .filter(scan => {
-                const scanDate = new Date(scan.created_at);
-                return scanDate >= startOfWeek && scanDate < endOfWeek;
-              })
-              .map(scan => scan.user_id || "anonymous")
-          ).size;
+          const registrationsCount = countInRange(profiles, startOfWeek, endOfWeek, 'created_at');
+          const scansCount = countInRange(scans, startOfWeek, endOfWeek, 'created_at');
+          const menuScansCount = countInRange(menuScans, startOfWeek, endOfWeek, 'scanned_at');
           
-          dataPoints.push({ label: `W${week}`, users: usersInWeek });
+          dataPoints.push({ 
+            label: `W${week}`, 
+            registrations: registrationsCount,
+            scans: scansCount,
+            menuScans: menuScansCount,
+            total: registrationsCount + scansCount + menuScansCount
+          });
         }
         
         setUsageData(dataPoints);
@@ -275,9 +299,21 @@ const Admin = () => {
   }
 
   const chartConfig = {
-    users: {
-      label: t("admin.usersLabel"),
+    registrations: {
+      label: t("admin.registrationsLabel"),
       color: "hsl(var(--primary))",
+    },
+    scans: {
+      label: t("admin.scansLabel"),
+      color: "hsl(142 76% 36%)",
+    },
+    menuScans: {
+      label: t("admin.menuScansLabel"),
+      color: "hsl(217 91% 60%)",
+    },
+    total: {
+      label: t("admin.totalLabel"),
+      color: "hsl(var(--muted-foreground))",
     },
   };
 
@@ -419,13 +455,36 @@ const Admin = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ background: "hsl(var(--primary))" }}></div>
+                    <span className="text-sm">{t("admin.registrationsLabel")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ background: "hsl(142 76% 36%)" }}></div>
+                    <span className="text-sm">{t("admin.scansLabel")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ background: "hsl(217 91% 60%)" }}></div>
+                    <span className="text-sm">{t("admin.menuScansLabel")}</span>
+                  </div>
+                </div>
                 <div className="h-[300px]">
                   <ChartContainer config={chartConfig} className="h-full w-full">
                     <AreaChart data={usageData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
                           <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorScans" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(142 76% 36%)" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(142 76% 36%)" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorMenuScans" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(217 91% 60%)" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(217 91% 60%)" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -438,10 +497,27 @@ const Admin = () => {
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Area 
                         type="monotone" 
-                        dataKey="users" 
+                        dataKey="registrations" 
                         stroke="hsl(var(--primary))" 
                         fillOpacity={1} 
-                        fill="url(#colorUsers)" 
+                        fill="url(#colorRegistrations)" 
+                        stackId="1"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="scans" 
+                        stroke="hsl(142 76% 36%)" 
+                        fillOpacity={1} 
+                        fill="url(#colorScans)" 
+                        stackId="1"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="menuScans" 
+                        stroke="hsl(217 91% 60%)" 
+                        fillOpacity={1} 
+                        fill="url(#colorMenuScans)" 
+                        stackId="1"
                       />
                     </AreaChart>
                   </ChartContainer>
