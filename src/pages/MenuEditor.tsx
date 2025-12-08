@@ -215,7 +215,29 @@ const MenuEditor = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const readers = Array.from(files).map(file => {
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+      const validFiles: File[] = [];
+      const oversizedFiles: string[] = [];
+
+      Array.from(files).forEach(file => {
+        if (file.size > MAX_FILE_SIZE) {
+          oversizedFiles.push(file.name);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (oversizedFiles.length > 0) {
+        toast({
+          title: t("scan.fileTooLarge"),
+          description: t("scan.fileTooLargeDesc").replace("{files}", oversizedFiles.join(", ")),
+          variant: "destructive",
+        });
+      }
+
+      if (validFiles.length === 0) return;
+
+      const readers = validFiles.map(file => {
         return new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -227,9 +249,11 @@ const MenuEditor = () => {
 
       Promise.all(readers).then(images => {
         setMultipleImages(prev => [...prev, ...images]);
+        const fileCount = images.length;
+        const isPdf = validFiles.some(f => f.type === 'application/pdf');
         toast({
-          title: `${images.length} foto${images.length > 1 ? "'s" : ""} toegevoegd`,
-          description: `Totaal: ${multipleImages.length + images.length} foto's`,
+          title: `${fileCount} ${isPdf ? t("scan.filesAdded") : (fileCount > 1 ? t("scan.photosAddedPlural") : t("scan.photoAdded"))}`,
+          description: `${t("scan.total")}: ${multipleImages.length + fileCount}`,
         });
       });
     }
@@ -490,7 +514,7 @@ const MenuEditor = () => {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.pdf,application/pdf"
             multiple
             onChange={handleFileUpload}
             className="hidden"
