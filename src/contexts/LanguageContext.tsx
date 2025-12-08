@@ -295,6 +295,8 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.scanToAdd": "Scan menu om gerechten toe te voegen",
     "editor.skipToManual": "Overslaan naar handmatig invoeren",
     "editor.dishDeleted": "Gerecht verwijderd",
+    "editor.editDish": "Gerecht bewerken",
+    "editor.deleteDish": "Gerecht verwijderen",
     "editor.qrCodeTitle": "Jouw QR-code",
     "editor.qrCodeDesc": "Deel deze QR-code zodat gasten je menu kunnen bekijken",
     "editor.qrCodeLink": "Link",
@@ -601,6 +603,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.validationError": "Validation error",
     "editor.invalidIngredient": "Invalid ingredient",
     "editor.maxIngredients": "Maximum 30 ingredients allowed",
+    "editor.editDish": "Edit dish",
+    "editor.deleteDish": "Delete dish",
+    "editor.dishDeleted": "Dish deleted",
     
     // Common
     "common.loading": "Loading...",
@@ -894,6 +899,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.validationError": "Erreur de validation",
     "editor.invalidIngredient": "Ingrédient invalide",
     "editor.maxIngredients": "Maximum 30 ingrédients autorisés",
+    "editor.editDish": "Modifier le plat",
+    "editor.deleteDish": "Supprimer le plat",
+    "editor.dishDeleted": "Plat supprimé",
     
     // Common
     "common.loading": "Chargement...",
@@ -1187,6 +1195,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.validationError": "Error de validación",
     "editor.invalidIngredient": "Ingrediente inválido",
     "editor.maxIngredients": "Máximo 30 ingredientes permitidos",
+    "editor.editDish": "Editar plato",
+    "editor.deleteDish": "Eliminar plato",
+    "editor.dishDeleted": "Plato eliminado",
     
     // Common
     "common.loading": "Cargando...",
@@ -1480,6 +1491,9 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.validationError": "Validierungsfehler",
     "editor.invalidIngredient": "Ungültige Zutat",
     "editor.maxIngredients": "Maximal 30 Zutaten erlaubt",
+    "editor.editDish": "Gericht bearbeiten",
+    "editor.deleteDish": "Gericht löschen",
+    "editor.dishDeleted": "Gericht gelöscht",
     
     // Common
     "common.loading": "Laden...",
