@@ -102,7 +102,7 @@ const Index = () => {
           <div className="flex items-center justify-center gap-4">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
-              <span>{t("index.title")}</span>
+              <span>{isBusiness ? "BiteBuddyMatch" : t("index.title")}</span>
             </div>
             <LanguageToggle fixed={false} />
           </div>
