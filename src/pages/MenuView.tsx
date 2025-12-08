@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import QRCode from "react-qr-code";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -207,6 +208,13 @@ const MenuView = () => {
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("menuView.backToHome")}
         </Button>
+
+        <Alert className="border-warning/50 bg-warning/10">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-sm">
+            {t("menuView.disclaimer")}
+          </AlertDescription>
+        </Alert>
 
         <Card>
           <CardHeader>
