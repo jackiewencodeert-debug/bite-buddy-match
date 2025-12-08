@@ -839,8 +839,21 @@ const MenuEditor = () => {
               {dishes.map((dish) => (
                 <div key={dish.id} className="p-4 rounded-lg border bg-card">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{dish.name}</h3>
+                  <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold">{dish.name}</h3>
+                        {dish.dietary_info && dish.dietary_info.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {dish.dietary_info
+                              .filter(pref => !(pref === "vegetarisch" && dish.dietary_info.includes("veganistisch")))
+                              .map((pref, i) => (
+                                <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
+                                  {pref}
+                                </Badge>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                       {dish.description && (
                         <p className="text-sm text-muted-foreground mt-1">{dish.description}</p>
                       )}
@@ -856,15 +869,6 @@ const MenuEditor = () => {
                           {dish.allergens.map((allergen, i) => (
                             <Badge key={i} variant="destructive">
                               {allergen}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      {dish.dietary_info && dish.dietary_info.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {dish.dietary_info.map((pref, i) => (
-                            <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                              {pref}
                             </Badge>
                           ))}
                         </div>
