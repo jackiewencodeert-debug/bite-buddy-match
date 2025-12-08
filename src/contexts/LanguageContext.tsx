@@ -212,7 +212,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Business Dashboard
     "business.title": "Bedrijf Dashboard",
-    "business.subtitle": "Bekijk je menu's en scan statistieken",
+    "business.subtitle": "Bekijk je menu's en statistieken",
     "business.totalMenus": "Totaal Menu's",
     "business.totalScans": "Totaal Scans",
     "business.uniqueAllergies": "Unieke Allergieën/Voorkeuren",
