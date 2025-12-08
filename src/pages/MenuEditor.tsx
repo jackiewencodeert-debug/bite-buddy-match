@@ -55,6 +55,10 @@ const commonAllergens = [
   "eieren", "soja", "sulfiet", "pinda's", "sesam"
 ];
 
+const commonDietaryPreferences = [
+  "vegetarisch", "veganistisch", "halal", "kosher", "glutenvrij", "lactosevrij"
+];
+
 const MenuEditor = () => {
   const { menuId } = useParams();
   const navigate = useNavigate();
@@ -371,6 +375,15 @@ const MenuEditor = () => {
       allergens: newDish.allergens.includes(allergen)
         ? newDish.allergens.filter(a => a !== allergen)
         : [...newDish.allergens, allergen]
+    });
+  };
+
+  const toggleDietaryInfo = (preference: string) => {
+    setNewDish({
+      ...newDish,
+      dietary_info: newDish.dietary_info.includes(preference)
+        ? newDish.dietary_info.filter(p => p !== preference)
+        : [...newDish.dietary_info, preference]
     });
   };
 
@@ -765,6 +778,24 @@ const MenuEditor = () => {
             </div>
 
             <div className="space-y-2">
+              <Label>{t("editor.dietaryPreferences")}</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {commonDietaryPreferences.map((preference) => (
+                  <div key={preference} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`dietary-${preference}`}
+                      checked={newDish.dietary_info.includes(preference)}
+                      onCheckedChange={() => toggleDietaryInfo(preference)}
+                    />
+                    <Label htmlFor={`dietary-${preference}`} className="cursor-pointer">
+                      {preference}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>{t("editor.extraAllergens")}</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {commonAllergens.map((allergen) => (
@@ -825,6 +856,15 @@ const MenuEditor = () => {
                           {dish.allergens.map((allergen, i) => (
                             <Badge key={i} variant="destructive">
                               {allergen}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {dish.dietary_info && dish.dietary_info.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {dish.dietary_info.map((pref, i) => (
+                            <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              {pref}
                             </Badge>
                           ))}
                         </div>
