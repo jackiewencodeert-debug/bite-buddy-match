@@ -904,19 +904,19 @@ const MenuEditor = () => {
           <div className="flex flex-col items-center gap-6 py-6">
             <div className="bg-white p-4 rounded-lg">
               <QRCode 
-                value={`${window.location.origin}/menu/${qrCode}`}
+                value={`https://www.bitebuddymatch.com/menu/${qrCode}`}
                 size={200}
               />
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              {t("editor.qrCodeLink")}: {window.location.origin}/menu/{qrCode}
+              {t("editor.qrCodeLink")}: https://www.bitebuddymatch.com/menu/{qrCode}
             </p>
             <div className="flex gap-2 w-full">
               <Button
                 variant="outline"
                 className="flex-1"
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/menu/${qrCode}`);
+                  navigator.clipboard.writeText(`https://www.bitebuddymatch.com/menu/${qrCode}`);
                   toast({
                     title: t("common.success"),
                     description: t("editor.linkCopied"),
