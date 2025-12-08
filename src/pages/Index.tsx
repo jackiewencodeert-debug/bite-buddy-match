@@ -79,11 +79,21 @@ const Index = () => {
 
   const isLoggedIn = user || isGuest;
 
-  const handleGuestContinue = () => {
+  const handleGuestContinue = async () => {
     localStorage.setItem("userType", "gast");
     // Set guest expiry time (12 hours from now)
     const expiryTime = Date.now() + 12 * 60 * 60 * 1000;
     localStorage.setItem("guestExpiry", expiryTime.toString());
+    
+    // Log guest registration to database for admin analytics
+    try {
+      await supabase.from("scans").insert({
+        user_id: null,
+        scan_method: "guest_registration"
+      });
+    } catch (error) {
+      console.error("Error logging guest registration:", error);
+    }
     
     toast({
       title: t("auth.guestWelcome"),
