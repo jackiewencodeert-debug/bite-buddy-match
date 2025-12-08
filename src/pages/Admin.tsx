@@ -38,6 +38,7 @@ interface AccountStats {
 interface UsageDataPoint {
   label: string;
   registrations: number;
+  guestRegistrations: number;
   scans: number;
   menuScans: number;
   total: number;
@@ -67,7 +68,8 @@ const Admin = () => {
   const [totalScans, setTotalScans] = useState(0);
   const [totalMenus, setTotalMenus] = useState(0);
   const [totalMenuScans, setTotalMenuScans] = useState(0);
-  
+  const [totalGuestRegistrations, setTotalGuestRegistrations] = useState(0);
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -149,8 +151,15 @@ const Admin = () => {
     try {
       const { count: scanCount } = await supabase
         .from("scans")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .neq("scan_method", "guest_registration");
       setTotalScans(scanCount || 0);
+
+      const { count: guestCount } = await supabase
+        .from("scans")
+        .select("*", { count: "exact", head: true })
+        .eq("scan_method", "guest_registration");
+      setTotalGuestRegistrations(guestCount || 0);
 
       const { count: menuCount } = await supabase
         .from("menus")
@@ -169,15 +178,17 @@ const Admin = () => {
   const loadUsageData = async () => {
     try {
       // Fetch all activity data
-      const [scansResult, profilesResult, menuScansResult] = await Promise.all([
-        supabase.from("scans").select("created_at"),
+      const [scansResult, profilesResult, menuScansResult, guestScansResult] = await Promise.all([
+        supabase.from("scans").select("created_at, scan_method").neq("scan_method", "guest_registration"),
         supabase.from("profiles").select("created_at"),
-        supabase.from("menu_scans").select("scanned_at")
+        supabase.from("menu_scans").select("scanned_at"),
+        supabase.from("scans").select("created_at").eq("scan_method", "guest_registration")
       ]);
 
       const scans = scansResult.data || [];
       const profiles = profilesResult.data || [];
       const menuScans = menuScansResult.data || [];
+      const guestScans = guestScansResult.data || [];
 
       const countInRange = (
         items: { created_at?: string; scanned_at?: string }[],
@@ -202,15 +213,17 @@ const Admin = () => {
           const endOfDay = new Date(selectedYear, selectedMonth, day + 1);
           
           const registrationsCount = countInRange(profiles, startOfDay, endOfDay, 'created_at');
+          const guestRegistrationsCount = countInRange(guestScans, startOfDay, endOfDay, 'created_at');
           const scansCount = countInRange(scans, startOfDay, endOfDay, 'created_at');
           const menuScansCount = countInRange(menuScans, startOfDay, endOfDay, 'scanned_at');
           
           dataPoints.push({ 
             label: day.toString(), 
             registrations: registrationsCount,
+            guestRegistrations: guestRegistrationsCount,
             scans: scansCount,
             menuScans: menuScansCount,
-            total: registrationsCount + scansCount + menuScansCount
+            total: registrationsCount + guestRegistrationsCount + scansCount + menuScansCount
           });
         }
         
@@ -224,15 +237,17 @@ const Admin = () => {
           endOfWeek.setDate(endOfWeek.getDate() + 7);
           
           const registrationsCount = countInRange(profiles, startOfWeek, endOfWeek, 'created_at');
+          const guestRegistrationsCount = countInRange(guestScans, startOfWeek, endOfWeek, 'created_at');
           const scansCount = countInRange(scans, startOfWeek, endOfWeek, 'created_at');
           const menuScansCount = countInRange(menuScans, startOfWeek, endOfWeek, 'scanned_at');
           
           dataPoints.push({ 
             label: `W${week}`, 
             registrations: registrationsCount,
+            guestRegistrations: guestRegistrationsCount,
             scans: scansCount,
             menuScans: menuScansCount,
-            total: registrationsCount + scansCount + menuScansCount
+            total: registrationsCount + guestRegistrationsCount + scansCount + menuScansCount
           });
         }
         
@@ -303,6 +318,10 @@ const Admin = () => {
       label: t("admin.registrationsLabel"),
       color: "hsl(var(--primary))",
     },
+    guestRegistrations: {
+      label: t("admin.guestRegistrationsLabel"),
+      color: "hsl(38 92% 50%)",
+    },
     scans: {
       label: t("admin.scansLabel"),
       color: "hsl(142 76% 36%)",
@@ -341,7 +360,7 @@ const Admin = () => {
         ) : (
           <div className="space-y-6">
             {/* Account Statistics Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -368,6 +387,21 @@ const Admin = () => {
                   <div className="text-3xl font-bold">{accountStats?.totalEetgevers || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t("admin.eetgeverAccountsDesc")}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t("admin.guestRegistrations")}
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-warning" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{totalGuestRegistrations}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("admin.guestRegistrationsDesc")}
                   </p>
                 </CardContent>
               </Card>
@@ -462,6 +496,10 @@ const Admin = () => {
                     <span className="text-sm">{t("admin.registrationsLabel")}</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ background: "hsl(38 92% 50%)" }}></div>
+                    <span className="text-sm">{t("admin.guestRegistrationsLabel")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ background: "hsl(142 76% 36%)" }}></div>
                     <span className="text-sm">{t("admin.scansLabel")}</span>
                   </div>
@@ -477,6 +515,10 @@ const Admin = () => {
                         <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
                           <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorGuestRegistrations" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(38 92% 50%)" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(38 92% 50%)" stopOpacity={0}/>
                         </linearGradient>
                         <linearGradient id="colorScans" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(142 76% 36%)" stopOpacity={0.8}/>
@@ -501,6 +543,14 @@ const Admin = () => {
                         stroke="hsl(var(--primary))" 
                         fillOpacity={1} 
                         fill="url(#colorRegistrations)" 
+                        stackId="1"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="guestRegistrations" 
+                        stroke="hsl(38 92% 50%)" 
+                        fillOpacity={1} 
+                        fill="url(#colorGuestRegistrations)" 
                         stackId="1"
                       />
                       <Area 
