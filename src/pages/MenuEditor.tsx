@@ -62,7 +62,7 @@ const commonAllergens = [
 ];
 
 const commonDietaryPreferences = [
-  "vegetarisch", "veganistisch", "halal", "kosher"
+  "vegetarisch", "veganistisch", "kosher", "halal"
 ];
 
 // Descriptions and examples for allergens
