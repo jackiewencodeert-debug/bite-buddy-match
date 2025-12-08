@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw, Settings, Trash2, Pencil } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw, Settings, Trash2, Pencil, Download } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +26,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { z } from "zod";
 import QRCode from "react-qr-code";
+import { jsPDF } from "jspdf";
 import {
   Dialog,
   DialogContent,
@@ -996,6 +997,7 @@ const MenuEditor = () => {
           <div className="flex flex-col items-center gap-6 py-6">
             <div className="bg-white p-4 rounded-lg">
               <QRCode 
+                id="qr-code-svg"
                 value={`https://www.bitebuddymatch.com/menu/${qrCode}`}
                 size={200}
               />
@@ -1003,25 +1005,75 @@ const MenuEditor = () => {
             <p className="text-sm text-muted-foreground text-center">
               {t("editor.qrCodeLink")}: https://www.bitebuddymatch.com/menu/{qrCode}
             </p>
-            <div className="flex gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://www.bitebuddymatch.com/menu/${qrCode}`);
+                    toast({
+                      title: t("common.success"),
+                      description: t("editor.linkCopied"),
+                    });
+                  }}
+                >
+                  {t("editor.copyLink")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => navigate(`/menu/${qrCode}`)}
+                >
+                  {t("editor.viewMenu")}
+                </Button>
+              </div>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="w-full"
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://www.bitebuddymatch.com/menu/${qrCode}`);
-                  toast({
-                    title: t("common.success"),
-                    description: t("editor.linkCopied"),
-                  });
+                  const svg = document.querySelector('#qr-code-svg');
+                  if (svg) {
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                      canvas.width = 200;
+                      canvas.height = 200;
+                      ctx?.drawImage(img, 0, 0);
+                      
+                      const pdf = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                      });
+                      
+                      // Add title
+                      pdf.setFontSize(24);
+                      pdf.text(menuName || 'Menu QR Code', 105, 40, { align: 'center' });
+                      
+                      // Add QR code image centered
+                      const imgData = canvas.toDataURL('image/png');
+                      pdf.addImage(imgData, 'PNG', 55, 60, 100, 100);
+                      
+                      // Add link below QR
+                      pdf.setFontSize(10);
+                      pdf.text(`https://www.bitebuddymatch.com/menu/${qrCode}`, 105, 175, { align: 'center' });
+                      
+                      // Add footer
+                      pdf.setFontSize(8);
+                      pdf.text('Powered by BiteBuddyMatch', 105, 280, { align: 'center' });
+                      
+                      pdf.save(`${menuName || 'menu'}-qr-code.pdf`);
+                    };
+                    
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }
                 }}
               >
-                {t("editor.copyLink")}
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={() => navigate(`/menu/${qrCode}`)}
-              >
-                {t("editor.viewMenu")}
+                <Download className="mr-2 h-4 w-4" />
+                {t("editor.downloadPDF")}
               </Button>
             </div>
           </div>
