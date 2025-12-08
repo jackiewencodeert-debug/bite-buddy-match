@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw, Settings, Trash2, Pencil } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -448,6 +454,20 @@ const MenuEditor = () => {
     }
   };
 
+  const startEditDish = (dish: Dish) => {
+    setNewDish({
+      name: dish.name,
+      description: dish.description || "",
+      price: dish.price || "",
+      ingredients: dish.ingredients || [],
+      allergens: dish.allergens || [],
+      dietary_info: dish.dietary_info || [],
+    });
+    setEditingDish(dish.id || null);
+    // Scroll to the add dish form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleFinish = () => {
     navigate("/business");
   };
@@ -816,14 +836,33 @@ const MenuEditor = () => {
                           {dish.price}
                         </span>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteDish(dish.id!)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => startEditDish(dish)}
+                            className="cursor-pointer"
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            {t("editor.editDish")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => deleteDish(dish.id!)}
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {t("editor.deleteDish")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
