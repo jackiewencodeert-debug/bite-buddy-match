@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -237,10 +237,15 @@ const BusinessDashboard = () => {
               <CardDescription>{t("business.totalScans")}</CardDescription>
             </CardHeader>
           </Card>
-          <Card>
+          <Card 
+            className="cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/business/statistics")}
+          >
             <CardHeader>
-              <CardTitle className="text-2xl">{stats.length}</CardTitle>
-              <CardDescription>{t("business.uniqueAllergies")}</CardDescription>
+              <CardTitle className="text-2xl flex items-center justify-center">
+                <BarChart3 className="h-8 w-8 text-primary" />
+              </CardTitle>
+              <CardDescription>{t("business.statistics")}</CardDescription>
             </CardHeader>
           </Card>
         </div>
