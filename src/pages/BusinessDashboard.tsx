@@ -317,45 +317,51 @@ const BusinessDashboard = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid gap-4">
-                {menus.map((menu) => {
-                  const menuData = menu.menu_data as { name?: string } | null;
-                  return (
-                    <div key={menu.id} className="p-4 rounded-lg border bg-card">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold">
-                            {menuData?.name || t("business.untitledMenu")}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Eye className="h-4 w-4" />
-                            <span>{menuScanCounts[menu.id] || 0}</span>
+              <div className="space-y-4">
+                <div className="grid gap-4">
+                  {menus.map((menu) => {
+                    const menuData = menu.menu_data as { name?: string } | null;
+                    return (
+                      <div key={menu.id} className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold">
+                              {menuData?.name || t("business.untitledMenu")}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
+                            </p>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/menu/${menu.id}/edit`)}
-                          >
-                            <Edit3 className="h-4 w-4 mr-1" />
-                            {t("business.editMenu")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/menu/${menu.qr_code}`)}
-                          >
-                            {t("business.viewQR")}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Eye className="h-4 w-4" />
+                              <span>{menuScanCounts[menu.id] || 0}</span>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/menu/${menu.id}/edit`)}
+                            >
+                              <Edit3 className="h-4 w-4 mr-1" />
+                              {t("business.editMenu")}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/menu/${menu.qr_code}`)}
+                            >
+                              {t("business.viewQR")}
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                <Button onClick={handleAddMenu} className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("business.addMenu")}
+                </Button>
               </div>
             )}
           </CardContent>
