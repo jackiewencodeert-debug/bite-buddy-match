@@ -210,7 +210,9 @@ const MenuView = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("menuView.title")}</CardTitle>
+            <CardTitle>
+              {menu?.menu_data?.name || t("menuView.title")}
+            </CardTitle>
             <CardDescription>
               {dishes.length > 0 
                 ? t("menuView.dishesAvailable").replace("{count}", dishes.length.toString())
