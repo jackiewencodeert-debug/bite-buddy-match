@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3 } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -28,6 +28,7 @@ const BusinessDashboard = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [menus, setMenus] = useState<any[]>([]);
+  const [menuScanCounts, setMenuScanCounts] = useState<{ [key: string]: number }>({});
   const [stats, setStats] = useState<MenuScanStats[]>([]);
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
@@ -97,10 +98,17 @@ const BusinessDashboard = () => {
       
       const { data: scansData } = await supabase
         .from("menu_scans")
-        .select("allergies_checked, preferences_checked")
+        .select("menu_id, allergies_checked, preferences_checked")
         .in("menu_id", menuIds);
 
       if (scansData) {
+        // Count scans per menu
+        const scanCounts: { [key: string]: number } = {};
+        menuIds.forEach(id => { scanCounts[id] = 0; });
+        scansData.forEach(scan => {
+          scanCounts[scan.menu_id] = (scanCounts[scan.menu_id] || 0) + 1;
+        });
+        setMenuScanCounts(scanCounts);
         // Count allergies and preferences
         const allergyCount: { [key: string]: number } = {};
         
@@ -323,7 +331,11 @@ const BusinessDashboard = () => {
                             {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
                           </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Eye className="h-4 w-4" />
+                            <span>{menuScanCounts[menu.id] || 0}</span>
+                          </div>
                           <Button
                             variant="outline"
                             size="sm"
