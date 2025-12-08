@@ -358,7 +358,7 @@ const BusinessDashboard = () => {
                     );
                   })}
                 </div>
-                <Button onClick={handleAddMenu} className="w-full">
+                <Button onClick={handleAddMenu} variant="outline" size="sm">
                   <Plus className="mr-2 h-4 w-4" />
                   {t("business.addMenu")}
                 </Button>
