@@ -107,10 +107,17 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
         continue;
       }
 
-      // Parse the JSON response
+      // Parse the JSON response - handle markdown code blocks
       let parsedContent;
       try {
-        parsedContent = JSON.parse(content);
+        let jsonContent = content.trim();
+        // Remove markdown code blocks if present
+        if (jsonContent.startsWith("```json")) {
+          jsonContent = jsonContent.replace(/^```json\s*/, "").replace(/\s*```\s*$/, "");
+        } else if (jsonContent.startsWith("```")) {
+          jsonContent = jsonContent.replace(/^```\s*/, "").replace(/\s*```\s*$/, "");
+        }
+        parsedContent = JSON.parse(jsonContent);
       } catch (e) {
         console.error("Failed to parse AI response:", content);
         continue;
