@@ -293,6 +293,10 @@ const translations: Record<Language, Record<string, string>> = {
     "admin.monthOct": "Oktober",
     "admin.monthNov": "November",
     "admin.monthDec": "December",
+    "admin.registrationsLabel": "Registraties",
+    "admin.scansLabel": "App Scans",
+    "admin.menuScansLabel": "Menu Scans",
+    "admin.totalLabel": "Totaal",
 
     // Statistics Page
     "statistics.title": "Statistieken",
@@ -646,6 +650,10 @@ const translations: Record<Language, Record<string, string>> = {
     "admin.monthOct": "October",
     "admin.monthNov": "November",
     "admin.monthDec": "December",
+    "admin.registrationsLabel": "Registrations",
+    "admin.scansLabel": "App Scans",
+    "admin.menuScansLabel": "Menu Scans",
+    "admin.totalLabel": "Total",
 
     // Statistics Page
     "statistics.title": "Statistics",
