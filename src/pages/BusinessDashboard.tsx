@@ -3,11 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface MenuScanStats {
   allergie: string;
@@ -23,6 +32,12 @@ const BusinessDashboard = () => {
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
   const { t } = useLanguage();
+  
+  // Dialog states
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [showMethodDialog, setShowMethodDialog] = useState(false);
+  const [menuName, setMenuName] = useState("");
+  const [creatingMenu, setCreatingMenu] = useState(false);
 
   useEffect(() => {
     checkUserTypeAndLoadData();
@@ -111,6 +126,66 @@ const BusinessDashboard = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleAddMenu = () => {
+    setMenuName("");
+    setShowNameDialog(true);
+  };
+
+  const handleStartMenu = async () => {
+    if (!menuName.trim()) {
+      toast({
+        title: t("common.error"),
+        description: t("business.enterMenuName"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setShowNameDialog(false);
+    setShowMethodDialog(true);
+  };
+
+  const handleMethodSelect = async (method: "scan" | "manual") => {
+    setCreatingMenu(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create the menu in database
+      const { data: menuData, error } = await supabase
+        .from("menus")
+        .insert({
+          business_user_id: user.id,
+          qr_code: generatedQrCode,
+          menu_data: { name: menuName.trim() }
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      setShowMethodDialog(false);
+
+      if (method === "scan") {
+        // Navigate to scan page with menu context
+        navigate(`/menu/${menuData.id}/edit?method=scan`);
+      } else {
+        // Navigate directly to editor for manual entry
+        navigate(`/menu/${menuData.id}/edit?method=manual`);
+      }
+    } catch (error: any) {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingMenu(false);
+    }
   };
 
   if (loading) {
@@ -231,33 +306,47 @@ const BusinessDashboard = () => {
                 <p className="text-muted-foreground mb-4">
                   {t("business.noMenus")}
                 </p>
-                <Button onClick={() => navigate("/scan")}>
-                  {t("business.scanFirstMenu")}
+                <Button onClick={handleAddMenu}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("business.addMenu")}
                 </Button>
               </div>
             ) : (
               <div className="grid gap-4">
-                {menus.map((menu) => (
-                  <div key={menu.id} className="p-4 rounded-lg border bg-card">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("business.qrCode").replace("{code}", menu.qr_code)}
-                        </p>
+                {menus.map((menu) => {
+                  const menuData = menu.menu_data as { name?: string } | null;
+                  return (
+                    <div key={menu.id} className="p-4 rounded-lg border bg-card">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">
+                            {menuData?.name || t("business.untitledMenu")}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {t("business.createdOn").replace("{date}", new Date(menu.created_at).toLocaleDateString("nl-NL"))}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/menu/${menu.id}/edit`)}
+                          >
+                            <Edit3 className="h-4 w-4 mr-1" />
+                            {t("business.editMenu")}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/menu/${menu.qr_code}`)}
+                          >
+                            {t("business.viewQR")}
+                          </Button>
+                        </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/menu/${menu.qr_code}`)}
-                      >
-                        {t("business.viewQR")}
-                      </Button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -274,14 +363,96 @@ const BusinessDashboard = () => {
             <Button 
               className="w-full" 
               size="lg"
-              onClick={() => navigate("/scan")}
+              onClick={handleAddMenu}
             >
-              <QrCode className="mr-2 h-5 w-5" />
-              {t("business.scanMenu")}
+              <Plus className="mr-2 h-5 w-5" />
+              {t("business.addMenu")}
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Menu Name Dialog */}
+      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("business.newMenuTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("business.newMenuDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="menuName">{t("business.menuNameLabel")}</Label>
+              <Input
+                id="menuName"
+                placeholder={t("business.menuNamePlaceholder")}
+                value={menuName}
+                onChange={(e) => setMenuName(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleStartMenu()}
+              />
+            </div>
+            <Button 
+              onClick={handleStartMenu} 
+              className="w-full"
+              disabled={!menuName.trim()}
+            >
+              {t("business.start")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Method Selection Dialog */}
+      <Dialog open={showMethodDialog} onOpenChange={setShowMethodDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("business.chooseMethod")}</DialogTitle>
+            <DialogDescription>
+              {t("business.chooseMethodDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Card 
+              className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary"
+              onClick={() => !creatingMenu && handleMethodSelect("scan")}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{t("business.scanMenuMethod")}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t("business.scanMenuMethodDesc")}
+                  </p>
+                </div>
+              </div>
+            </Card>
+            <Card 
+              className="p-6 cursor-pointer hover:shadow-hover transition-all border-2 hover:border-primary"
+              onClick={() => !creatingMenu && handleMethodSelect("manual")}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Edit3 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{t("business.manualMethod")}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t("business.manualMethodDesc")}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+          {creatingMenu && (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
