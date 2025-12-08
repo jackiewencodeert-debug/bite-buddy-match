@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Sparkles, Users, LogOut, Building2, User } from "lucide-react";
+import { Camera, Shield, Sparkles, Users, LogOut, Building2, User, CheckCircle2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -250,6 +251,40 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {/* App Guidelines - Only for non-business users */}
+      {!isBusiness && (
+        <section className="container mx-auto px-4 pb-20">
+          <div className="max-w-3xl mx-auto">
+            <Card className="border-secondary/50 bg-secondary/5">
+              <CardHeader>
+                <CardTitle>{t("statistics.appGuidelines")}</CardTitle>
+                <CardDescription>
+                  {t("statistics.appGuidelinesDesc")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                  <p className="text-sm">{t("statistics.guideline1")}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                  <p className="text-sm">{t("statistics.guideline2")}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                  <p className="text-sm">{t("statistics.guideline3")}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                  <p className="text-sm">{t("statistics.guideline4")}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
     </div>
   );
 };
