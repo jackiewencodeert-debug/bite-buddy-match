@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Sparkles, Users, LogOut, Building2, User, CheckCircle2 } from "lucide-react";
+import { Camera, Shield, Sparkles, Users, LogOut, Building2, User, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [isBusiness, setIsBusiness] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -36,6 +37,7 @@ const Index = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkUserType(session.user.id);
+        checkAdminRole(session.user.id);
       }
     });
 
@@ -45,9 +47,11 @@ const Index = () => {
       if (session?.user) {
         setTimeout(() => {
           checkUserType(session.user.id);
+          checkAdminRole(session.user.id);
         }, 0);
       } else {
         setIsBusiness(false);
+        setIsAdmin(false);
       }
     });
 
@@ -62,6 +66,15 @@ const Index = () => {
       .single();
     
     setIsBusiness(profile?.user_type === "eetgever");
+  };
+
+  const checkAdminRole = async (userId: string) => {
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    
+    setIsAdmin(roles?.some(r => r.role === "admin") ?? false);
   };
 
   const isLoggedIn = user || isGuest;
@@ -119,7 +132,15 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             {isLoggedIn ? (
               <>
-                {!isBusiness && (
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105 border-primary text-primary">
+                      <ShieldCheck className="mr-2 h-5 w-5" />
+                      {t("profile.adminDashboard")}
+                    </Button>
+                  </Link>
+                )}
+                {!isBusiness && !isAdmin && (
                   <Link to="/profile">
                     <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
                       <User className="mr-2 h-5 w-5" />
@@ -134,7 +155,7 @@ const Index = () => {
                       {t("index.businessDashboard")}
                     </Button>
                   </Link>
-                ) : (
+                ) : !isAdmin && (
                   <Link to="/scan">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
                       <Camera className="mr-2 h-5 w-5" />
