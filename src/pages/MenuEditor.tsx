@@ -9,6 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw, Settings, Trash2, Pencil } from "lucide-react";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -58,6 +64,30 @@ const commonAllergens = [
 const commonDietaryPreferences = [
   "vegetarisch", "veganistisch", "halal", "kosher", "glutenvrij", "lactosevrij"
 ];
+
+// Descriptions and examples for allergens
+const allergenDescriptions: Record<string, string> = {
+  "noten": "Alle soorten noten zoals walnoten, hazelnoten, cashewnoten, pistachenoten, amandelen, pecannoten, macadamianoten",
+  "gluten": "Eiwit in granen zoals tarwe, rogge, gerst, spelt. Voorbeelden: brood, pasta, koekjes, bier",
+  "lactose": "Melksuiker in zuivelproducten zoals melk, kaas, yoghurt, roomijs, boter",
+  "schaaldieren": "Kreeft, krab, garnalen, langoustines, rivierkreeft, mosselen, oesters",
+  "vis": "Alle soorten vis zoals zalm, tonijn, kabeljauw, makreel, haring, sardines",
+  "eieren": "Kippen- en andere eieren. Voorbeelden: mayonaise, cake, pasta, meringue",
+  "soja": "Sojabonen en -producten zoals tofu, tempeh, sojasaus, edamame, miso",
+  "sulfiet": "Conserveermiddel in wijn, gedroogd fruit, mosterd, garnalen, aardappelproducten",
+  "pinda's": "Pinda's en pindaproducten zoals pindakaas, satésaus, pinda-olie",
+  "sesam": "Sesamzaadjes, tahini, hummus, sesamolie, veel Aziatische gerechten"
+};
+
+// Descriptions and examples for dietary preferences
+const dietaryDescriptions: Record<string, string> = {
+  "vegetarisch": "Geen vlees of vis. Wel zuivel en eieren. Voorbeelden: groentecurry, pasta met kaas, omelet",
+  "veganistisch": "Geen dierlijke producten. Geen vlees, vis, zuivel, eieren of honing. Voorbeelden: falafel, plantaardige curry",
+  "halal": "Islamitisch toegestaan voedsel. Geen varkensvlees, halal geslacht vlees. Geen alcohol",
+  "kosher": "Joods toegestaan voedsel. Scheiding vlees en zuivel, specifieke slachtmethoden",
+  "glutenvrij": "Geen gluten. Geschikt voor mensen met coeliakie. Voorbeelden: rijst, aardappelen, quinoa",
+  "lactosevrij": "Geen lactose (melksuiker). Geschikt bij lactose-intolerantie. Vaak wel lactosevrije zuivel"
+};
 
 const MenuEditor = () => {
   const { menuId } = useParams();
@@ -836,6 +866,7 @@ const MenuEditor = () => {
               <CardTitle>{t("editor.addedDishes")} ({dishes.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <TooltipProvider>
               {dishes.map((dish) => (
                 <div key={dish.id} className="p-4 rounded-lg border bg-card">
                   <div className="flex items-start justify-between">
@@ -847,9 +878,16 @@ const MenuEditor = () => {
                             {dish.dietary_info
                               .filter(pref => !(pref === "vegetarisch" && dish.dietary_info.includes("veganistisch")))
                               .map((pref, i) => (
-                                <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
-                                  {pref}
-                                </Badge>
+                                <Tooltip key={i}>
+                                  <TooltipTrigger asChild>
+                                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs cursor-help">
+                                      {pref}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p>{dietaryDescriptions[pref] || pref}</p>
+                                  </TooltipContent>
+                                </Tooltip>
                               ))}
                           </div>
                         )}
@@ -867,9 +905,16 @@ const MenuEditor = () => {
                       {dish.allergens && dish.allergens.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {dish.allergens.map((allergen, i) => (
-                            <Badge key={i} variant="destructive">
-                              {allergen}
-                            </Badge>
+                            <Tooltip key={i}>
+                              <TooltipTrigger asChild>
+                                <Badge variant="destructive" className="cursor-help">
+                                  {allergen}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>{allergenDescriptions[allergen] || allergen}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           ))}
                         </div>
                       )}
@@ -911,6 +956,7 @@ const MenuEditor = () => {
                   </div>
                 </div>
               ))}
+              </TooltipProvider>
             </CardContent>
           </Card>
         )}
