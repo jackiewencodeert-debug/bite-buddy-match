@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Sparkles, Users, LogOut } from "lucide-react";
+import { Camera, Shield, Sparkles, Users, LogOut, Building2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [isGuest, setIsGuest] = useState(false);
+  const [isBusiness, setIsBusiness] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -32,15 +33,35 @@ const Index = () => {
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkUserType(session.user.id);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setTimeout(() => {
+          checkUserType(session.user.id);
+        }, 0);
+      } else {
+        setIsBusiness(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkUserType = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_type")
+      .eq("id", userId)
+      .single();
+    
+    setIsBusiness(profile?.user_type === "eetgever");
+  };
 
   const isLoggedIn = user || isGuest;
 
@@ -97,12 +118,21 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             {isLoggedIn ? (
               <>
-                <Link to="/scan">
-                  <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                    <Camera className="mr-2 h-5 w-5" />
-                    {t("index.scanMenu")}
-                  </Button>
-                </Link>
+                {isBusiness ? (
+                  <Link to="/business">
+                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                      <Building2 className="mr-2 h-5 w-5" />
+                      {t("index.businessDashboard")}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/scan">
+                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                      <Camera className="mr-2 h-5 w-5" />
+                      {t("index.scanMenu")}
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -194,12 +224,21 @@ const Index = () => {
             {isLoggedIn ? t("index.readyDesc") : t("index.readyDescLoggedOut")}
           </p>
           {isLoggedIn && (
-            <Link to="/scan">
-              <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                <Camera className="mr-2 h-5 w-5" />
-                {t("index.scanMenu")}
-              </Button>
-            </Link>
+            isBusiness ? (
+              <Link to="/business">
+                <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                  <Building2 className="mr-2 h-5 w-5" />
+                  {t("index.businessDashboard")}
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/scan">
+                <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                  <Camera className="mr-2 h-5 w-5" />
+                  {t("index.scanMenu")}
+                </Button>
+              </Link>
+            )
           )}
         </div>
       </section>
