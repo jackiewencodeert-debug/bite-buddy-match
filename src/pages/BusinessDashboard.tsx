@@ -352,24 +352,6 @@ const BusinessDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("business.addNewMenu")}</CardTitle>
-            <CardDescription>
-              {t("business.addNewMenuDescFree")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={handleAddMenu}
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              {t("business.addMenu")}
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Menu Name Dialog */}
