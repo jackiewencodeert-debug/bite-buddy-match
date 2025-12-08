@@ -8,6 +8,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().trim().email("Ongeldig e-mailadres").max(255, "E-mail is te lang"),
+  password: z.string().min(6, "Wachtwoord moet minimaal 6 tekens bevatten").max(128, "Wachtwoord is te lang"),
+});
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +21,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState<"eter" | "eetgever" | "gast">("eter");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -67,6 +74,25 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+
+    // Validate inputs with zod
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const fieldErrors: { email?: string; password?: string } = {};
+      validation.error.errors.forEach((err) => {
+        if (err.path[0] === "email") fieldErrors.email = err.message;
+        if (err.path[0] === "password") fieldErrors.password = err.message;
+      });
+      setErrors(fieldErrors);
+      toast({
+        title: "Validatiefout",
+        description: Object.values(fieldErrors).join(". "),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -186,10 +212,17 @@ const Auth = () => {
                     type="email"
                     placeholder="naam@voorbeeld.nl"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
                     required
                     disabled={loading}
+                    className={errors.email ? "border-destructive" : ""}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-sm font-medium">
@@ -200,11 +233,18 @@ const Auth = () => {
                     type="password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
                     required
                     disabled={loading}
                     minLength={6}
+                    className={errors.password ? "border-destructive" : ""}
                   />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password}</p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
