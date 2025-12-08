@@ -331,6 +331,7 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.qrCodeLink": "Link",
     "editor.copyLink": "Kopieer link",
     "editor.viewMenu": "Bekijk menu",
+    "editor.downloadPDF": "Download als PDF",
     "editor.linkCopied": "Link gekopieerd!",
     "editor.dishAdded": "Gerecht toegevoegd!",
     "editor.dishAddedDesc": "{name} is toegevoegd aan het menu",
