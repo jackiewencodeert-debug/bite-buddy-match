@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3 } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -207,10 +207,12 @@ const BusinessDashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <Card>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/profile")}>
             <CardHeader>
-              <CardTitle className="text-2xl">{menus.length}</CardTitle>
-              <CardDescription>{t("business.totalMenus")}</CardDescription>
+              <CardTitle className="text-2xl flex items-center justify-center">
+                <User className="h-8 w-8 text-primary" />
+              </CardTitle>
+              <CardDescription className="text-center text-base font-medium text-warning-foreground">{t("index.profile")}</CardDescription>
             </CardHeader>
           </Card>
           <Card>
