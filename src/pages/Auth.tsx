@@ -9,6 +9,16 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { z } from "zod";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const authSchema = z.object({
   email: z.string().trim().email("Ongeldig e-mailadres").max(255, "E-mail is te lang"),
@@ -22,9 +32,57 @@ const Auth = () => {
   const [userType, setUserType] = useState<"eter" | "eetgever" | "gast">("eter");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  const handlePasswordReset = async () => {
+    if (!email.trim()) {
+      toast({
+        title: "E-mail vereist",
+        description: "Vul eerst je e-mailadres in om je wachtwoord te resetten.",
+        variant: "destructive",
+      });
+      setShowResetDialog(false);
+      return;
+    }
+
+    const emailValidation = z.string().email().safeParse(email);
+    if (!emailValidation.success) {
+      toast({
+        title: "Ongeldig e-mailadres",
+        description: "Vul een geldig e-mailadres in.",
+        variant: "destructive",
+      });
+      setShowResetDialog(false);
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "E-mail verzonden!",
+        description: "Check je inbox voor de link om je wachtwoord te resetten.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fout",
+        description: error.message || "Er is iets misgegaan. Probeer het opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      setResetLoading(false);
+      setShowResetDialog(false);
+    }
+  };
 
   const handleGuestContinue = () => {
     localStorage.setItem("userType", "gast");
@@ -245,6 +303,16 @@ const Auth = () => {
                   {errors.password && (
                     <p className="text-sm text-destructive">{errors.password}</p>
                   )}
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => setShowResetDialog(true)}
+                      className="text-sm text-primary hover:underline"
+                      disabled={loading}
+                    >
+                      Wachtwoord vergeten?
+                    </button>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
@@ -275,6 +343,30 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Wachtwoord resetten</AlertDialogTitle>
+            <AlertDialogDescription>
+              Wil je een nieuw wachtwoord aanmaken? We sturen een e-mail naar {email || "het opgegeven adres"} met een link om je wachtwoord te resetten.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetLoading}>Nee</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePasswordReset} disabled={resetLoading}>
+              {resetLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verzenden...
+                </>
+              ) : (
+                "Ja"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
