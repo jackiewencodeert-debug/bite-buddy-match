@@ -44,30 +44,85 @@ serve(async (req) => {
     // Determine language based on redirect_to or default to Dutch
     const isEnglish = redirect_to?.includes("lang=en") || false;
     
+    // Check if this is a password recovery email
+    const isPasswordRecovery = email_action_type === "recovery";
+    
     // Generate verification link
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const verificationLink = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
 
-    // Email content based on language
-    const content = isEnglish ? {
-      subject: "Verify your email - Bite Buddy",
-      title: "Welcome to Bite Buddy! 🍽️",
-      subtitle: "You're almost there!",
-      body: "Thanks for signing up. Please verify your email address by clicking the button below.",
-      buttonText: "Verify Email Address",
-      orText: "Or copy and paste this link in your browser:",
-      footer: "If you didn't create an account with Bite Buddy, you can safely ignore this email.",
-      team: "The Bite Buddy Team"
-    } : {
-      subject: "Bevestig je e-mailadres - Bite Buddy",
-      title: "Welkom bij Bite Buddy! 🍽️",
-      subtitle: "Je bent er bijna!",
-      body: "Bedankt voor je registratie. Bevestig je e-mailadres door op de onderstaande knop te klikken.",
-      buttonText: "E-mailadres Bevestigen",
-      orText: "Of kopieer en plak deze link in je browser:",
-      footer: "Als je geen account hebt aangemaakt bij Bite Buddy, kun je deze e-mail veilig negeren.",
-      team: "Het Bite Buddy Team"
-    };
+    // Email content based on language and action type
+    let content;
+    
+    if (isPasswordRecovery) {
+      content = isEnglish ? {
+        subject: "Reset your password - Bite Buddy",
+        title: "Reset your password 🔐",
+        subtitle: "You requested a password reset",
+        body: "Click the button below to set a new password for your account. After clicking, you'll be taken to a page where you can enter your new password.",
+        instructions: [
+          "1. Click the button below",
+          "2. You'll be redirected to the password reset page",
+          "3. Enter your new password (minimum 6 characters)",
+          "4. Confirm your new password",
+          "5. Click 'Save password' to complete the reset"
+        ],
+        buttonText: "Reset Password",
+        orText: "Or copy and paste this link in your browser:",
+        footer: "If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.",
+        team: "The Bite Buddy Team"
+      } : {
+        subject: "Wachtwoord resetten - Bite Buddy",
+        title: "Wachtwoord resetten 🔐",
+        subtitle: "Je hebt een wachtwoord reset aangevraagd",
+        body: "Klik op de onderstaande knop om een nieuw wachtwoord in te stellen voor je account. Na het klikken word je doorgestuurd naar een pagina waar je je nieuwe wachtwoord kunt invoeren.",
+        instructions: [
+          "1. Klik op de onderstaande knop",
+          "2. Je wordt doorgestuurd naar de wachtwoord reset pagina",
+          "3. Voer je nieuwe wachtwoord in (minimaal 6 tekens)",
+          "4. Bevestig je nieuwe wachtwoord",
+          "5. Klik op 'Wachtwoord opslaan' om de reset te voltooien"
+        ],
+        buttonText: "Wachtwoord Resetten",
+        orText: "Of kopieer en plak deze link in je browser:",
+        footer: "Als je geen wachtwoord reset hebt aangevraagd, kun je deze e-mail veilig negeren. Je wachtwoord blijft ongewijzigd.",
+        team: "Het Bite Buddy Team"
+      };
+    } else {
+      content = isEnglish ? {
+        subject: "Verify your email - Bite Buddy",
+        title: "Welcome to Bite Buddy! 🍽️",
+        subtitle: "You're almost there!",
+        body: "Thanks for signing up. Please verify your email address by clicking the button below.",
+        instructions: null,
+        buttonText: "Verify Email Address",
+        orText: "Or copy and paste this link in your browser:",
+        footer: "If you didn't create an account with Bite Buddy, you can safely ignore this email.",
+        team: "The Bite Buddy Team"
+      } : {
+        subject: "Bevestig je e-mailadres - Bite Buddy",
+        title: "Welkom bij Bite Buddy! 🍽️",
+        subtitle: "Je bent er bijna!",
+        body: "Bedankt voor je registratie. Bevestig je e-mailadres door op de onderstaande knop te klikken.",
+        instructions: null,
+        buttonText: "E-mailadres Bevestigen",
+        orText: "Of kopieer en plak deze link in je browser:",
+        footer: "Als je geen account hebt aangemaakt bij Bite Buddy, kun je deze e-mail veilig negeren.",
+        team: "Het Bite Buddy Team"
+      };
+    }
+
+    // Generate instructions HTML if applicable
+    const instructionsHtml = content.instructions ? `
+      <div style="margin: 24px 0; padding: 16px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981;">
+        <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #065f46;">
+          ${isEnglish ? "How to reset your password:" : "Zo reset je je wachtwoord:"}
+        </p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #065f46;">
+          ${content.instructions.map((step: string) => `<li>${step}</li>`).join("")}
+        </ul>
+      </div>
+    ` : "";
 
     const html = `
 <!DOCTYPE html>
@@ -103,6 +158,8 @@ serve(async (req) => {
               <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #3f3f46;">
                 ${content.body}
               </p>
+              
+              ${instructionsHtml}
               
               <!-- Button -->
               <table role="presentation" style="width: 100%;">

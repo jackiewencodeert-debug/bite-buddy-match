@@ -29,6 +29,12 @@ const AuthCallback = () => {
             setError(sessionError.message);
             return;
           }
+
+          // Check if this is a password recovery flow
+          if (type === "recovery") {
+            navigate("/reset-password", { replace: true });
+            return;
+          }
         } else {
           // Check for error in URL params
           const errorDescription = searchParams.get("error_description");
