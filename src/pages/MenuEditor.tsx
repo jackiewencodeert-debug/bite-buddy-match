@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Plus, X, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { z } from "zod";
+import QRCode from "react-qr-code";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Validation schema for dish inputs
 const dishSchema = z.object({
@@ -44,11 +52,27 @@ const commonAllergens = [
 const MenuEditor = () => {
   const { menuId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dishes, setDishes] = useState<Dish[]>([]);
+  const [menuName, setMenuName] = useState("");
+  const [qrCode, setQrCode] = useState("");
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  
+  // Scan mode states
+  const [mode, setMode] = useState<"editor" | "scan" | "camera">("editor");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [multipleImages, setMultipleImages] = useState<string[]>([]);
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [newDish, setNewDish] = useState<Dish>({
     name: "",
     description: "",
@@ -59,10 +83,20 @@ const MenuEditor = () => {
   });
   const [newIngredient, setNewIngredient] = useState("");
   const [businessAllergens, setBusinessAllergens] = useState<string[]>([]);
+  const [editingDish, setEditingDish] = useState<string | null>(null);
 
   useEffect(() => {
     loadMenuAndDishes();
     loadBusinessProfile();
+    
+    const method = searchParams.get('method');
+    if (method === 'scan') {
+      setMode("scan");
+    }
+    
+    return () => {
+      stopCamera();
+    };
   }, [menuId]);
 
   const loadBusinessProfile = async () => {
@@ -86,6 +120,20 @@ const MenuEditor = () => {
 
   const loadMenuAndDishes = async () => {
     try {
+      // Load menu info
+      const { data: menuData } = await supabase
+        .from("menus")
+        .select("*")
+        .eq("id", menuId)
+        .single();
+
+      if (menuData) {
+        const menuDataJson = menuData.menu_data as { name?: string } | null;
+        setMenuName(menuDataJson?.name || "");
+        setQrCode(menuData.qr_code);
+      }
+
+      // Load dishes
       const { data: dishesData } = await supabase
         .from("dishes")
         .select("*")
@@ -102,6 +150,154 @@ const MenuEditor = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Camera functions
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+        setCameraActive(true);
+      }
+    } catch (error) {
+      console.error("Camera access error:", error);
+      toast({
+        title: t("common.error"),
+        description: "Kon geen toegang krijgen tot de camera.",
+        variant: "destructive",
+      });
+      setMode("editor");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  useEffect(() => {
+    if (mode === "camera" && !cameraActive && !capturedImage) {
+      startCamera();
+    }
+  }, [mode]);
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d");
+      
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        const imageData = canvas.toDataURL("image/jpeg", 0.9);
+        setMultipleImages(prev => [...prev, imageData]);
+        stopCamera();
+        setMode("scan");
+        toast({
+          title: "Foto toegevoegd!",
+          description: `Totaal: ${multipleImages.length + 1} foto's`,
+        });
+      }
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const readers = Array.from(files).map(file => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve(e.target?.result as string);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(images => {
+        setMultipleImages(prev => [...prev, ...images]);
+        toast({
+          title: `${images.length} foto${images.length > 1 ? "'s" : ""} toegevoegd`,
+          description: `Totaal: ${multipleImages.length + images.length} foto's`,
+        });
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setMultipleImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const analyzeImages = async () => {
+    if (multipleImages.length === 0) return;
+
+    setAnalyzing(true);
+    try {
+      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
+        body: { 
+          images: multipleImages,
+          isMultiple: multipleImages.length > 1
+        }
+      });
+
+      if (analysisError) throw analysisError;
+
+      if (!analysisData.isMenu) {
+        toast({
+          title: t("common.error"),
+          description: "De afbeelding lijkt geen menu te zijn.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (analysisData.dishes && analysisData.dishes.length > 0) {
+        // Add analyzed dishes to database
+        const dishesToInsert = analysisData.dishes.map((dish: any) => ({
+          menu_id: menuId,
+          name: dish.name,
+          description: dish.description || '',
+          price: dish.price || '',
+          ingredients: dish.ingredients || [],
+          allergens: [...new Set([...(dish.allergens || []), ...businessAllergens])],
+          dietary_info: dish.dietary_info || [],
+        }));
+
+        const { error: insertError } = await supabase
+          .from("dishes")
+          .insert(dishesToInsert);
+
+        if (insertError) throw insertError;
+
+        toast({
+          title: t("common.success"),
+          description: `${analysisData.dishes.length} gerechten toegevoegd!`,
+        });
+
+        // Reload dishes
+        loadMenuAndDishes();
+        setMultipleImages([]);
+        setMode("editor");
+      }
+    } catch (error: any) {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -149,7 +345,6 @@ const MenuEditor = () => {
   };
 
   const addDish = async () => {
-    // Validate dish with zod schema
     const validationResult = dishSchema.safeParse(newDish);
     
     if (!validationResult.success) {
@@ -165,7 +360,6 @@ const MenuEditor = () => {
     setSaving(true);
     try {
       const validatedDish = validationResult.data;
-      // Add business-wide allergens to this dish
       const allAllergens = [...new Set([...validatedDish.allergens, ...businessAllergens])];
 
       const { error } = await supabase.from("dishes").insert({
@@ -185,7 +379,6 @@ const MenuEditor = () => {
         description: t("editor.dishAddedDesc").replace("{name}", newDish.name),
       });
 
-      // Reset form
       setNewDish({
         name: "",
         description: "",
@@ -207,8 +400,36 @@ const MenuEditor = () => {
     }
   };
 
-  const finishEditing = async () => {
+  const deleteDish = async (dishId: string) => {
+    try {
+      const { error } = await supabase
+        .from("dishes")
+        .delete()
+        .eq("id", dishId);
+
+      if (error) throw error;
+
+      toast({
+        title: t("common.success"),
+        description: t("editor.dishDeleted"),
+      });
+
+      loadMenuAndDishes();
+    } catch (error: any) {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFinish = () => {
     navigate("/business");
+  };
+
+  const handleCreateQR = () => {
+    setShowQRDialog(true);
   };
 
   if (loading) {
@@ -219,6 +440,172 @@ const MenuEditor = () => {
     );
   }
 
+  // Scan mode view
+  if (mode === "scan") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+        <LanguageToggle />
+        
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Button variant="ghost" onClick={() => setMode("editor")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("common.back")}
+          </Button>
+
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold mb-2">{t("scan.title")}</h1>
+            <p className="text-muted-foreground">
+              {multipleImages.length > 0 
+                ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} toegevoegd`
+                : t("scan.addPhotos")
+              }
+            </p>
+          </div>
+
+          {multipleImages.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              {multipleImages.map((image, index) => (
+                <Card key={index} className="overflow-hidden relative group">
+                  <img
+                    src={image}
+                    alt={`Menu pagina ${index + 1}`}
+                    className="w-full h-48 object-cover"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeImage(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
+                    {t("scan.page")} {index + 1}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+
+          <div className="flex flex-col gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setMode("camera")}
+                className="w-full"
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                {t("scan.camera")}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+              >
+                <Upload className="mr-2 h-5 w-5" />
+                {t("scan.upload")}
+              </Button>
+            </div>
+
+            {multipleImages.length > 0 && (
+              <Button
+                size="lg"
+                onClick={analyzeImages}
+                disabled={analyzing}
+                className="w-full"
+              >
+                {analyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    {t("scan.analyzing")}
+                  </>
+                ) : (
+                  <>
+                    <Camera className="mr-2 h-5 w-5" />
+                    {t("scan.scanButton")} ({multipleImages.length} foto{multipleImages.length > 1 ? "'s" : ""})
+                  </>
+                )}
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              onClick={() => setMode("editor")}
+            >
+              {t("editor.skipToManual")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Camera mode view
+  if (mode === "camera") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+        <LanguageToggle />
+        
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold mb-2">{t("scan.makePhoto")}</h1>
+            <p className="text-muted-foreground">{t("scan.position")}</p>
+          </div>
+
+          <Card className="overflow-hidden">
+            <div className="relative bg-black aspect-[4/3]">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              
+              {cameraActive && (
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                  <div className="flex justify-center gap-4">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => {
+                        stopCamera();
+                        setMode("scan");
+                      }}
+                      className="bg-background/20 backdrop-blur-sm hover:bg-background/40"
+                    >
+                      <X className="mr-2 h-5 w-5" />
+                      {t("common.cancel")}
+                    </Button>
+                    <Button
+                      size="lg"
+                      onClick={capturePhoto}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <Camera className="mr-2 h-5 w-5" />
+                      {t("scan.takePhoto")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Editor mode view
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
       <LanguageToggle />
@@ -230,11 +617,25 @@ const MenuEditor = () => {
         </Button>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">{t("editor.title")}</h1>
+          <h1 className="text-3xl font-bold">{menuName || t("editor.title")}</h1>
           <p className="text-muted-foreground">
             {t("editor.subtitle")}
           </p>
         </div>
+
+        {/* Scan menu button */}
+        <Card>
+          <CardContent className="p-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setMode("scan")}
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              {t("editor.scanToAdd")}
+            </Button>
+          </CardContent>
+        </Card>
 
         {businessAllergens.length > 0 && (
           <Card className="border-warning/50 bg-warning/5">
@@ -385,11 +786,21 @@ const MenuEditor = () => {
                         </div>
                       )}
                     </div>
-                    {dish.price && (
-                      <span className="font-semibold text-muted-foreground ml-4">
-                        {dish.price}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2 ml-4">
+                      {dish.price && (
+                        <span className="font-semibold text-muted-foreground">
+                          {dish.price}
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteDish(dish.id!)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -397,11 +808,70 @@ const MenuEditor = () => {
           </Card>
         )}
 
-        <Button onClick={finishEditing} size="lg" className="w-full">
-          <Save className="mr-2 h-5 w-5" />
-          {t("editor.finishEditing")}
-        </Button>
+        {/* Bottom action buttons */}
+        <div className="flex gap-4">
+          <Button 
+            onClick={handleFinish} 
+            size="lg" 
+            variant="outline"
+            className="flex-1"
+          >
+            {t("editor.done")}
+          </Button>
+          <Button 
+            onClick={handleCreateQR} 
+            size="lg"
+            className="flex-1"
+          >
+            <QrCode className="mr-2 h-5 w-5" />
+            {t("editor.createQR")}
+          </Button>
+        </div>
       </div>
+
+      {/* QR Code Dialog */}
+      <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("editor.qrCodeTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("editor.qrCodeDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-6 py-6">
+            <div className="bg-white p-4 rounded-lg">
+              <QRCode 
+                value={`${window.location.origin}/menu/${qrCode}`}
+                size={200}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              {t("editor.qrCodeLink")}: {window.location.origin}/menu/{qrCode}
+            </p>
+            <div className="flex gap-2 w-full">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/menu/${qrCode}`);
+                  toast({
+                    title: t("common.success"),
+                    description: t("editor.linkCopied"),
+                  });
+                }}
+              >
+                {t("editor.copyLink")}
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => navigate(`/menu/${qrCode}`)}
+              >
+                {t("editor.viewMenu")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
