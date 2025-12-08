@@ -108,11 +108,11 @@ const Index = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-            {t("index.title")}
+            {isBusiness ? t("index.businessTitle") : t("index.title")}
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            {t("index.subtitle")}
+            {isBusiness ? t("index.businessSubtitle") : t("index.subtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -177,18 +177,18 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <FeatureCard
             icon={<Camera className="h-8 w-8 text-primary" />}
-            title={t("index.feature1Title")}
-            description={t("index.feature1Desc")}
+            title={isBusiness ? t("index.businessFeature1Title") : t("index.feature1Title")}
+            description={isBusiness ? t("index.businessFeature1Desc") : t("index.feature1Desc")}
           />
           <FeatureCard
             icon={<Shield className="h-8 w-8 text-success" />}
-            title={t("index.feature2Title")}
-            description={t("index.feature2Desc")}
+            title={isBusiness ? t("index.businessFeature2Title") : t("index.feature2Title")}
+            description={isBusiness ? t("index.businessFeature2Desc") : t("index.feature2Desc")}
           />
           <FeatureCard
             icon={<Sparkles className="h-8 w-8 text-warning" />}
-            title={t("index.feature3Title")}
-            description={t("index.feature3Desc")}
+            title={isBusiness ? t("index.businessFeature3Title") : t("index.feature3Title")}
+            description={isBusiness ? t("index.businessFeature3Desc") : t("index.feature3Desc")}
           />
         </div>
       </section>
@@ -203,18 +203,18 @@ const Index = () => {
           <div className="space-y-8">
             <Step
               number="1"
-              title={t("index.step1Title")}
-              description={t("index.step1Desc")}
+              title={isBusiness ? t("index.businessStep1Title") : t("index.step1Title")}
+              description={isBusiness ? t("index.businessStep1Desc") : t("index.step1Desc")}
             />
             <Step
               number="2"
-              title={t("index.step2Title")}
-              description={t("index.step2Desc")}
+              title={isBusiness ? t("index.businessStep2Title") : t("index.step2Title")}
+              description={isBusiness ? t("index.businessStep2Desc") : t("index.step2Desc")}
             />
             <Step
               number="3"
-              title={t("index.step3Title")}
-              description={t("index.step3Desc")}
+              title={isBusiness ? t("index.businessStep3Title") : t("index.step3Title")}
+              description={isBusiness ? t("index.businessStep3Desc") : t("index.step3Desc")}
             />
           </div>
         </div>
@@ -224,7 +224,9 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto text-center bg-gradient-warm p-12 rounded-3xl shadow-hover">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {isLoggedIn ? t("index.readyTitle") : t("index.readyTitleLoggedOut")}
+            {isLoggedIn 
+              ? (isBusiness ? t("index.businessReadyTitle") : t("index.readyTitle"))
+              : t("index.readyTitleLoggedOut")}
           </h2>
           <p className="text-lg text-white/90 mb-8">
             {isLoggedIn ? t("index.readyDesc") : t("index.readyDescLoggedOut")}
