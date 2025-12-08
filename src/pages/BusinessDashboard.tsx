@@ -126,9 +126,9 @@ const BusinessDashboard = () => {
       <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/profile")}>
+          <Button variant="ghost" onClick={() => navigate("/")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("business.backToProfile")}
+            {t("common.back")}
           </Button>
           <Button variant="outline" onClick={handleLogout}>
             {t("profile.logout")}
