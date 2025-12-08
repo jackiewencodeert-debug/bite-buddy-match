@@ -119,12 +119,14 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             {isLoggedIn ? (
               <>
-                <Link to="/profile">
-                  <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                    <User className="mr-2 h-5 w-5" />
-                    {t("index.profile")}
-                  </Button>
-                </Link>
+                {!isBusiness && (
+                  <Link to="/profile">
+                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                      <User className="mr-2 h-5 w-5" />
+                      {t("index.profile")}
+                    </Button>
+                  </Link>
+                )}
                 {isBusiness ? (
                   <Link to="/business">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
