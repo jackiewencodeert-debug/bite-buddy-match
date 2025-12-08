@@ -37,6 +37,7 @@ const translations: Record<Language, Record<string, string>> = {
     "index.readyDesc": "Begin nu met scannen en ontdek veilige maaltijden",
     "index.readyTitleLoggedOut": "Klaar om te genieten?",
     "index.readyDescLoggedOut": "Begin met scannen na het inloggen",
+    "index.profile": "Profiel",
     
     // Allergies
     "allergy.noten": "Noten",
@@ -313,6 +314,7 @@ const translations: Record<Language, Record<string, string>> = {
     "index.readyDesc": "Start scanning now and discover safe meals",
     "index.readyTitleLoggedOut": "Ready to enjoy?",
     "index.readyDescLoggedOut": "Start scanning after logging in",
+    "index.profile": "Profile",
     
     // Allergies
     "allergy.noten": "Nuts",
@@ -589,6 +591,7 @@ const translations: Record<Language, Record<string, string>> = {
     "index.readyDesc": "Commencez à scanner et découvrez des repas sûrs",
     "index.readyTitleLoggedOut": "Prêt à déguster?",
     "index.readyDescLoggedOut": "Commencez à scanner après vous être connecté",
+    "index.profile": "Profil",
     
     // Allergies
     "allergy.noten": "Noix",
@@ -865,6 +868,7 @@ const translations: Record<Language, Record<string, string>> = {
     "index.readyDesc": "Empieza a escanear y descubre comidas seguras",
     "index.readyTitleLoggedOut": "¿Listo para disfrutar?",
     "index.readyDescLoggedOut": "Comienza a escanear después de iniciar sesión",
+    "index.profile": "Perfil",
     
     // Allergies
     "allergy.noten": "Frutos secos",
@@ -1141,6 +1145,7 @@ const translations: Record<Language, Record<string, string>> = {
     "index.readyDesc": "Starten Sie jetzt mit dem Scannen und entdecken Sie sichere Mahlzeiten",
     "index.readyTitleLoggedOut": "Bereit zu genießen?",
     "index.readyDescLoggedOut": "Scannen Sie nach dem Anmelden",
+    "index.profile": "Profil",
     
     // Allergies
     "allergy.noten": "Nüsse",
