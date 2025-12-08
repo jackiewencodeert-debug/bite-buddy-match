@@ -809,39 +809,57 @@ const MenuEditor = () => {
 
             <div className="space-y-2">
               <Label>{t("editor.dietaryPreferences")}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {commonDietaryPreferences.map((preference) => (
-                  <div key={preference} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`dietary-${preference}`}
-                      checked={newDish.dietary_info.includes(preference)}
-                      onCheckedChange={() => toggleDietaryInfo(preference)}
-                    />
-                    <Label htmlFor={`dietary-${preference}`} className="cursor-pointer">
-                      {preference}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+              <TooltipProvider>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {commonDietaryPreferences.map((preference) => (
+                    <Tooltip key={preference}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center space-x-2 cursor-help">
+                          <Checkbox
+                            id={`dietary-${preference}`}
+                            checked={newDish.dietary_info.includes(preference)}
+                            onCheckedChange={() => toggleDietaryInfo(preference)}
+                          />
+                          <Label htmlFor={`dietary-${preference}`} className="cursor-pointer">
+                            {preference}
+                          </Label>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{dietaryDescriptions[preference] || preference}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              </TooltipProvider>
             </div>
 
             <div className="space-y-2">
               <Label>{t("editor.extraAllergens")}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {commonAllergens.map((allergen) => (
-                  <div key={allergen} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`allergen-${allergen}`}
-                      checked={newDish.allergens.includes(allergen)}
-                      onCheckedChange={() => toggleAllergen(allergen)}
-                      disabled={businessAllergens.includes(allergen)}
-                    />
-                    <Label htmlFor={`allergen-${allergen}`} className="cursor-pointer">
-                      {allergen}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+              <TooltipProvider>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {commonAllergens.map((allergen) => (
+                    <Tooltip key={allergen}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center space-x-2 cursor-help">
+                          <Checkbox
+                            id={`allergen-${allergen}`}
+                            checked={newDish.allergens.includes(allergen)}
+                            onCheckedChange={() => toggleAllergen(allergen)}
+                            disabled={businessAllergens.includes(allergen)}
+                          />
+                          <Label htmlFor={`allergen-${allergen}`} className="cursor-pointer">
+                            {allergen}
+                          </Label>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{allergenDescriptions[allergen] || allergen}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              </TooltipProvider>
             </div>
 
             <Button onClick={addDish} disabled={saving} className="w-full">
@@ -866,7 +884,6 @@ const MenuEditor = () => {
               <CardTitle>{t("editor.addedDishes")} ({dishes.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <TooltipProvider>
               {dishes.map((dish) => (
                 <div key={dish.id} className="p-4 rounded-lg border bg-card">
                   <div className="flex items-start justify-between">
@@ -878,16 +895,9 @@ const MenuEditor = () => {
                             {dish.dietary_info
                               .filter(pref => !(pref === "vegetarisch" && dish.dietary_info.includes("veganistisch")))
                               .map((pref, i) => (
-                                <Tooltip key={i}>
-                                  <TooltipTrigger asChild>
-                                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs cursor-help">
-                                      {pref}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-xs">
-                                    <p>{dietaryDescriptions[pref] || pref}</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
+                                  {pref}
+                                </Badge>
                               ))}
                           </div>
                         )}
@@ -905,16 +915,9 @@ const MenuEditor = () => {
                       {dish.allergens && dish.allergens.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {dish.allergens.map((allergen, i) => (
-                            <Tooltip key={i}>
-                              <TooltipTrigger asChild>
-                                <Badge variant="destructive" className="cursor-help">
-                                  {allergen}
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>{allergenDescriptions[allergen] || allergen}</p>
-                              </TooltipContent>
-                            </Tooltip>
+                            <Badge key={i} variant="destructive">
+                              {allergen}
+                            </Badge>
                           ))}
                         </div>
                       )}
@@ -956,7 +959,6 @@ const MenuEditor = () => {
                   </div>
                 </div>
               ))}
-              </TooltipProvider>
             </CardContent>
           </Card>
         )}
