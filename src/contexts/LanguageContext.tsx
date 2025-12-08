@@ -208,6 +208,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menuView.errorScanning": "Fout bij scannen",
     "menuView.errorLoading": "Fout bij laden",
     "menuView.backToHome": "Terug naar Home",
+    "menuView.disclaimer": "💡 Tip: Deze informatie is ter ondersteuning. Vraag altijd bij de bediening na of een gerecht veilig is voor jouw allergieën of voorkeuren. Zij helpen je graag!",
     
     // Business Dashboard
     "business.title": "Bedrijf Dashboard",
@@ -517,6 +518,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menuView.errorScanning": "Error scanning",
     "menuView.errorLoading": "Error loading",
     "menuView.backToHome": "Back to Home",
+    "menuView.disclaimer": "💡 Tip: This information is for guidance only. Always check with the staff if a dish is safe for your allergies or preferences. They're happy to help!",
     
     // Business Dashboard
     "business.title": "Business Dashboard",
@@ -814,6 +816,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menuView.errorScanning": "Erreur de scan",
     "menuView.errorLoading": "Erreur de chargement",
     "menuView.backToHome": "Retour à l'Accueil",
+    "menuView.disclaimer": "💡 Conseil: Ces informations sont à titre indicatif. Vérifiez toujours auprès du personnel si un plat est sûr pour vos allergies ou préférences. Ils sont là pour vous aider!",
     
     // Business Dashboard
     "business.title": "Tableau de Bord Entreprise",
@@ -1111,6 +1114,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menuView.errorScanning": "Error al escanear",
     "menuView.errorLoading": "Error al cargar",
     "menuView.backToHome": "Volver al Inicio",
+    "menuView.disclaimer": "💡 Consejo: Esta información es solo orientativa. Siempre consulta con el personal si un plato es seguro para tus alergias o preferencias. ¡Estarán encantados de ayudarte!",
     
     // Business Dashboard
     "business.title": "Panel de Negocio",
@@ -1408,6 +1412,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menuView.errorScanning": "Fehler beim Scannen",
     "menuView.errorLoading": "Fehler beim Laden",
     "menuView.backToHome": "Zurück zur Startseite",
+    "menuView.disclaimer": "💡 Tipp: Diese Informationen dienen nur zur Orientierung. Fragen Sie immer das Personal, ob ein Gericht für Ihre Allergien oder Vorlieben sicher ist. Sie helfen Ihnen gerne!",
     
     // Business Dashboard
     "business.title": "Geschäfts-Dashboard",
