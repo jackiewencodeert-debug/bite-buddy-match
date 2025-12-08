@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Sparkles, Users, LogOut, Building2 } from "lucide-react";
+import { Camera, Shield, Sparkles, Users, LogOut, Building2, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -118,6 +118,12 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             {isLoggedIn ? (
               <>
+                <Link to="/profile">
+                  <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                    <User className="mr-2 h-5 w-5" />
+                    {t("index.profile")}
+                  </Button>
+                </Link>
                 {isBusiness ? (
                   <Link to="/business">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
