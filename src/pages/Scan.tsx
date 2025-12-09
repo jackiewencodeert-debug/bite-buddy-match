@@ -207,7 +207,9 @@ const Scan = () => {
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0);
         const imageData = canvas.toDataURL("image/jpeg", 0.9);
-        setCapturedImage(imageData);
+        // Store as JSON format consistent with file uploads
+        const imageItem = JSON.stringify({ data: imageData, type: 'image' });
+        setCapturedImage(imageItem);
         stopCamera();
       }
     }
@@ -615,9 +617,12 @@ const Scan = () => {
                                   const imageData = canvas.toDataURL("image/jpeg", 0.9);
                                   
                                   if (multipleImages.length > 0 || mode === "camera") {
+                                    // Store as JSON format consistent with file uploads
+                                    const imageItem = JSON.stringify({ data: imageData, type: 'image' });
+                                    
                                     // Add to multiple images if we came from multiple mode
                                     if (multipleImages.length > 0) {
-                                      setMultipleImages(prev => [...prev, imageData]);
+                                      setMultipleImages(prev => [...prev, imageItem]);
                                       toast({
                                         title: "Foto toegevoegd!",
                                         description: `Totaal: ${multipleImages.length + 1} foto's`,
@@ -625,7 +630,7 @@ const Scan = () => {
                                       stopCamera();
                                       setMode("multiple");
                                     } else {
-                                      setCapturedImage(imageData);
+                                      setCapturedImage(imageItem);
                                       stopCamera();
                                     }
                                   }
@@ -656,11 +661,23 @@ const Scan = () => {
 
                 <Card className="overflow-hidden">
                   <div className="relative">
-                    <img
-                      src={capturedImage}
-                      alt="Captured menu"
-                      className="w-full h-auto"
-                    />
+                    {(() => {
+                      // Parse the captured image to get the actual data URL
+                      let imageUrl = capturedImage;
+                      try {
+                        const parsed = JSON.parse(capturedImage);
+                        imageUrl = parsed.data;
+                      } catch {
+                        // Already a raw base64, use as-is
+                      }
+                      return (
+                        <img
+                          src={imageUrl}
+                          alt="Captured menu"
+                          className="w-full h-auto"
+                        />
+                      );
+                    })()}
                   </div>
                   
                   <div className="p-6 flex justify-center gap-4">
