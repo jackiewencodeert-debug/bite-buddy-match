@@ -225,25 +225,56 @@ const Scan = () => {
     }
   };
 
-  // Handle multiple file uploads
+  // Handle multiple file uploads (images and PDFs)
   const handleMultipleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const readers = Array.from(files).map(file => {
-        return new Promise<string>((resolve) => {
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const validFiles: File[] = [];
+      const invalidFiles: string[] = [];
+
+      Array.from(files).forEach(file => {
+        if (file.size > MAX_FILE_SIZE) {
+          invalidFiles.push(`${file.name} (te groot)`);
+        } else if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+          invalidFiles.push(`${file.name} (ongeldig type)`);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (invalidFiles.length > 0) {
+        toast({
+          title: "Bestanden overgeslagen",
+          description: invalidFiles.join(", "),
+          variant: "destructive",
+        });
+      }
+
+      if (validFiles.length === 0) return;
+
+      const readers = validFiles.map(file => {
+        return new Promise<{ data: string; type: string }>((resolve) => {
           const reader = new FileReader();
           reader.onload = (e) => {
-            resolve(e.target?.result as string);
+            resolve({
+              data: e.target?.result as string,
+              type: file.type === 'application/pdf' ? 'pdf' : 'image'
+            });
           };
           reader.readAsDataURL(file);
         });
       });
 
-      Promise.all(readers).then(images => {
-        setMultipleImages(prev => [...prev, ...images]);
+      Promise.all(readers).then(results => {
+        const newItems = results.map(r => JSON.stringify(r));
+        setMultipleImages(prev => [...prev, ...newItems]);
+        const imageCount = results.filter(r => r.type === 'image').length;
+        const pdfCount = results.filter(r => r.type === 'pdf').length;
+        let description = `Totaal: ${multipleImages.length + results.length} bestanden`;
         toast({
-          title: `${images.length} foto${images.length > 1 ? "'s" : ""} toegevoegd`,
-          description: `Totaal: ${multipleImages.length + images.length} foto's`,
+          title: `${imageCount > 0 ? `${imageCount} foto${imageCount > 1 ? "'s" : ""}` : ""}${imageCount > 0 && pdfCount > 0 ? " en " : ""}${pdfCount > 0 ? `${pdfCount} PDF${pdfCount > 1 ? "'s" : ""}` : ""} toegevoegd`,
+          description,
         });
       });
     }
@@ -509,7 +540,7 @@ const Scan = () => {
                 <input
                   ref={multipleFileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.pdf,application/pdf"
                   multiple
                   onChange={handleMultipleFileUpload}
                   className="hidden"
@@ -661,33 +692,56 @@ const Scan = () => {
 
                 {multipleImages.length > 0 && (
                   <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {multipleImages.map((image, index) => (
-                      <Card key={index} className="overflow-hidden relative group">
-                        <img
-                          src={image}
-                          alt={`Menu pagina ${index + 1}`}
-                          className="w-full h-48 object-cover"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeImageFromMultiple(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
-                          {t("scan.page")} {index + 1}
-                        </div>
-                      </Card>
-                    ))}
+                    {multipleImages.map((item, index) => {
+                      // Parse item to check type
+                      let itemData: string;
+                      let itemType: string;
+                      try {
+                        const parsed = JSON.parse(item);
+                        itemData = parsed.data;
+                        itemType = parsed.type;
+                      } catch {
+                        itemData = item;
+                        itemType = 'image';
+                      }
+
+                      return (
+                        <Card key={index} className="overflow-hidden relative group">
+                          {itemType === 'pdf' ? (
+                            <div className="w-full h-48 bg-muted flex flex-col items-center justify-center">
+                              <svg className="h-16 w-16 text-primary mb-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8.5 13h2v5h-2v-5zm5 0h2v5h-2v-5z"/>
+                              </svg>
+                              <span className="text-sm text-muted-foreground">PDF</span>
+                            </div>
+                          ) : (
+                            <img
+                              src={itemData}
+                              alt={`Menu pagina ${index + 1}`}
+                              className="w-full h-48 object-cover"
+                            />
+                          )}
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImageFromMultiple(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
+                            {itemType === 'pdf' ? 'PDF' : t("scan.page")} {index + 1}
+                          </div>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
 
                 <input
                   ref={multipleFileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.pdf,application/pdf"
                   multiple
                   onChange={handleMultipleFileUpload}
                   className="hidden"
