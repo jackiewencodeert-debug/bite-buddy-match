@@ -307,6 +307,12 @@ const Scan = () => {
 
   // Process image(s)
   const processImage = async () => {
+    const { dismiss } = toast({
+      title: "Analyseren...",
+      description: `De AI analyseert je menu. Dit kan even duren.`,
+      duration: 60000, // Long duration, we'll dismiss manually
+    });
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -319,12 +325,6 @@ const Scan = () => {
       }
 
       const imagesToProcess = mode === "multiple" ? multipleImages : [capturedImage];
-      const imageCount = imagesToProcess.length;
-
-      toast({
-        title: "Analyseren...",
-        description: `De AI analyseert ${imageCount} foto${imageCount > 1 ? "'s" : ""}. Dit kan even duren.`,
-      });
 
       // Call the AI edge function to analyze the menu(s)
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
@@ -335,20 +335,25 @@ const Scan = () => {
       });
 
       if (analysisError) {
+        dismiss();
         throw analysisError;
       }
 
       if (!analysisData.isMenu) {
+        dismiss();
         setErrorMessage("De afbeelding lijkt geen menu te zijn. Zorg ervoor dat de foto duidelijk en goed verlicht is.");
         setMode("error");
         return;
       }
 
       if (!analysisData.dishes || analysisData.dishes.length === 0) {
+        dismiss();
         setErrorMessage("Er konden geen gerechten worden gevonden op deze afbeelding. Probeer een duidelijkere foto te maken.");
         setMode("error");
         return;
       }
+
+      dismiss();
 
       // Get user allergies and preferences
       let allergies: string[] = [];
