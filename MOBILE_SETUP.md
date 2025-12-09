@@ -51,58 +51,24 @@ npx cap run ios
 
 ## 💰 AdMob Configuratie
 
-### Test Ads (Huidige Setup)
-De app gebruikt nu **test ad IDs** van Google. Deze tonen test advertenties en genereren geen echte inkomsten, maar werken perfect voor development en testing.
+### Automatische Environment Detectie
+De app detecteert automatisch of je in development of productie draait:
+- **Development mode**: Test Ad IDs worden gebruikt
+- **Productie mode**: Echte Ad Unit IDs worden gebruikt
 
-### Echte Advertenties Activeren
-
-#### 1. Maak een AdMob Account
-- Ga naar [AdMob](https://admob.google.com/)
-- Maak een account aan
-- Maak een nieuwe app aan in AdMob
-
-#### 2. Verkrijg je Ad Unit IDs
-- Maak een Interstitial Ad Unit aan
-- Kopieer de Ad Unit IDs voor Android en iOS
-
-#### 3. Vervang Test IDs in de Code
-
-**In `capacitor.config.ts`:**
-```typescript
-plugins: {
-  AdMob: {
-    appId: {
-      android: 'ca-app-pub-XXXXXXXXXX~YYYYYYYYYY', // Je Android App ID
-      ios: 'ca-app-pub-XXXXXXXXXX~YYYYYYYYYY' // Je iOS App ID
-    }
-  }
-}
+### Huidige Configuratie (PRODUCTIE)
+```
+App ID: ca-app-pub-1597606960562339~3810151402
+Interstitial Ad Unit ID: ca-app-pub-1597606960562339/4235309779
 ```
 
-**In `src/services/admob.ts`:**
-```typescript
-const AD_UNIT_IDS = {
-  android: 'ca-app-pub-XXXXXXXXXX/YYYYYYYYYY', // Je Android Ad Unit ID
-  ios: 'ca-app-pub-XXXXXXXXXX/YYYYYYYYYY' // Je iOS Ad Unit ID
-};
+### Test Ads voor Development
+Wanneer je lokaal ontwikkelt (`npm run dev`), worden automatisch Google's test ad IDs gebruikt:
+- Dit voorkomt dat je AdMob account gebanned wordt
+- Test ads tonen een "Test Ad" label
 
-// En verander:
-initializeForTesting: false, // Zet op false voor productie
-isTesting: false, // Zet op false voor productie
-```
-
-#### 4. Voeg je Test Device ID Toe
-Om test advertenties te zien zonder je AdMob account te beïnvloeden:
-
-1. Run je app één keer
-2. Check de console logs voor je device ID
-3. Voeg het toe in `src/services/admob.ts`:
-```typescript
-await AdMob.initialize({
-  testingDevices: ['JE_DEVICE_ID_HIER'],
-  initializeForTesting: true,
-});
-```
+### Build voor Productie
+Bij `npm run build` worden automatisch de echte Ad Unit IDs gebruikt.
 
 ## 📊 Hoe Werkt de Integratie?
 

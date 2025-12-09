@@ -1,11 +1,23 @@
 import { AdMob, AdOptions, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
-// Test Ad Unit IDs - vervang deze met je echte AdMob IDs voor productie
-const AD_UNIT_IDS = {
-  android: 'ca-app-pub-3940256099942544/1033173712', // Test Interstitial ID
-  ios: 'ca-app-pub-3940256099942544/4411468910' // Test Interstitial ID
+// Productie Ad Unit IDs
+const PRODUCTION_AD_UNIT_IDS = {
+  android: 'ca-app-pub-1597606960562339/4235309779',
+  ios: 'ca-app-pub-1597606960562339/4235309779'
 };
+
+// Test Ad Unit IDs (voor development)
+const TEST_AD_UNIT_IDS = {
+  android: 'ca-app-pub-3940256099942544/1033173712',
+  ios: 'ca-app-pub-3940256099942544/4411468910'
+};
+
+// Detecteer of we in development mode zijn
+const isDevelopment = import.meta.env.DEV;
+
+// Gebruik test IDs in development, productie IDs in productie
+const AD_UNIT_IDS = isDevelopment ? TEST_AD_UNIT_IDS : PRODUCTION_AD_UNIT_IDS;
 
 export class AdMobService {
   private static initialized = false;
@@ -24,15 +36,18 @@ export class AdMobService {
 
     try {
       await AdMob.initialize({
-        testingDevices: ['YOUR_DEVICE_ID'], // Voeg je test device ID toe
-        initializeForTesting: true, // Zet op false voor productie
+        testingDevices: [], // Laat leeg voor productie
+        initializeForTesting: isDevelopment, // Automatisch op basis van environment
       });
       
       this.initialized = true;
-      console.log('AdMob geïnitialiseerd');
+      console.log('AdMob geïnitialiseerd (development:', isDevelopment, ')');
       
       // Luister naar ad events
       this.setupAdListeners();
+      
+      // Pre-load eerste interstitial
+      this.prepareInterstitial();
     } catch (error) {
       console.error('AdMob initialisatie fout:', error);
     }
@@ -81,7 +96,7 @@ export class AdMobService {
 
       const options: AdOptions = {
         adId: adId,
-        isTesting: true, // Zet op false voor productie
+        isTesting: isDevelopment, // Automatisch op basis van environment
       };
 
       await AdMob.prepareInterstitial(options);

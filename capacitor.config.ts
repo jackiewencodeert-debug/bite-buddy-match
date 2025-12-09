@@ -10,11 +10,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     AdMob: {
-      // Test IDs worden gebruikt tijdens development
-      // Vervang deze met je echte AdMob IDs voor productie
       appId: {
-        android: 'ca-app-pub-3940256099942544~3347511713', // Test ID
-        ios: 'ca-app-pub-3940256099942544~1458002511' // Test ID
+        android: 'ca-app-pub-1597606960562339~3810151402',
+        ios: 'ca-app-pub-1597606960562339~3810151402'
       }
     }
   }
