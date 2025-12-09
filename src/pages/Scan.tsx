@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdMobService } from "@/services/admob";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { AdSenseAd } from "@/components/AdSenseAd";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -910,17 +911,12 @@ const Scan = () => {
               <div className="space-y-6 py-6">
                 {/* Google AdSense Ad Container */}
                 <div className="min-h-[250px] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden">
-                  <ins
-                    className="adsbygoogle"
-                    style={{ display: 'block' }}
-                    data-ad-client="ca-pub-1597606960562339"
-                    data-ad-slot="7704507845"
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"
+                  <AdSenseAd 
+                    adSlot="7704507845" 
+                    adFormat="auto" 
+                    fullWidthResponsive={true}
+                    className="w-full"
                   />
-                  <script dangerouslySetInnerHTML={{
-                    __html: `(adsbygoogle = window.adsbygoogle || []).push({});`
-                  }} />
                 </div>
                 
                 <div className="text-center">
