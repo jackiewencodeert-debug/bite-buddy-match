@@ -283,7 +283,9 @@ const Scan = () => {
   // Add camera photo to multiple images
   const addCameraPhotoToMultiple = () => {
     if (capturedImage) {
-      setMultipleImages(prev => [...prev, capturedImage]);
+      // Store as JSON format consistent with file uploads
+      const imageItem = JSON.stringify({ data: capturedImage, type: 'image' });
+      setMultipleImages(prev => [...prev, imageItem]);
       toast({
         title: "Foto toegevoegd!",
         description: `Totaal: ${multipleImages.length + 1} foto's`,
