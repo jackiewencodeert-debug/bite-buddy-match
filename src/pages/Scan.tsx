@@ -908,27 +908,18 @@ const Scan = () => {
             <AlertDialogTitle className="text-2xl text-center">{t("ad.sponsoredMessage")}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-6 py-6">
-                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-8 text-center">
-                  <div className="text-6xl mb-4">🍕</div>
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">
-                    {t("ad.upgradeToPremium")}
-                  </h3>
-                  <p className="text-base text-muted-foreground mb-4">
-                    {t("ad.upgradeDesc")}
-                  </p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      ✓ {t("ad.unlimitedScans")}
-                    </span>
-                    <span>•</span>
-                    <span className="inline-flex items-center gap-1">
-                      ✓ {t("ad.noAds")}
-                    </span>
-                    <span>•</span>
-                    <span className="inline-flex items-center gap-1">
-                      ✓ {t("ad.premiumSupport")}
-                    </span>
-                  </div>
+                {/* Google AdSense Ad Container */}
+                <div className="min-h-[250px] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden">
+                  <ins
+                    className="adsbygoogle"
+                    style={{ display: 'block', width: '100%', height: '250px' }}
+                    data-ad-client="ca-pub-1597606960562339"
+                    data-ad-slot="4235309779"
+                    data-ad-format="rectangle"
+                  />
+                  <script dangerouslySetInnerHTML={{
+                    __html: `(adsbygoogle = window.adsbygoogle || []).push({});`
+                  }} />
                 </div>
                 
                 <div className="text-center">
