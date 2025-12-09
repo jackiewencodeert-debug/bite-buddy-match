@@ -1,55 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Simple PDF text extractor - extracts readable text from PDF content
-function extractTextFromPDF(pdfBytes: Uint8Array): string {
-  const decoder = new TextDecoder('utf-8', { fatal: false });
-  const content = decoder.decode(pdfBytes);
-  
-  // Extract text between BT (begin text) and ET (end text) markers
-  const textBlocks: string[] = [];
-  const btPattern = /BT[\s\S]*?ET/g;
-  const matches = content.match(btPattern) || [];
-  
-  for (const block of matches) {
-    // Extract text from Tj and TJ operators
-    const tjPattern = /\(([^)]*)\)\s*Tj/g;
-    let match;
-    while ((match = tjPattern.exec(block)) !== null) {
-      textBlocks.push(match[1]);
-    }
-    
-    // Also try to extract from TJ arrays
-    const tjArrayPattern = /\[([^\]]*)\]\s*TJ/g;
-    while ((match = tjArrayPattern.exec(block)) !== null) {
-      const arrayContent = match[1];
-      const stringPattern = /\(([^)]*)\)/g;
-      let stringMatch;
-      while ((stringMatch = stringPattern.exec(arrayContent)) !== null) {
-        textBlocks.push(stringMatch[1]);
-      }
-    }
-  }
-  
-  // Also try to find stream content with readable text
-  const streamPattern = /stream\s*([\s\S]*?)\s*endstream/g;
-  let streamMatch;
-  while ((streamMatch = streamPattern.exec(content)) !== null) {
-    const streamContent = streamMatch[1];
-    // Look for readable strings in streams
-    const readablePattern = /[A-Za-z0-9\s,.€$£¥\-:;()]{10,}/g;
-    const readable = streamContent.match(readablePattern) || [];
-    textBlocks.push(...readable.filter(r => r.trim().length > 0));
-  }
-  
-  return textBlocks.join('\n').replace(/\\n/g, '\n').replace(/\\r/g, '');
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -68,14 +23,14 @@ serve(async (req) => {
       throw new Error("No images provided");
     }
 
-    const systemPromptImage = `You are a menu analysis assistant. Analyze menu images and extract dish information in a structured format. Return only valid JSON.
+    const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
 
-Analyze ${isMultiple ? 'these images of different menu pages' : 'this image'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
-- name: dish name
-- ingredients: array of ingredients (in Dutch if possible)
-- allergens: array of allergens found (noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet)
-- dietary_info: array of dietary tags (vegetarisch, veganistisch, halal, kosher)
-- price: price if visible
+Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
+- name: dish name (required)
+- ingredients: array of ingredients mentioned or that can be inferred from the dish description (in Dutch if possible)
+- allergens: array of allergens found or inferred (common ones: noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet, selderij, mosterd, sesam, weekdieren, lupine)
+- dietary_info: array of dietary tags if indicated (vegetarisch, veganistisch, halal, kosher) - look for v., vgn., or similar indicators
+- price: price if visible (include € symbol)
 - description: brief description if available
 
 Return in this exact JSON format:
@@ -96,33 +51,6 @@ Return in this exact JSON format:
 ${isMultiple ? 'Combine all dishes from all menu pages into one array. Do not duplicate dishes.' : ''}
 If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": []}`;
 
-    const systemPromptPDF = `You are a menu analysis assistant. Analyze menu text extracted from a PDF and extract dish information in a structured format. Return only valid JSON.
-
-Analyze this text from a restaurant menu PDF. Extract ALL dishes with the following information for each dish:
-- name: dish name
-- ingredients: array of ingredients (in Dutch if possible)
-- allergens: array of allergens found (noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet)
-- dietary_info: array of dietary tags (vegetarisch, veganistisch, halal, kosher)
-- price: price if visible
-- description: brief description if available
-
-Return in this exact JSON format:
-{
-  "isMenu": true/false,
-  "dishes": [
-    {
-      "name": "string",
-      "ingredients": ["string"],
-      "allergens": ["string"],
-      "dietary_info": ["string"],
-      "price": "string",
-      "description": "string"
-    }
-  ]
-}
-
-If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes": []}`;
-
     // Process files (images and PDFs)
     let allDishes: any[] = [];
     let foundMenu = false;
@@ -142,21 +70,14 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
         itemType = 'image';
       }
 
+      console.log("Processing item type:", itemType);
+
+      // For PDFs, we send them as documents to the vision model
+      // Gemini can process PDF documents directly
       let response;
       
       if (itemType === 'pdf') {
-        // Extract text from PDF
-        const base64Data = itemData.replace(/^data:application\/pdf;base64,/, '');
-        const pdfBytes = base64Decode(base64Data);
-        const pdfText = extractTextFromPDF(pdfBytes);
-        
-        console.log("Extracted PDF text length:", pdfText.length);
-        
-        if (pdfText.length < 50) {
-          console.log("PDF text too short, skipping");
-          continue;
-        }
-
+        // Send PDF as inline document to Gemini
         response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -168,11 +89,22 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
             messages: [
               {
                 role: "system",
-                content: systemPromptPDF
+                content: systemPrompt
               },
               {
                 role: "user",
-                content: `Here is the menu text extracted from a PDF:\n\n${pdfText.substring(0, 15000)}`
+                content: [
+                  {
+                    type: "text",
+                    text: "Please analyze this menu PDF document and extract all dishes with their ingredients, allergens, prices, and dietary information."
+                  },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: itemData
+                    }
+                  }
+                ]
               }
             ]
           }),
@@ -190,7 +122,7 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
             messages: [
               {
                 role: "system",
-                content: systemPromptImage
+                content: systemPrompt
               },
               {
                 role: "user",
@@ -209,6 +141,9 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
       }
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("AI gateway error:", response.status, errorText);
+        
         if (response.status === 429) {
           return new Response(
             JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
@@ -227,7 +162,10 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
+      console.log("AI response received, content length:", content?.length || 0);
+
       if (!content) {
+        console.log("No content in AI response");
         continue;
       }
 
@@ -242,6 +180,7 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
           jsonContent = jsonContent.replace(/^```\s*/, "").replace(/\s*```\s*$/, "");
         }
         parsedContent = JSON.parse(jsonContent);
+        console.log("Parsed dishes count:", parsedContent.dishes?.length || 0);
       } catch (e) {
         console.error("Failed to parse AI response:", content);
         continue;
@@ -257,6 +196,8 @@ If the text doesn't appear to be from a menu, return {"isMenu": false, "dishes":
     const uniqueDishes = allDishes.filter((dish, index, self) =>
       index === self.findIndex((d) => d.name.toLowerCase() === dish.name.toLowerCase())
     );
+
+    console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length);
 
     return new Response(
       JSON.stringify({
