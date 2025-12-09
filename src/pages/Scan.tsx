@@ -912,10 +912,11 @@ const Scan = () => {
                 <div className="min-h-[250px] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden">
                   <ins
                     className="adsbygoogle"
-                    style={{ display: 'block', width: '100%', height: '250px' }}
+                    style={{ display: 'block' }}
                     data-ad-client="ca-pub-1597606960562339"
-                    data-ad-slot="4235309779"
-                    data-ad-format="rectangle"
+                    data-ad-slot="7704507845"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"
                   />
                   <script dangerouslySetInnerHTML={{
                     __html: `(adsbygoogle = window.adsbygoogle || []).push({});`
