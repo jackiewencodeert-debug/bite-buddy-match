@@ -162,17 +162,31 @@ const Auth = () => {
 
         if (error) throw error;
 
+        // Check if user is admin first
+        const { data: adminRole } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        toast({
+          title: "Welkom terug!",
+          description: "Je bent succesvol ingelogd.",
+        });
+
+        // Redirect admins to admin dashboard
+        if (adminRole) {
+          navigate("/admin");
+          return;
+        }
+
         // Check user type and redirect accordingly
         const { data: profile } = await supabase
           .from("profiles")
           .select("user_type")
           .eq("id", data.user.id)
           .single();
-
-        toast({
-          title: "Welkom terug!",
-          description: "Je bent succesvol ingelogd.",
-        });
 
         // Redirect business users to business dashboard
         if (profile?.user_type === "eetgever") {
