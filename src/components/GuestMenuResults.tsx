@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AllergenFeedback } from "./AllergenFeedback";
 
 interface Dish {
   id: string;
@@ -113,6 +114,9 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                         ))}
                       </div>
                     )}
+                    <div className="mt-2">
+                      <AllergenFeedback dish={dish} />
+                    </div>
                   </div>
                   {dish.price && (
                     <div className="text-lg font-semibold text-primary flex-shrink-0">

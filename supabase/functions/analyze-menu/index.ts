@@ -1,10 +1,53 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Fetch learned allergen patterns from database
+async function getLearnedPatterns(): Promise<Map<string, string[]>> {
+  const patterns = new Map<string, string[]>();
+  
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.log("Supabase credentials not available, using default patterns");
+      return patterns;
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data, error } = await supabase
+      .from("allergen_patterns")
+      .select("ingredient_pattern, allergen, confidence_score")
+      .gte("confidence_score", 0.6)
+      .order("confidence_score", { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching patterns:", error);
+      return patterns;
+    }
+    
+    if (data) {
+      data.forEach((row: any) => {
+        const existing = patterns.get(row.ingredient_pattern) || [];
+        existing.push(row.allergen);
+        patterns.set(row.ingredient_pattern, existing);
+      });
+    }
+    
+    console.log("Loaded", patterns.size, "learned allergen patterns");
+  } catch (e) {
+    console.error("Error loading patterns:", e);
+  }
+  
+  return patterns;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,6 +65,12 @@ serve(async (req) => {
     if (!images || images.length === 0) {
       throw new Error("No images provided");
     }
+
+    // Fetch learned patterns for enhanced allergen detection
+    const learnedPatterns = await getLearnedPatterns();
+    const patternsHint = learnedPatterns.size > 0 
+      ? `\n\nAdditional learned allergen patterns to consider:\n${Array.from(learnedPatterns.entries()).map(([ingredient, allergens]) => `- "${ingredient}" often contains: ${allergens.join(", ")}`).join("\n")}`
+      : "";
 
     const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
 
@@ -66,7 +115,7 @@ Return in this exact JSON format:
 }
 
 ${isMultiple ? 'Combine all dishes from all menu pages into one array. Do not duplicate dishes. Merge categories from all pages.' : ''}
-If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": [], "template": null}`;
+If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": [], "template": null}${patternsHint}`;
 
     // Process files (images and PDFs)
     let allDishes: any[] = [];
