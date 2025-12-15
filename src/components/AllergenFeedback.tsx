@@ -62,8 +62,8 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
       });
 
       toast({
-        title: "Bedankt voor je feedback! 🙏",
-        description: "Je helpt ons de allergeenherkenning te verbeteren.",
+        title: t("feedback.thankYou"),
+        description: t("feedback.thankYouDesc"),
       });
 
       setIsOpen(false);
@@ -73,8 +73,8 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast({
-        title: "Fout bij verzenden",
-        description: "Probeer het later opnieuw.",
+        title: t("feedback.error"),
+        description: t("feedback.errorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -106,17 +106,17 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground hover:text-foreground">
           <MessageSquare className="h-3 w-3" />
-          Feedback
+          {t("feedback.button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Allergeenfeedback
+            {t("feedback.title")}
           </DialogTitle>
           <DialogDescription>
-            Help ons de allergeenherkenning te verbeteren voor "{dish.name}"
+            {t("feedback.description").replace("{dish}", dish.name)}
           </DialogDescription>
         </DialogHeader>
 
@@ -124,7 +124,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
           {/* Current detected allergens */}
           {dish.allergens && dish.allergens.length > 0 && (
             <div>
-              <Label className="text-sm font-medium">Gedetecteerde allergenen:</Label>
+              <Label className="text-sm font-medium">{t("feedback.detectedAllergens")}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {dish.allergens.map((allergen, idx) => (
                   <Badge key={idx} variant="secondary">
@@ -137,7 +137,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
 
           {/* Feedback type selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Zijn de gedetecteerde allergenen correct?</Label>
+            <Label className="text-sm font-medium">{t("feedback.areCorrect")}</Label>
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
@@ -146,7 +146,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
                 className="flex items-center gap-2"
               >
                 <ThumbsUp className="h-4 w-4" />
-                Ja, correct
+                {t("feedback.yesCorrect")}
               </Button>
               <Button
                 type="button"
@@ -155,7 +155,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
                 className="flex items-center gap-2"
               >
                 <AlertTriangle className="h-4 w-4" />
-                Nee, aanpassen
+                {t("feedback.noAdjust")}
               </Button>
             </div>
           </div>
@@ -167,7 +167,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
               {dish.allergens && dish.allergens.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    Onjuist gedetecteerd (zit er niet in):
+                    {t("feedback.falsePositives")}
                   </Label>
                   <div className="flex flex-wrap gap-2">
                     {dish.allergens.map((allergen, idx) => (
@@ -188,7 +188,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
               {/* Missed allergens */}
               <div>
                 <Label className="text-sm font-medium mb-2 block">
-                  Gemiste allergenen (zit er wel in):
+                  {t("feedback.missedAllergens")}
                 </Label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {commonAllergens
@@ -209,7 +209,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
                 {/* Custom allergen input */}
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Ander allergeen..."
+                    placeholder={t("feedback.otherAllergen")}
                     value={customAllergen}
                     onChange={(e) => setCustomAllergen(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomAllergen())}
@@ -248,7 +248,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
             disabled={submitting} 
             className="w-full"
           >
-            {submitting ? "Verzenden..." : "Feedback verzenden"}
+            {submitting ? t("feedback.submitting") : t("feedback.submit")}
           </Button>
         </div>
       </DialogContent>
