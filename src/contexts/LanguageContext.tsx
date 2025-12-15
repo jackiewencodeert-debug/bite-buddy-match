@@ -136,6 +136,7 @@ const translations: Record<Language, Record<string, string>> = {
     "results.adjustable": "Aanpasbaar",
     "results.containsAllergens": "Bevat Allergenen",
     "results.dishes": "gerechten",
+    "results.guestHint": "Log in om te zien welke gerechten bij jouw allergieën passen",
     
     // Profile page
     "profile.title": "Mijn Profiel",
@@ -544,6 +545,7 @@ const translations: Record<Language, Record<string, string>> = {
     "results.adjustable": "Adjustable",
     "results.containsAllergens": "Contains Allergens",
     "results.dishes": "dishes",
+    "results.guestHint": "Log in to see which dishes match your allergies",
     
     // Profile page
     "profile.title": "My Profile",
@@ -950,6 +952,7 @@ const translations: Record<Language, Record<string, string>> = {
     "results.adjustable": "Adaptable",
     "results.containsAllergens": "Contient des Allergènes",
     "results.dishes": "plats",
+    "results.guestHint": "Connectez-vous pour voir quels plats correspondent à vos allergies",
     
     // Profile page
     "profile.title": "Mon Profil",
@@ -1329,6 +1332,7 @@ const translations: Record<Language, Record<string, string>> = {
     "results.adjustable": "Adaptable",
     "results.containsAllergens": "Contiene Alérgenos",
     "results.dishes": "platos",
+    "results.guestHint": "Inicia sesión para ver qué platos coinciden con tus alergias",
     
     // Profile page
     "profile.title": "Mi Perfil",
@@ -1708,6 +1712,7 @@ const translations: Record<Language, Record<string, string>> = {
     "results.adjustable": "Anpassbar",
     "results.containsAllergens": "Enthält Allergene",
     "results.dishes": "Gerichte",
+    "results.guestHint": "Melden Sie sich an, um zu sehen, welche Gerichte zu Ihren Allergien passen",
     
     // Profile page
     "profile.title": "Mein Profil",
