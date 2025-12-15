@@ -12,7 +12,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
   const location = useLocation();
   
   const handleProfileClick = () => {
-    navigate("/profile");
+    navigate("/auth");
   };
 
   const handleCameraClick = () => {
@@ -41,7 +41,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
           onClick={handleProfileClick}
           className={cn(
             "flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all",
-            isActive("/profile") 
+            isActive("/auth") 
               ? "text-primary bg-primary/10" 
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}
