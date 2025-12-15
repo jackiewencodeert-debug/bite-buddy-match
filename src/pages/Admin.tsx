@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3, MessageSquare, Check, X, ThumbsUp, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 interface AccountStats {
   totalEters: number;
@@ -51,6 +58,27 @@ interface UserProfile {
   created_at: string;
 }
 
+interface AllergenFeedbackItem {
+  id: string;
+  dish_name: string;
+  detected_allergens: string[];
+  confirmed_allergens: string[];
+  missed_allergens: string[];
+  false_positives: string[];
+  ingredients: string[];
+  feedback_type: string;
+  is_processed: boolean;
+  created_at: string;
+}
+
+interface AllergenPattern {
+  id: string;
+  ingredient_pattern: string;
+  allergen: string;
+  confidence_score: number;
+  feedback_count: number;
+}
+
 const Admin = () => {
   const [accountStats, setAccountStats] = useState<AccountStats | null>(null);
   const [usageData, setUsageData] = useState<UsageDataPoint[]>([]);
@@ -69,6 +97,11 @@ const Admin = () => {
   const [totalMenus, setTotalMenus] = useState(0);
   const [totalMenuScans, setTotalMenuScans] = useState(0);
   const [totalGuestRegistrations, setTotalGuestRegistrations] = useState(0);
+
+  // Allergen feedback
+  const [feedbackItems, setFeedbackItems] = useState<AllergenFeedbackItem[]>([]);
+  const [patterns, setPatterns] = useState<AllergenPattern[]>([]);
+  const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "processed">("pending");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -125,6 +158,8 @@ const Admin = () => {
       loadAccountStats();
       loadUsers();
       loadExtraStats();
+      loadFeedback();
+      loadPatterns();
     } catch (error) {
       console.error("Error checking admin:", error);
       navigate("/auth");
@@ -308,6 +343,117 @@ const Admin = () => {
     const currentYear = new Date().getFullYear();
     return [currentYear - 2, currentYear - 1, currentYear];
   };
+
+  const loadFeedback = async () => {
+    try {
+      const { data } = await supabase
+        .from("allergen_feedback")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (data) {
+        setFeedbackItems(data as AllergenFeedbackItem[]);
+      }
+    } catch (error) {
+      console.error("Error loading feedback:", error);
+    }
+  };
+
+  const loadPatterns = async () => {
+    try {
+      const { data } = await supabase
+        .from("allergen_patterns")
+        .select("*")
+        .order("confidence_score", { ascending: false });
+      
+      if (data) {
+        setPatterns(data as AllergenPattern[]);
+      }
+    } catch (error) {
+      console.error("Error loading patterns:", error);
+    }
+  };
+
+  const markFeedbackProcessed = async (id: string) => {
+    try {
+      await supabase
+        .from("allergen_feedback")
+        .update({ is_processed: true })
+        .eq("id", id);
+      
+      loadFeedback();
+      toast({
+        title: t("admin.feedbackProcessed"),
+        description: t("admin.feedbackProcessedDesc"),
+      });
+    } catch (error) {
+      console.error("Error marking feedback:", error);
+    }
+  };
+
+  const createPatternFromFeedback = async (feedback: AllergenFeedbackItem) => {
+    try {
+      // Create patterns from missed allergens
+      for (const allergen of feedback.missed_allergens) {
+        for (const ingredient of feedback.ingredients || []) {
+          const existingPattern = patterns.find(
+            p => p.ingredient_pattern.toLowerCase() === ingredient.toLowerCase() && 
+                 p.allergen.toLowerCase() === allergen.toLowerCase()
+          );
+          
+          if (existingPattern) {
+            await supabase
+              .from("allergen_patterns")
+              .update({ 
+                feedback_count: existingPattern.feedback_count + 1,
+                confidence_score: Math.min(1, existingPattern.confidence_score + 0.1)
+              })
+              .eq("id", existingPattern.id);
+          } else {
+            await supabase
+              .from("allergen_patterns")
+              .insert({
+                ingredient_pattern: ingredient.toLowerCase(),
+                allergen: allergen.toLowerCase(),
+                confidence_score: 0.5,
+                feedback_count: 1
+              });
+          }
+        }
+      }
+      
+      await markFeedbackProcessed(feedback.id);
+      loadPatterns();
+      toast({
+        title: t("admin.patternCreated"),
+        description: t("admin.patternCreatedDesc"),
+      });
+    } catch (error) {
+      console.error("Error creating pattern:", error);
+    }
+  };
+
+  const deletePattern = async (id: string) => {
+    try {
+      await supabase
+        .from("allergen_patterns")
+        .delete()
+        .eq("id", id);
+      
+      loadPatterns();
+      toast({
+        title: t("admin.patternDeleted"),
+      });
+    } catch (error) {
+      console.error("Error deleting pattern:", error);
+    }
+  };
+
+  const filteredFeedback = feedbackItems.filter(item => {
+    if (feedbackFilter === "all") return true;
+    if (feedbackFilter === "pending") return !item.is_processed;
+    return item.is_processed;
+  });
 
   if (!isAdmin) {
     return null;
@@ -679,6 +825,158 @@ const Admin = () => {
                     <p className="text-sm text-muted-foreground">{t("admin.businessRatio")}</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Allergen Feedback Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  {t("admin.allergenFeedback")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="feedback">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="feedback">{t("admin.feedbackTab")}</TabsTrigger>
+                    <TabsTrigger value="patterns">{t("admin.patternsTab")}</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="feedback">
+                    <div className="flex gap-2 mb-4">
+                      <Select value={feedbackFilter} onValueChange={(v) => setFeedbackFilter(v as "all" | "pending" | "processed")}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t("admin.filterAll")}</SelectItem>
+                          <SelectItem value="pending">{t("admin.filterPending")}</SelectItem>
+                          <SelectItem value="processed">{t("admin.filterProcessed")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {filteredFeedback.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">{t("admin.noFeedback")}</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {filteredFeedback.map((item) => (
+                          <div key={item.id} className={`border rounded-lg p-4 ${item.is_processed ? 'opacity-60' : ''}`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium">{item.dish_name}</h4>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(item.created_at).toLocaleDateString()} - {item.feedback_type === "confirmation" ? t("admin.confirmed") : t("admin.correction")}
+                                </p>
+                              </div>
+                              {!item.is_processed && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => createPatternFromFeedback(item)}
+                                  >
+                                    <Check className="h-4 w-4 mr-1" />
+                                    {t("admin.approve")}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => markFeedbackProcessed(item.id)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {item.detected_allergens.length > 0 && (
+                              <div className="mb-2">
+                                <span className="text-xs text-muted-foreground">{t("admin.detectedAllergens")}: </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.detected_allergens.map((a, i) => (
+                                    <Badge key={i} variant="secondary">{a}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {item.missed_allergens.length > 0 && (
+                              <div className="mb-2">
+                                <span className="text-xs text-destructive">{t("admin.missedAllergens")}: </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.missed_allergens.map((a, i) => (
+                                    <Badge key={i} variant="destructive">{a}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {item.false_positives.length > 0 && (
+                              <div className="mb-2">
+                                <span className="text-xs text-warning">{t("admin.falsePositives")}: </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.false_positives.map((a, i) => (
+                                    <Badge key={i} variant="outline">{a}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {item.ingredients && item.ingredients.length > 0 && (
+                              <div>
+                                <span className="text-xs text-muted-foreground">{t("admin.ingredients")}: </span>
+                                <p className="text-sm">{item.ingredients.join(", ")}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="patterns">
+                    {patterns.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">{t("admin.noPatterns")}</p>
+                    ) : (
+                      <div className="border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t("admin.ingredient")}</TableHead>
+                              <TableHead>{t("admin.allergen")}</TableHead>
+                              <TableHead>{t("admin.confidence")}</TableHead>
+                              <TableHead>{t("admin.feedbackCount")}</TableHead>
+                              <TableHead></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {patterns.map((pattern) => (
+                              <TableRow key={pattern.id}>
+                                <TableCell className="font-medium">{pattern.ingredient_pattern}</TableCell>
+                                <TableCell>
+                                  <Badge>{pattern.allergen}</Badge>
+                                </TableCell>
+                                <TableCell>{(pattern.confidence_score * 100).toFixed(0)}%</TableCell>
+                                <TableCell>{pattern.feedback_count}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => deletePattern(pattern.id)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
