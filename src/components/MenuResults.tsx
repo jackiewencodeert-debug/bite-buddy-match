@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AllergenFeedback } from "./AllergenFeedback";
 
 type DishStatus = "safe" | "caution" | "avoid";
 
@@ -124,9 +125,12 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
                       {t("results.contains")} {dish.foundAllergens.join(", ")}
                     </p>
                   )}
-                  <Badge className={getStatusColor(dish.status!)}>
-                    {getStatusText(dish.status!)}
-                  </Badge>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className={getStatusColor(dish.status!)}>
+                      {getStatusText(dish.status!)}
+                    </Badge>
+                    <AllergenFeedback dish={dish} userAllergies={userAllergies} />
+                  </div>
                 </div>
               </div>
               {dish.price && (

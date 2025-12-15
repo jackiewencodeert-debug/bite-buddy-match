@@ -204,9 +204,9 @@ const MenuView = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
       <LanguageToggle />
       <div className="max-w-2xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/business")}>
+        <Button variant="ghost" onClick={() => navigate("/")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("statistics.backToDashboard")}
+          {t("menuView.backToHome")}
         </Button>
 
         <Alert className="border-warning/50 bg-warning/10">

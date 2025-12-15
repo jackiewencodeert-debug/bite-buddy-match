@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Camera, Upload, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BottomNavBarProps {
   onCameraClick?: () => void;
@@ -10,9 +12,24 @@ interface BottomNavBarProps {
 export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+  
+  const checkAuthStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsLoggedIn(!!user);
+  };
   
   const handleProfileClick = () => {
-    navigate("/auth");
+    // If logged in, go to profile. If guest, go to auth
+    if (isLoggedIn) {
+      navigate("/profile");
+    } else {
+      navigate("/auth");
+    }
   };
 
   const handleCameraClick = () => {
@@ -41,7 +58,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
           onClick={handleProfileClick}
           className={cn(
             "flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all",
-            isActive("/auth") 
+            (isLoggedIn ? isActive("/profile") : isActive("/auth"))
               ? "text-primary bg-primary/10" 
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}

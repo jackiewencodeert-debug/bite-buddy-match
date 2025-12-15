@@ -41,6 +41,78 @@ export type Database = {
         }
         Relationships: []
       }
+      allergen_feedback: {
+        Row: {
+          confirmed_allergens: string[]
+          created_at: string
+          detected_allergens: string[]
+          dish_name: string
+          false_positives: string[]
+          feedback_type: string
+          id: string
+          ingredients: string[] | null
+          is_processed: boolean
+          missed_allergens: string[]
+          user_id: string | null
+        }
+        Insert: {
+          confirmed_allergens?: string[]
+          created_at?: string
+          detected_allergens?: string[]
+          dish_name: string
+          false_positives?: string[]
+          feedback_type?: string
+          id?: string
+          ingredients?: string[] | null
+          is_processed?: boolean
+          missed_allergens?: string[]
+          user_id?: string | null
+        }
+        Update: {
+          confirmed_allergens?: string[]
+          created_at?: string
+          detected_allergens?: string[]
+          dish_name?: string
+          false_positives?: string[]
+          feedback_type?: string
+          id?: string
+          ingredients?: string[] | null
+          is_processed?: boolean
+          missed_allergens?: string[]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      allergen_patterns: {
+        Row: {
+          allergen: string
+          confidence_score: number
+          created_at: string
+          feedback_count: number
+          id: string
+          ingredient_pattern: string
+          updated_at: string
+        }
+        Insert: {
+          allergen: string
+          confidence_score?: number
+          created_at?: string
+          feedback_count?: number
+          id?: string
+          ingredient_pattern: string
+          updated_at?: string
+        }
+        Update: {
+          allergen?: string
+          confidence_score?: number
+          created_at?: string
+          feedback_count?: number
+          id?: string
+          ingredient_pattern?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dishes: {
         Row: {
           allergens: string[] | null
