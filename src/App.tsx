@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
 import Scan from "./pages/Scan";
 import Profile from "./pages/Profile";
@@ -26,21 +27,23 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/scan" element={<Scan />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/business" element={<BusinessDashboard />} />
-            <Route path="/business/statistics" element={<BusinessStatistics />} />
-            <Route path="/menu/:qrCode" element={<MenuView />} />
-            <Route path="/menu/:menuId/edit" element={<MenuEditor />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/scan" element={<Scan />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/business" element={<BusinessDashboard />} />
+              <Route path="/business/statistics" element={<BusinessStatistics />} />
+              <Route path="/menu/:qrCode" element={<MenuView />} />
+              <Route path="/menu/:menuId/edit" element={<MenuEditor />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>

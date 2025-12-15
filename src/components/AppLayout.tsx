@@ -1,0 +1,75 @@
+import { useLocation } from "react-router-dom";
+import { BottomNavBar } from "./BottomNavBar";
+import { AdBanner } from "./AdBanner";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+export const AppLayout = ({ children }: AppLayoutProps) => {
+  const location = useLocation();
+  const [showNavBar, setShowNavBar] = useState(true);
+
+  useEffect(() => {
+    checkShowNavBar();
+  }, [location.pathname]);
+
+  const checkShowNavBar = async () => {
+    // Hide on business and admin pages
+    if (
+      location.pathname.startsWith("/business") ||
+      location.pathname.startsWith("/admin") ||
+      location.pathname.startsWith("/auth") ||
+      location.pathname.startsWith("/reset-password")
+    ) {
+      setShowNavBar(false);
+      return;
+    }
+
+    // Check if user is business or admin
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_type")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.user_type === "eetgever") {
+        setShowNavBar(false);
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+      
+      if (roles?.some(r => r.role === "admin")) {
+        setShowNavBar(false);
+        return;
+      }
+    }
+
+    setShowNavBar(true);
+  };
+
+  // Calculate extra padding for bottom nav and ad banner
+  const hasAdBanner = showNavBar && localStorage.getItem("userType") === "gast";
+  const bottomPadding = showNavBar ? (hasAdBanner ? "pb-36" : "pb-20") : "";
+
+  return (
+    <div className={`min-h-screen ${bottomPadding}`}>
+      {children}
+      {showNavBar && (
+        <>
+          <AdBanner />
+          <BottomNavBar />
+        </>
+      )}
+    </div>
+  );
+};
