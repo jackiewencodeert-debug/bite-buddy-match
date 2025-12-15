@@ -49,8 +49,8 @@ export const AdBanner = () => {
         return;
       }
 
-      // Logged in regular user - don't show banner
-      setShowBanner(false);
+      // Logged in regular user (not business, not admin) - show banner
+      setShowBanner(true);
       return;
     }
 

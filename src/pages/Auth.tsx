@@ -192,7 +192,20 @@ const Auth = () => {
         if (profile?.user_type === "eetgever") {
           navigate("/business");
         } else {
-          navigate("/profile");
+          // Check if user has any preferences set
+          const { data: preferences } = await supabase
+            .from("preferences")
+            .select("id")
+            .eq("user_id", data.user.id)
+            .limit(1);
+
+          // If no preferences, go to profile to set them
+          if (!preferences || preferences.length === 0) {
+            navigate("/profile");
+          } else {
+            // User has preferences, go to main page
+            navigate("/");
+          }
         }
       } else {
         const { error } = await supabase.auth.signUp({

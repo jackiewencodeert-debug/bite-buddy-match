@@ -58,8 +58,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   // Calculate extra padding for bottom nav and ad banner
-  const hasAdBanner = showNavBar && localStorage.getItem("userType") === "gast";
-  const bottomPadding = showNavBar ? (hasAdBanner ? "pb-36" : "pb-20") : "";
+  // Ad banner shows for guests AND logged-in regular users
+  const bottomPadding = showNavBar ? "pb-36" : "";
 
   return (
     <div className={`min-h-screen ${bottomPadding}`}>
