@@ -32,6 +32,14 @@ Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this 
 - dietary_info: array of dietary tags if indicated (vegetarisch, veganistisch, halal, kosher) - look for v., vgn., or similar indicators
 - price: price if visible (include € symbol)
 - description: brief description if available
+- category: the section/category this dish belongs to (e.g., "Voorgerechten", "Hoofdgerechten", "Desserts", "Soepen", "Salades", "Drankjes", etc.)
+
+Also extract menu template information:
+- categories: array of all menu section names/categories found on the menu in order
+- style: object with visual styling hints:
+  - primaryColor: dominant color of the menu (hex format like #FF5500)
+  - secondaryColor: secondary/accent color (hex format)
+  - fontStyle: general font style description (e.g., "elegant", "modern", "rustic", "casual")
 
 Return in this exact JSON format:
 {
@@ -43,16 +51,27 @@ Return in this exact JSON format:
       "allergens": ["string"],
       "dietary_info": ["string"],
       "price": "string",
-      "description": "string"
+      "description": "string",
+      "category": "string"
     }
-  ]
+  ],
+  "template": {
+    "categories": ["string"],
+    "style": {
+      "primaryColor": "#000000",
+      "secondaryColor": "#FFFFFF",
+      "fontStyle": "string"
+    }
+  }
 }
 
-${isMultiple ? 'Combine all dishes from all menu pages into one array. Do not duplicate dishes.' : ''}
-If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": []}`;
+${isMultiple ? 'Combine all dishes from all menu pages into one array. Do not duplicate dishes. Merge categories from all pages.' : ''}
+If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {"isMenu": false, "dishes": [], "template": null}`;
 
     // Process files (images and PDFs)
     let allDishes: any[] = [];
+    let allCategories: string[] = [];
+    let templateStyle: any = null;
     let foundMenu = false;
 
     for (const item of images) {
@@ -96,7 +115,7 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
                 content: [
                   {
                     type: "text",
-                    text: "Please analyze this menu PDF document and extract all dishes with their ingredients, allergens, prices, and dietary information."
+                    text: "Please analyze this menu PDF document and extract all dishes with their ingredients, allergens, prices, dietary information, and categories. Also extract the menu template styling."
                   },
                   {
                     type: "image_url",
@@ -189,6 +208,16 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
       if (parsedContent.isMenu) {
         foundMenu = true;
         allDishes = allDishes.concat(parsedContent.dishes || []);
+        
+        // Collect categories
+        if (parsedContent.template?.categories) {
+          allCategories = [...new Set([...allCategories, ...parsedContent.template.categories])];
+        }
+        
+        // Use first valid template style found
+        if (!templateStyle && parsedContent.template?.style) {
+          templateStyle = parsedContent.template.style;
+        }
       }
     }
 
@@ -197,12 +226,16 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
       index === self.findIndex((d) => d.name.toLowerCase() === dish.name.toLowerCase())
     );
 
-    console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length);
+    console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length, ", categories =", allCategories.length);
 
     return new Response(
       JSON.stringify({
         isMenu: foundMenu,
-        dishes: uniqueDishes
+        dishes: uniqueDishes,
+        template: foundMenu ? {
+          categories: allCategories,
+          style: templateStyle
+        } : null
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

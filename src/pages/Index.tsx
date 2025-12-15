@@ -38,6 +38,12 @@ const Index = () => {
       if (session?.user) {
         checkUserType(session.user.id);
         checkAdminRole(session.user.id);
+      } else {
+        // Auto-login as guest if no session and not already a guest
+        const currentGuestType = localStorage.getItem("userType");
+        if (!currentGuestType) {
+          autoLoginAsGuest();
+        }
       }
     });
 
@@ -77,9 +83,7 @@ const Index = () => {
     setIsAdmin(roles?.some(r => r.role === "admin") ?? false);
   };
 
-  const isLoggedIn = user || isGuest;
-
-  const handleGuestContinue = async () => {
+  const autoLoginAsGuest = async () => {
     localStorage.setItem("userType", "gast");
     // Set guest expiry time (12 hours from now)
     const expiryTime = Date.now() + 12 * 60 * 60 * 1000;
@@ -95,12 +99,10 @@ const Index = () => {
       console.error("Error logging guest registration:", error);
     }
     
-    toast({
-      title: t("auth.guestWelcome"),
-      description: t("auth.guestWelcomeDesc"),
-    });
-    navigate("/profile");
+    setIsGuest(true);
   };
+
+  const isLoggedIn = user || isGuest;
 
   const handleLogout = async () => {
     // Clear guest data if guest
@@ -115,7 +117,8 @@ const Index = () => {
       title: "Uitgelogd",
       description: "Je bent succesvol uitgelogd.",
     });
-    navigate("/");
+    // Re-login as guest after logout
+    autoLoginAsGuest();
   };
 
   return (
@@ -150,57 +153,41 @@ const Index = () => {
                     </Button>
                   </Link>
                 )}
-                {!isBusiness && !isAdmin && (
-                  <Link to="/profile">
-                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                      <User className="mr-2 h-5 w-5" />
-                      {t("index.profile")}
-                    </Button>
-                  </Link>
-                )}
-                {isBusiness ? (
+                {isBusiness && (
                   <Link to="/business">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
                       <Building2 className="mr-2 h-5 w-5" />
                       {t("index.businessDashboard")}
                     </Button>
                   </Link>
-                ) : !isAdmin && (
-                  <Link to="/scan">
-                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                      <Camera className="mr-2 h-5 w-5" />
-                      {t("index.scanMenu")}
+                )}
+                {!isBusiness && !isAdmin && !isGuest && (
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="text-lg px-8 transition-all hover:scale-105"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    {t("profile.logout")}
+                  </Button>
+                )}
+                {isGuest && (
+                  <Link to="/auth">
+                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                      <Users className="mr-2 h-5 w-5" />
+                      {t("auth.signIn")}
                     </Button>
                   </Link>
                 )}
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-lg px-8 transition-all hover:scale-105"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-5 w-5" />
-                  {t("profile.logout")}
-                </Button>
               </>
             ) : (
-              <>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-lg px-8 transition-all hover:scale-105"
-                  onClick={handleGuestContinue}
-                >
+              <Link to="/auth">
+                <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
                   <Users className="mr-2 h-5 w-5" />
-                  {t("auth.guest")}
+                  {t("auth.signIn")}
                 </Button>
-                <Link to="/auth">
-                  <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                    <Users className="mr-2 h-5 w-5" />
-                    {t("auth.signIn")}
-                  </Button>
-                </Link>
-              </>
+              </Link>
             )}
           </div>
         </div>
@@ -265,22 +252,13 @@ const Index = () => {
           <p className="text-lg text-white/90 mb-8">
             {isLoggedIn ? t("index.readyDesc") : t("index.readyDescLoggedOut")}
           </p>
-          {isLoggedIn && (
-            isBusiness ? (
-              <Link to="/business">
-                <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                  <Building2 className="mr-2 h-5 w-5" />
-                  {t("index.businessDashboard")}
-                </Button>
-              </Link>
-            ) : (
-              <Link to="/scan">
-                <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                  <Camera className="mr-2 h-5 w-5" />
-                  {t("index.scanMenu")}
-                </Button>
-              </Link>
-            )
+          {isLoggedIn && isBusiness && (
+            <Link to="/business">
+              <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <Building2 className="mr-2 h-5 w-5" />
+                {t("index.businessDashboard")}
+              </Button>
+            </Link>
           )}
         </div>
       </section>

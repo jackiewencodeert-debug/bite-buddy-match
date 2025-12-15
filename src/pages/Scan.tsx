@@ -11,6 +11,7 @@ import {
 import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
+import { GuestMenuResults } from "@/components/GuestMenuResults";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdMobService } from "@/services/admob";
@@ -26,10 +27,12 @@ const Scan = () => {
   const [multipleImages, setMultipleImages] = useState<string[]>([]);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userType, setUserType] = useState<string>("");
+  const [isGuest, setIsGuest] = useState(false);
   const [showAd, setShowAd] = useState(false);
   const [pendingMode, setPendingMode] = useState<"camera" | "upload" | "multiple" | null>(null);
   const [adCountdown, setAdCountdown] = useState(5);
   const [analyzedDishes, setAnalyzedDishes] = useState<any[]>([]);
+  const [menuTemplate, setMenuTemplate] = useState<{ categories?: string[]; style?: any }>({});
   const [userAllergies, setUserAllergies] = useState<string[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -45,12 +48,24 @@ const Scan = () => {
   useEffect(() => {
     checkUserType();
     
+    // Check if guest
+    const guestType = localStorage.getItem("userType");
+    setIsGuest(guestType === "gast");
+    
     // Check for payment success
     if (searchParams.get('payment') === 'success') {
       toast({
         title: "Betaling geslaagd!",
         description: "Je kunt nu je menu scannen.",
       });
+    }
+
+    // Handle mode from URL (from bottom nav bar)
+    const urlMode = searchParams.get('mode');
+    if (urlMode === 'camera') {
+      handleModeSelection("camera");
+    } else if (urlMode === 'upload') {
+      handleModeSelection("multiple");
     }
   }, [searchParams]);
 
@@ -87,11 +102,12 @@ const Scan = () => {
   };
 
   const handleModeSelection = async (selectedMode: "camera" | "upload" | "multiple") => {
-    // Check if user is eter or gast
+    // Check if user is guest
     const guestType = localStorage.getItem("userType");
-    const isGuest = guestType === "gast";
+    const currentIsGuest = guestType === "gast";
     
-    if (isGuest || userType === "eter" || userType === "") {
+    // Only show ad to guests when scanning
+    if (currentIsGuest) {
       // Log ad shown event
       await logAdEvent('shown');
       
@@ -117,7 +133,7 @@ const Scan = () => {
         setAdCountdown(5);
       }
     } else {
-      // Business users skip the ad
+      // Logged in users and business users skip the ad
       proceedWithMode(selectedMode);
     }
   };
@@ -395,6 +411,14 @@ const Scan = () => {
       setAnalyzedDishes(processedDishes);
       setUserAllergies(allergies);
       setUserPreferences(preferences);
+      
+      // Store menu template info
+      if (analysisData.template) {
+        setMenuTemplate({
+          categories: analysisData.template.categories || [],
+          style: analysisData.template.style || {}
+        });
+      }
 
       // If business user, generate QR code and save to database
       if (userType === "eetgever" && user) {
@@ -484,6 +508,7 @@ const Scan = () => {
     setAnalyzedDishes([]);
     setUserAllergies([]);
     setUserPreferences([]);
+    setMenuTemplate({});
     setErrorMessage("");
     stopCamera();
   };
@@ -887,6 +912,12 @@ const Scan = () => {
                   </div>
                 </Card>
               </div>
+            ) : isGuest ? (
+              <GuestMenuResults 
+                dishes={analyzedDishes}
+                categories={menuTemplate.categories}
+                menuStyle={menuTemplate.style}
+              />
             ) : (
               <MenuResults 
                 dishes={analyzedDishes}
