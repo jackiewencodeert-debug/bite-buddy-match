@@ -190,6 +190,60 @@ const Index = () => {
               </Link>
             )}
           </div>
+
+          {/* How It Works - Direct onder Scan Menu */}
+          {!isBusiness && !isAdmin && (
+            <div className="mt-12 text-left max-w-2xl mx-auto">
+              <h2 className="text-2xl font-bold text-center mb-8">
+                {t("index.howItWorksTitle")}
+              </h2>
+              
+              <div className="space-y-6">
+                <Step
+                  number="1"
+                  title={t("index.step1Title")}
+                  description={t("index.step1Desc")}
+                />
+                <Step
+                  number="2"
+                  title={t("index.step2Title")}
+                  description={t("index.step2Desc")}
+                />
+                <Step
+                  number="3"
+                  title={t("index.step3Title")}
+                  description={t("index.step3Desc")}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Business How It Works */}
+          {isBusiness && (
+            <div className="mt-12 text-left max-w-2xl mx-auto">
+              <h2 className="text-2xl font-bold text-center mb-8">
+                {t("index.howItWorksTitle")}
+              </h2>
+              
+              <div className="space-y-6">
+                <Step
+                  number="1"
+                  title={t("index.businessStep1Title")}
+                  description={t("index.businessStep1Desc")}
+                />
+                <Step
+                  number="2"
+                  title={t("index.businessStep2Title")}
+                  description={t("index.businessStep2Desc")}
+                />
+                <Step
+                  number="3"
+                  title={t("index.businessStep3Title")}
+                  description={t("index.businessStep3Desc")}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -211,33 +265,6 @@ const Index = () => {
             title={isBusiness ? t("index.businessFeature3Title") : t("index.feature3Title")}
             description={isBusiness ? t("index.businessFeature3Desc") : t("index.feature3Desc")}
           />
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            {t("index.howItWorksTitle")}
-          </h2>
-          
-          <div className="space-y-8">
-            <Step
-              number="1"
-              title={isBusiness ? t("index.businessStep1Title") : t("index.step1Title")}
-              description={isBusiness ? t("index.businessStep1Desc") : t("index.step1Desc")}
-            />
-            <Step
-              number="2"
-              title={isBusiness ? t("index.businessStep2Title") : t("index.step2Title")}
-              description={isBusiness ? t("index.businessStep2Desc") : t("index.step2Desc")}
-            />
-            <Step
-              number="3"
-              title={isBusiness ? t("index.businessStep3Title") : t("index.step3Title")}
-              description={isBusiness ? t("index.businessStep3Desc") : t("index.step3Desc")}
-            />
-          </div>
         </div>
       </section>
 
