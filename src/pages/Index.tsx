@@ -287,6 +287,14 @@ const Index = () => {
               </Button>
             </Link>
           )}
+          {isLoggedIn && !isBusiness && !isAdmin && (
+            <Link to="/scan">
+              <Button size="lg" variant="secondary" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <Camera className="mr-2 h-5 w-5" />
+                {t("index.scanMenu")}
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
 
