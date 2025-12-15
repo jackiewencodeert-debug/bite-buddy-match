@@ -173,10 +173,10 @@ const Index = () => {
                   </Button>
                 )}
                 {isGuest && (
-                  <Link to="/auth">
-                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                      <Users className="mr-2 h-5 w-5" />
-                      {t("auth.signIn")}
+                  <Link to="/scan">
+                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                      <Camera className="mr-2 h-5 w-5" />
+                      {t("index.scanMenu")}
                     </Button>
                   </Link>
                 )}
