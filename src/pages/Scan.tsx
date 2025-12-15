@@ -102,11 +102,19 @@ const Scan = () => {
   };
 
   const handleModeSelection = async (selectedMode: "camera" | "upload" | "multiple") => {
-    // Check if user is guest
+    // Check if user is actually logged in (authenticated)
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // If user is logged in (not guest), skip the ad completely
+    if (user) {
+      proceedWithMode(selectedMode);
+      return;
+    }
+    
+    // Only show ad to guests when scanning
     const guestType = localStorage.getItem("userType");
     const currentIsGuest = guestType === "gast";
     
-    // Only show ad to guests when scanning
     if (currentIsGuest) {
       // Log ad shown event
       await logAdEvent('shown');
@@ -133,7 +141,7 @@ const Scan = () => {
         setAdCountdown(5);
       }
     } else {
-      // Logged in users and business users skip the ad
+      // Not logged in and not guest - proceed without ad
       proceedWithMode(selectedMode);
     }
   };
