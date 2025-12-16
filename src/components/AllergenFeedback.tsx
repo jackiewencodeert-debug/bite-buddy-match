@@ -17,11 +17,20 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+interface TranslatedItem {
+  original: string;
+  nl?: string;
+  en?: string;
+  fr?: string;
+  es?: string;
+  de?: string;
+}
+
 interface Dish {
   id: string;
   name: string;
   ingredients: string[];
-  allergens?: string[];
+  allergens?: (string | TranslatedItem)[];
 }
 
 interface AllergenFeedbackProps {
@@ -35,6 +44,12 @@ const commonAllergens = [
   "sesam", "weekdieren", "lupine", "pinda"
 ];
 
+// Helper to get string value from allergen
+const getAllergenString = (allergen: string | TranslatedItem): string => {
+  if (typeof allergen === 'string') return allergen;
+  return allergen.original;
+};
+
 export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<"confirm" | "correct">("confirm");
@@ -45,6 +60,9 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  // Convert allergens to string array for storage
+  const allergenStrings = dish.allergens?.map(getAllergenString) || [];
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
@@ -53,8 +71,8 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
       await supabase.from("allergen_feedback").insert({
         user_id: user?.id || null,
         dish_name: dish.name,
-        detected_allergens: dish.allergens || [],
-        confirmed_allergens: feedbackType === "confirm" ? (dish.allergens || []) : [],
+        detected_allergens: allergenStrings,
+        confirmed_allergens: feedbackType === "confirm" ? allergenStrings : [],
         missed_allergens: missedAllergens,
         false_positives: falsePositives,
         ingredients: dish.ingredients,
@@ -122,11 +140,11 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
 
         <div className="space-y-6 pt-4">
           {/* Current detected allergens */}
-          {dish.allergens && dish.allergens.length > 0 && (
+          {allergenStrings.length > 0 && (
             <div>
               <Label className="text-sm font-medium">{t("feedback.detectedAllergens")}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {dish.allergens.map((allergen, idx) => (
+                {allergenStrings.map((allergen, idx) => (
                   <Badge key={idx} variant="secondary">
                     {allergen}
                   </Badge>
@@ -164,13 +182,13 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
           {feedbackType === "correct" && (
             <>
               {/* False positives */}
-              {dish.allergens && dish.allergens.length > 0 && (
+              {allergenStrings.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
                     {t("feedback.falsePositives")}
                   </Label>
                   <div className="flex flex-wrap gap-2">
-                    {dish.allergens.map((allergen, idx) => (
+                    {allergenStrings.map((allergen, idx) => (
                       <Badge
                         key={idx}
                         variant={falsePositives.includes(allergen) ? "destructive" : "outline"}
@@ -192,7 +210,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
                 </Label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {commonAllergens
-                    .filter(a => !dish.allergens?.includes(a))
+                    .filter(a => !allergenStrings.includes(a))
                     .map((allergen, idx) => (
                       <Badge
                         key={idx}
