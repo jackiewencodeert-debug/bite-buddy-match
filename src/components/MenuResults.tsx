@@ -8,6 +8,13 @@ type DishStatus = "safe" | "caution" | "avoid";
 interface Dish {
   id: string;
   name: string;
+  name_translations?: {
+    nl?: string;
+    en?: string;
+    fr?: string;
+    es?: string;
+    de?: string;
+  };
   ingredients: string[];
   allergens?: string[];
   dietary_info?: string[];
@@ -52,7 +59,19 @@ const getStatusColor = (status: DishStatus) => {
 };
 
 export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], menuStyle }: MenuResultsProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Get translated dish name with original if different
+  const getDishDisplayName = (dish: Dish) => {
+    const translations = dish.name_translations;
+    if (!translations) return dish.name;
+    
+    const translatedName = translations[language as keyof typeof translations];
+    if (!translatedName || translatedName.toLowerCase() === dish.name.toLowerCase()) {
+      return dish.name;
+    }
+    return `${dish.name} / ${translatedName}`;
+  };
 
   const getFontClass = () => {
     if (!menuStyle?.fontStyle) return '';
@@ -130,7 +149,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
                   {getStatusEmoji(dish.status!)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-semibold mb-2">{dish.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2">{getDishDisplayName(dish)}</h3>
                   {dish.description && (
                     <p className="text-sm text-muted-foreground mb-2">{dish.description}</p>
                   )}

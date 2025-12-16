@@ -6,6 +6,13 @@ import { AllergenFeedback } from "./AllergenFeedback";
 interface Dish {
   id: string;
   name: string;
+  name_translations?: {
+    nl?: string;
+    en?: string;
+    fr?: string;
+    es?: string;
+    de?: string;
+  };
   ingredients: string[];
   allergens?: string[];
   dietary_info?: string[];
@@ -26,7 +33,19 @@ interface GuestMenuResultsProps {
 }
 
 export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuResultsProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Get translated dish name with original if different
+  const getDishDisplayName = (dish: Dish) => {
+    const translations = dish.name_translations;
+    if (!translations) return dish.name;
+    
+    const translatedName = translations[language as keyof typeof translations];
+    if (!translatedName || translatedName.toLowerCase() === dish.name.toLowerCase()) {
+      return dish.name;
+    }
+    return `${dish.name} / ${translatedName}`;
+  };
 
   // Group dishes by category if categories exist
   const groupedDishes = categories && categories.length > 0
@@ -91,7 +110,7 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-xl font-semibold">{dish.name}</h3>
+                      <h3 className="text-xl font-semibold">{getDishDisplayName(dish)}</h3>
                       {dish.dietary_info && dish.dietary_info.length > 0 && (
                         <div className="flex gap-1">
                           {dish.dietary_info

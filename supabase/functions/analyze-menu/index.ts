@@ -75,7 +75,8 @@ serve(async (req) => {
     const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
 
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
-- name: dish name (required)
+- name: dish name as it appears on the menu (required)
+- name_translations: object with translations of the dish name in these languages: { "nl": "Dutch name", "en": "English name", "fr": "French name", "es": "Spanish name", "de": "German name" }. If the original name is already in one of these languages, still provide translations for the other languages.
 - ingredients: array of ingredients mentioned or that can be inferred from the dish description (in Dutch if possible)
 - allergens: array of allergens found or inferred (common ones: noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet, selderij, mosterd, sesam, weekdieren, lupine)
 - dietary_info: array of dietary tags if indicated (vegetarisch, veganistisch, halal, kosher) - look for v., vgn., or similar indicators
@@ -96,6 +97,7 @@ Return in this exact JSON format:
   "dishes": [
     {
       "name": "string",
+      "name_translations": { "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" },
       "ingredients": ["string"],
       "allergens": ["string"],
       "dietary_info": ["string"],
