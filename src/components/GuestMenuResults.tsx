@@ -20,6 +20,7 @@ interface GuestMenuResultsProps {
     primaryColor?: string;
     secondaryColor?: string;
     fontStyle?: string;
+    backgroundColor?: string;
   };
   categories?: string[];
 }
@@ -39,12 +40,30 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
   const customStyle = menuStyle ? {
     '--menu-primary': menuStyle.primaryColor || 'hsl(var(--primary))',
     '--menu-secondary': menuStyle.secondaryColor || 'hsl(var(--secondary))',
+    '--menu-bg': menuStyle.backgroundColor || 'transparent',
+    fontFamily: menuStyle.fontStyle || 'inherit',
   } as React.CSSProperties : {};
 
+  const getFontClass = () => {
+    if (!menuStyle?.fontStyle) return '';
+    const font = menuStyle.fontStyle.toLowerCase();
+    if (font.includes('serif')) return 'font-serif';
+    if (font.includes('mono')) return 'font-mono';
+    return '';
+  };
+
   return (
-    <div className="max-w-4xl mx-auto" style={customStyle}>
+    <div 
+      className={`max-w-4xl mx-auto ${getFontClass()}`} 
+      style={customStyle}
+    >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">{t("results.title")}</h2>
+        <h2 
+          className="text-3xl font-bold mb-2"
+          style={{ color: menuStyle?.primaryColor }}
+        >
+          {t("results.title")}
+        </h2>
         <p className="text-muted-foreground">
           {t("results.found").replace("{count}", String(dishes.length))}
         </p>
@@ -56,7 +75,10 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
       {groupedDishes.map((group, groupIndex) => (
         <div key={groupIndex} className="mb-8">
           {group.category && (
-            <h3 className="text-xl font-semibold mb-4 text-primary border-b border-border pb-2">
+            <h3 
+              className="text-xl font-semibold mb-4 border-b border-border pb-2"
+              style={{ color: menuStyle?.primaryColor || 'hsl(var(--primary))' }}
+            >
               {group.category}
             </h3>
           )}
@@ -107,7 +129,7 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                           <Badge
                             key={`allergen-${idx}`}
                             variant="outline"
-                            className="text-xs bg-warning/10 text-warning border-warning/20"
+                            className="text-xs bg-destructive/20 text-destructive border-destructive/30"
                           >
                             {allergen}
                           </Badge>
@@ -119,7 +141,10 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                     </div>
                   </div>
                   {dish.price && (
-                    <div className="text-lg font-semibold text-primary flex-shrink-0">
+                    <div 
+                      className="text-lg font-semibold flex-shrink-0"
+                      style={{ color: menuStyle?.primaryColor || 'hsl(var(--primary))' }}
+                    >
                       {dish.price}
                     </div>
                   )}
