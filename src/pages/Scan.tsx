@@ -931,6 +931,7 @@ const Scan = () => {
                 dishes={analyzedDishes}
                 userAllergies={userAllergies}
                 userPreferences={userPreferences}
+                menuStyle={menuTemplate.style}
               />
             )}
           </>

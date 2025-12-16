@@ -21,6 +21,12 @@ interface MenuResultsProps {
   dishes: Dish[];
   userAllergies?: string[];
   userPreferences?: string[];
+  menuStyle?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+    fontStyle?: string;
+    backgroundColor?: string;
+  };
 }
 
 const getStatusEmoji = (status: DishStatus) => {
@@ -45,8 +51,22 @@ const getStatusColor = (status: DishStatus) => {
   }
 };
 
-export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }: MenuResultsProps) => {
+export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], menuStyle }: MenuResultsProps) => {
   const { t } = useLanguage();
+
+  const getFontClass = () => {
+    if (!menuStyle?.fontStyle) return '';
+    const font = menuStyle.fontStyle.toLowerCase();
+    if (font.includes('serif')) return 'font-serif';
+    if (font.includes('mono')) return 'font-mono';
+    return '';
+  };
+
+  const customStyle = menuStyle ? {
+    '--menu-primary': menuStyle.primaryColor || 'hsl(var(--primary))',
+    '--menu-secondary': menuStyle.secondaryColor || 'hsl(var(--secondary))',
+    fontFamily: menuStyle.fontStyle || 'inherit',
+  } as React.CSSProperties : {};
 
   const getStatusText = (status: DishStatus) => {
     switch (status) {
@@ -85,9 +105,14 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
   }, {} as Record<DishStatus, number>);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${getFontClass()}`} style={customStyle}>
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">{t("results.title")}</h2>
+        <h2 
+          className="text-3xl font-bold mb-2"
+          style={{ color: menuStyle?.primaryColor }}
+        >
+          {t("results.title")}
+        </h2>
         <p className="text-muted-foreground">
           {t("results.found").replace("{count}", String(dishes.length))}
         </p>
@@ -120,6 +145,25 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [] }
                       </Badge>
                     ))}
                   </div>
+                  {dish.allergens && dish.allergens.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <span className="text-xs text-muted-foreground mr-1">Allergenen:</span>
+                      {dish.allergens.map((allergen, idx) => {
+                        const isMatching = dish.foundAllergens?.some(
+                          fa => fa.toLowerCase() === allergen.toLowerCase()
+                        );
+                        return (
+                          <Badge
+                            key={`allergen-${idx}`}
+                            variant="outline"
+                            className={`text-xs ${isMatching ? 'bg-destructive/20 text-destructive border-destructive/30' : 'bg-warning/10 text-warning border-warning/20'}`}
+                          >
+                            {allergen}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
                   {dish.foundAllergens && dish.foundAllergens.length > 0 && (
                     <p className="text-sm text-destructive font-medium mb-2">
                       {t("results.contains")} {dish.foundAllergens.join(", ")}
