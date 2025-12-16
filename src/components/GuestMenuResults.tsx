@@ -3,6 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
 
+interface TranslatedItem {
+  original: string;
+  nl?: string;
+  en?: string;
+  fr?: string;
+  es?: string;
+  de?: string;
+}
+
 interface Dish {
   id: string;
   name: string;
@@ -14,8 +23,8 @@ interface Dish {
     de?: string;
   };
   ingredients: string[];
-  allergens?: string[];
-  dietary_info?: string[];
+  allergens?: (string | TranslatedItem)[];
+  dietary_info?: (string | TranslatedItem)[];
   price?: string;
   description?: string;
   category?: string;
@@ -45,6 +54,13 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
       return dish.name;
     }
     return `${dish.name} / ${translatedName}`;
+  };
+
+  // Get translated allergen or dietary info
+  const getTranslatedItem = (item: string | TranslatedItem): string => {
+    if (typeof item === 'string') return item;
+    const translated = item[language as keyof TranslatedItem];
+    return (typeof translated === 'string' ? translated : item.original) || item.original;
   };
 
   // Group dishes by category if categories exist
@@ -114,14 +130,18 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                       {dish.dietary_info && dish.dietary_info.length > 0 && (
                         <div className="flex gap-1">
                           {dish.dietary_info
-                            .filter(info => info.toLowerCase() !== "vegetarisch" || !dish.dietary_info?.some(d => d.toLowerCase() === "veganistisch"))
+                            .filter(info => {
+                              const infoStr = getTranslatedItem(info).toLowerCase();
+                              const hasVegan = dish.dietary_info?.some(d => getTranslatedItem(d).toLowerCase().includes('vegan'));
+                              return !infoStr.includes('vegetar') || !hasVegan;
+                            })
                             .map((info, idx) => (
                               <Badge
                                 key={`diet-${idx}`}
                                 variant="outline"
                                 className="text-xs bg-success/10 text-success border-success/20"
                               >
-                                {info}
+                                {getTranslatedItem(info)}
                               </Badge>
                             ))}
                         </div>
@@ -143,14 +163,14 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                     </div>
                     {dish.allergens && dish.allergens.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-xs text-muted-foreground mr-1">Allergenen:</span>
+                        <span className="text-xs text-muted-foreground mr-1">{t("results.allergens") || "Allergenen"}:</span>
                         {dish.allergens.map((allergen, idx) => (
                           <Badge
                             key={`allergen-${idx}`}
                             variant="outline"
                             className="text-xs bg-destructive/20 text-destructive border-destructive/30"
                           >
-                            {allergen}
+                            {getTranslatedItem(allergen)}
                           </Badge>
                         ))}
                       </div>

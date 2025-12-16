@@ -76,13 +76,19 @@ serve(async (req) => {
 
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
 - name: dish name as it appears on the menu (required)
-- name_translations: object with translations of the dish name in these languages: { "nl": "Dutch name", "en": "English name", "fr": "French name", "es": "Spanish name", "de": "German name" }. If the original name is already in one of these languages, still provide translations for the other languages.
+- name_translations: object with translations of the dish name in these languages: { "nl": "Dutch name", "en": "English name", "fr": "French name", "es": "Spanish name", "de": "German name" }
 - ingredients: array of ingredients mentioned or that can be inferred from the dish description (in Dutch if possible)
-- allergens: array of allergens found or inferred (common ones: noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet, selderij, mosterd, sesam, weekdieren, lupine)
-- dietary_info: array of dietary tags if indicated (vegetarisch, veganistisch, halal, kosher) - look for v., vgn., or similar indicators
+- allergens: array of allergen objects, each with translations: [{ "original": "noten", "nl": "Noten", "en": "Nuts", "fr": "Noix", "es": "Frutos secos", "de": "Nüsse" }]
+- dietary_info: array of dietary info objects, each with translations: [{ "original": "vegetarisch", "nl": "Vegetarisch", "en": "Vegetarian", "fr": "Végétarien", "es": "Vegetariano", "de": "Vegetarisch" }]
 - price: price if visible (include € symbol)
 - description: brief description if available
 - category: the section/category this dish belongs to (e.g., "Voorgerechten", "Hoofdgerechten", "Desserts", "Soepen", "Salades", "Drankjes", etc.)
+
+Common allergens to detect (with their standard translations):
+- noten/nuts, gluten, lactose, schaaldieren/shellfish, vis/fish, eieren/eggs, soja/soy, sulfiet/sulfite, selderij/celery, mosterd/mustard, sesam/sesame, weekdieren/mollusks, lupine
+
+Common dietary preferences to detect:
+- vegetarisch/vegetarian, veganistisch/vegan, halal, kosher
 
 Also extract menu template information:
 - categories: array of all menu section names/categories found on the menu in order
@@ -99,8 +105,8 @@ Return in this exact JSON format:
       "name": "string",
       "name_translations": { "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" },
       "ingredients": ["string"],
-      "allergens": ["string"],
-      "dietary_info": ["string"],
+      "allergens": [{ "original": "string", "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" }],
+      "dietary_info": [{ "original": "string", "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" }],
       "price": "string",
       "description": "string",
       "category": "string"

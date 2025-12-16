@@ -5,6 +5,15 @@ import { AllergenFeedback } from "./AllergenFeedback";
 
 type DishStatus = "safe" | "caution" | "avoid";
 
+interface TranslatedItem {
+  original: string;
+  nl?: string;
+  en?: string;
+  fr?: string;
+  es?: string;
+  de?: string;
+}
+
 interface Dish {
   id: string;
   name: string;
@@ -16,8 +25,8 @@ interface Dish {
     de?: string;
   };
   ingredients: string[];
-  allergens?: string[];
-  dietary_info?: string[];
+  allergens?: (string | TranslatedItem)[];
+  dietary_info?: (string | TranslatedItem)[];
   status?: DishStatus;
   foundAllergens?: string[];
   price?: string;
@@ -73,6 +82,19 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
     return `${dish.name} / ${translatedName}`;
   };
 
+  // Get translated allergen or dietary info
+  const getTranslatedItem = (item: string | TranslatedItem): string => {
+    if (typeof item === 'string') return item;
+    const translated = item[language as keyof TranslatedItem];
+    return (typeof translated === 'string' ? translated : item.original) || item.original;
+  };
+
+  // Get original value for comparison
+  const getOriginalItem = (item: string | TranslatedItem): string => {
+    if (typeof item === 'string') return item;
+    return item.original;
+  };
+
   const getFontClass = () => {
     if (!menuStyle?.fontStyle) return '';
     const font = menuStyle.fontStyle.toLowerCase();
@@ -103,12 +125,13 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
     if (dish.status) return dish;
     
     // Check if any dish allergens match user allergies
-    const foundAllergens = dish.allergens?.filter(allergen => 
-      userAllergies.some(userAllergy => 
-        allergen.toLowerCase().includes(userAllergy.toLowerCase()) ||
-        userAllergy.toLowerCase().includes(allergen.toLowerCase())
-      )
-    ) || [];
+    const foundAllergens = dish.allergens?.filter(allergen => {
+      const originalAllergen = getOriginalItem(allergen);
+      return userAllergies.some(userAllergy => 
+        originalAllergen.toLowerCase().includes(userAllergy.toLowerCase()) ||
+        userAllergy.toLowerCase().includes(originalAllergen.toLowerCase())
+      );
+    }).map(a => getOriginalItem(a)) || [];
 
     let status: DishStatus = "safe";
     if (foundAllergens.length > 0) {
@@ -166,10 +189,11 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
                   </div>
                   {dish.allergens && dish.allergens.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
-                      <span className="text-xs text-muted-foreground mr-1">Allergenen:</span>
+                      <span className="text-xs text-muted-foreground mr-1">{t("results.allergens") || "Allergenen"}:</span>
                       {dish.allergens.map((allergen, idx) => {
+                        const originalAllergen = getOriginalItem(allergen);
                         const isMatching = dish.foundAllergens?.some(
-                          fa => fa.toLowerCase() === allergen.toLowerCase()
+                          fa => fa.toLowerCase() === originalAllergen.toLowerCase()
                         );
                         return (
                           <Badge
@@ -177,7 +201,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
                             variant="outline"
                             className={`text-xs ${isMatching ? 'bg-destructive/20 text-destructive border-destructive/30' : 'bg-warning/10 text-warning border-warning/20'}`}
                           >
-                            {allergen}
+                            {getTranslatedItem(allergen)}
                           </Badge>
                         );
                       })}
