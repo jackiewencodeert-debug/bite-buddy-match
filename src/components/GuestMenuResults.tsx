@@ -22,7 +22,7 @@ interface Dish {
     es?: string;
     de?: string;
   };
-  ingredients: string[];
+  ingredients: (string | TranslatedItem)[];
   allergens?: (string | TranslatedItem)[];
   dietary_info?: (string | TranslatedItem)[];
   price?: string;
@@ -153,11 +153,11 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                     <div className="flex flex-wrap gap-2 mb-3">
                       {dish.ingredients.map((ingredient, idx) => (
                         <Badge
-                          key={`${ingredient}-${idx}`}
+                          key={`ingredient-${idx}`}
                           variant="secondary"
                           className="text-xs"
                         >
-                          {ingredient}
+                          {getTranslatedItem(ingredient)}
                         </Badge>
                       ))}
                     </div>
