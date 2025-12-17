@@ -77,7 +77,7 @@ const systemPrompt = `You are a menu analysis assistant. Analyze menu images/doc
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
 - name: dish name EXACTLY as it appears on the menu (required)
 - name_translations: REQUIRED object with translations of the dish name. ALWAYS provide this for every dish, even if the original is already in one of the target languages: { "nl": "Dutch translation", "en": "English translation", "fr": "French translation", "es": "Spanish translation", "de": "German translation" }
-- ingredients: array of ingredients mentioned or that can be inferred from the dish description (in Dutch if possible)
+- ingredients: array of ingredient objects, each with translations: [{ "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen" }]
 - allergens: array of allergen objects, each with translations: [{ "original": "noten", "nl": "Noten", "en": "Nuts", "fr": "Noix", "es": "Frutos secos", "de": "Nüsse" }]
 - dietary_info: array of dietary info objects, each with translations: [{ "original": "vegetarisch", "nl": "Vegetarisch", "en": "Vegetarian", "fr": "Végétarien", "es": "Vegetariano", "de": "Vegetarisch" }]
 - price: price if visible (include € symbol)
@@ -106,7 +106,11 @@ Return in this exact JSON format (name_translations is REQUIRED for every dish):
     {
       "name": "Kippensoep",
       "name_translations": { "nl": "Kippensoep", "en": "Chicken soup", "fr": "Soupe au poulet", "es": "Sopa de pollo", "de": "Hühnersuppe" },
-      "ingredients": ["kip", "wortel", "selderij"],
+      "ingredients": [
+        { "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen" },
+        { "original": "wortel", "nl": "Wortel", "en": "Carrot", "fr": "Carotte", "es": "Zanahoria", "de": "Karotte" },
+        { "original": "selderij", "nl": "Selderij", "en": "Celery", "fr": "Céleri", "es": "Apio", "de": "Sellerie" }
+      ],
       "allergens": [{ "original": "selderij", "nl": "Selderij", "en": "Celery", "fr": "Céleri", "es": "Apio", "de": "Sellerie" }],
       "dietary_info": [],
       "price": "€7,50",

@@ -29,7 +29,7 @@ interface TranslatedItem {
 interface Dish {
   id: string;
   name: string;
-  ingredients: string[];
+  ingredients: (string | TranslatedItem)[];
   allergens?: (string | TranslatedItem)[];
 }
 
@@ -60,8 +60,9 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  // Convert allergens to string array for storage
+  // Convert allergens and ingredients to string arrays for storage
   const allergenStrings = dish.allergens?.map(getAllergenString) || [];
+  const ingredientStrings = dish.ingredients.map(getAllergenString);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -75,7 +76,7 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
         confirmed_allergens: feedbackType === "confirm" ? allergenStrings : [],
         missed_allergens: missedAllergens,
         false_positives: falsePositives,
-        ingredients: dish.ingredients,
+        ingredients: ingredientStrings,
         feedback_type: feedbackType === "confirm" ? "confirmation" : "correction",
       });
 
