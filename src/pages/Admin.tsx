@@ -491,7 +491,7 @@ const Admin = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       <LanguageToggle />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 mb-6">
           <Link to="/">
             <Button variant="ghost">
               <ArrowLeft className="mr-2 h-4 w-4" />
