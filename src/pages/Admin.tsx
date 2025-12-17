@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3, MessageSquare, Check, X, ThumbsUp, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3, MessageSquare, Check, X, ThumbsUp, AlertTriangle, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -482,16 +482,27 @@ const Admin = () => {
     },
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       <LanguageToggle />
       <div className="container mx-auto px-4 py-8">
-        <Link to="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("common.back")}
+        <div className="flex items-center justify-between mb-6">
+          <Link to="/">
+            <Button variant="ghost">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t("common.back")}
+            </Button>
+          </Link>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            {t("common.logout")}
           </Button>
-        </Link>
+        </div>
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">{t("admin.title")}</h1>
