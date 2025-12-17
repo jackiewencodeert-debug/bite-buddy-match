@@ -72,17 +72,19 @@ serve(async (req) => {
       ? `\n\nAdditional learned allergen patterns to consider:\n${Array.from(learnedPatterns.entries()).map(([ingredient, allergens]) => `- "${ingredient}" often contains: ${allergens.join(", ")}`).join("\n")}`
       : "";
 
-    const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
+const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
 
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
-- name: dish name as it appears on the menu (required)
-- name_translations: object with translations of the dish name in these languages: { "nl": "Dutch name", "en": "English name", "fr": "French name", "es": "Spanish name", "de": "German name" }
+- name: dish name EXACTLY as it appears on the menu (required)
+- name_translations: REQUIRED object with translations of the dish name. ALWAYS provide this for every dish, even if the original is already in one of the target languages: { "nl": "Dutch translation", "en": "English translation", "fr": "French translation", "es": "Spanish translation", "de": "German translation" }
 - ingredients: array of ingredients mentioned or that can be inferred from the dish description (in Dutch if possible)
 - allergens: array of allergen objects, each with translations: [{ "original": "noten", "nl": "Noten", "en": "Nuts", "fr": "Noix", "es": "Frutos secos", "de": "Nüsse" }]
 - dietary_info: array of dietary info objects, each with translations: [{ "original": "vegetarisch", "nl": "Vegetarisch", "en": "Vegetarian", "fr": "Végétarien", "es": "Vegetariano", "de": "Vegetarisch" }]
 - price: price if visible (include € symbol)
 - description: brief description if available
 - category: the section/category this dish belongs to (e.g., "Voorgerechten", "Hoofdgerechten", "Desserts", "Soepen", "Salades", "Drankjes", etc.)
+
+IMPORTANT: The name_translations field is MANDATORY for every dish. Always provide translations in all 5 languages (nl, en, fr, es, de).
 
 Common allergens to detect (with their standard translations):
 - noten/nuts, gluten, lactose, schaaldieren/shellfish, vis/fish, eieren/eggs, soja/soy, sulfiet/sulfite, selderij/celery, mosterd/mustard, sesam/sesame, weekdieren/mollusks, lupine
@@ -97,27 +99,27 @@ Also extract menu template information:
   - secondaryColor: secondary/accent color (hex format)
   - fontStyle: general font style description (e.g., "elegant", "modern", "rustic", "casual")
 
-Return in this exact JSON format:
+Return in this exact JSON format (name_translations is REQUIRED for every dish):
 {
   "isMenu": true/false,
   "dishes": [
     {
-      "name": "string",
-      "name_translations": { "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" },
-      "ingredients": ["string"],
-      "allergens": [{ "original": "string", "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" }],
-      "dietary_info": [{ "original": "string", "nl": "string", "en": "string", "fr": "string", "es": "string", "de": "string" }],
-      "price": "string",
-      "description": "string",
-      "category": "string"
+      "name": "Kippensoep",
+      "name_translations": { "nl": "Kippensoep", "en": "Chicken soup", "fr": "Soupe au poulet", "es": "Sopa de pollo", "de": "Hühnersuppe" },
+      "ingredients": ["kip", "wortel", "selderij"],
+      "allergens": [{ "original": "selderij", "nl": "Selderij", "en": "Celery", "fr": "Céleri", "es": "Apio", "de": "Sellerie" }],
+      "dietary_info": [],
+      "price": "€7,50",
+      "description": "Huisgemaakte kippensoep met verse groenten",
+      "category": "Voorgerechten"
     }
   ],
   "template": {
-    "categories": ["string"],
+    "categories": ["Voorgerechten", "Hoofdgerechten"],
     "style": {
-      "primaryColor": "#000000",
-      "secondaryColor": "#FFFFFF",
-      "fontStyle": "string"
+      "primaryColor": "#2D3748",
+      "secondaryColor": "#718096",
+      "fontStyle": "elegant"
     }
   }
 }
