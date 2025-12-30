@@ -36,22 +36,27 @@ const Index = () => {
     // Check current session
     const initializeUser = async () => {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await Promise.all([
-          checkUserType(session.user.id),
-          checkAdminRole(session.user.id)
-        ]);
-      } else {
-        // Auto-login as guest if no session and not already a guest
-        const currentGuestType = localStorage.getItem("userType");
-        if (!currentGuestType) {
-          await autoLoginAsGuest();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          await Promise.all([
+            checkUserType(session.user.id),
+            checkAdminRole(session.user.id),
+          ]);
+        } else {
+          // Auto-login as guest if no session and not already a guest
+          const currentGuestType = localStorage.getItem("userType");
+          if (!currentGuestType) {
+            await autoLoginAsGuest();
+          }
         }
+      } catch (error) {
+        console.error("Error initializing user session:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     
     initializeUser();
@@ -61,18 +66,23 @@ const Index = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         setIsLoading(true);
-        await Promise.all([
-          checkUserType(session.user.id),
-          checkAdminRole(session.user.id)
-        ]);
-        setIsLoading(false);
+        try {
+          await Promise.all([
+            checkUserType(session.user.id),
+            checkAdminRole(session.user.id),
+          ]);
+        } catch (error) {
+          console.error("Error checking user role/type:", error);
+        } finally {
+          setIsLoading(false);
+        }
       } else {
         // Reset business and admin state when user logs out
         setIsBusiness(false);
         setIsAdmin(false);
-        
+
         // Auto-login as guest after logout if not already a guest
-        if (event === 'SIGNED_OUT') {
+        if (event === "SIGNED_OUT") {
           const currentGuestType = localStorage.getItem("userType");
           if (!currentGuestType) {
             await autoLoginAsGuest();
@@ -160,67 +170,76 @@ const Index = () => {
             {isBusiness ? t("index.businessSubtitle") : t("index.subtitle")}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            {isLoading ? (
-              <div className="h-12 w-48 bg-muted/50 rounded-lg animate-pulse" />
-            ) : isLoggedIn ? (
-              <>
-                {isAdmin && (
-                  <Link to="/admin">
-                    <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105 border-primary text-primary">
-                      <ShieldCheck className="mr-2 h-5 w-5" />
-                      {t("profile.adminDashboard")}
-                    </Button>
-                  </Link>
-                )}
-                {isBusiness && (
-                  <>
-                    <Link to="/business">
-                      <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                        <Building2 className="mr-2 h-5 w-5" />
-                        {t("index.businessDashboard")}
-                      </Button>
-                    </Link>
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="text-lg px-8 transition-all hover:scale-105"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="mr-2 h-5 w-5" />
-                      {t("profile.logout")}
-                    </Button>
-                  </>
-                )}
-                {!isBusiness && !isAdmin && !isGuest && (
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="text-lg px-8 transition-all hover:scale-105"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    {t("profile.logout")}
-                  </Button>
-                )}
-                {isGuest && (
-                  <Link to="/scan">
-                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                      <Camera className="mr-2 h-5 w-5" />
-                      {t("index.scanMenu")}
-                    </Button>
-                  </Link>
-                )}
-              </>
-            ) : (
-              <Link to="/auth">
-                <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
-                  <Users className="mr-2 h-5 w-5" />
-                  {t("auth.signIn")}
-                </Button>
-              </Link>
-            )}
-          </div>
+           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+             {isLoading ? (
+               isGuest ? (
+                 <Link to="/scan">
+                   <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                     <Camera className="mr-2 h-5 w-5" />
+                     {t("index.scanMenu")}
+                   </Button>
+                 </Link>
+               ) : (
+                 <div className="h-12 w-48 bg-muted/50 rounded-lg animate-pulse" />
+               )
+             ) : isLoggedIn ? (
+               <>
+                 {isAdmin && (
+                   <Link to="/admin">
+                     <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105 border-primary text-primary">
+                       <ShieldCheck className="mr-2 h-5 w-5" />
+                       {t("profile.adminDashboard")}
+                     </Button>
+                   </Link>
+                 )}
+                 {isBusiness && (
+                   <>
+                     <Link to="/business">
+                       <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                         <Building2 className="mr-2 h-5 w-5" />
+                         {t("index.businessDashboard")}
+                       </Button>
+                     </Link>
+                     <Button
+                       size="lg"
+                       variant="outline"
+                       className="text-lg px-8 transition-all hover:scale-105"
+                       onClick={handleLogout}
+                     >
+                       <LogOut className="mr-2 h-5 w-5" />
+                       {t("profile.logout")}
+                     </Button>
+                   </>
+                 )}
+                 {!isBusiness && !isAdmin && !isGuest && (
+                   <Button
+                     size="lg"
+                     variant="outline"
+                     className="text-lg px-8 transition-all hover:scale-105"
+                     onClick={handleLogout}
+                   >
+                     <LogOut className="mr-2 h-5 w-5" />
+                     {t("profile.logout")}
+                   </Button>
+                 )}
+                 {isGuest && (
+                   <Link to="/scan">
+                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                       <Camera className="mr-2 h-5 w-5" />
+                       {t("index.scanMenu")}
+                     </Button>
+                   </Link>
+                 )}
+               </>
+             ) : (
+               <Link to="/auth">
+                 <Button size="lg" variant="outline" className="text-lg px-8 transition-all hover:scale-105">
+                   <Users className="mr-2 h-5 w-5" />
+                   {t("auth.signIn")}
+                 </Button>
+               </Link>
+             )}
+           </div>
 
           {/* How It Works - Direct onder Scan Menu */}
           {!isBusiness && !isAdmin && (
