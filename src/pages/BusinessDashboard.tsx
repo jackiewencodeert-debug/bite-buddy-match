@@ -310,7 +310,7 @@ const BusinessDashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setShowProfileDevDialog(true)}>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/profile")}>
             <CardHeader>
               <CardTitle className="text-2xl flex items-center justify-center">
                 <User className="h-8 w-8 text-primary" />
