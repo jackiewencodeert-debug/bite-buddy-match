@@ -48,7 +48,7 @@ const Index = () => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => {
@@ -56,8 +56,17 @@ const Index = () => {
           checkAdminRole(session.user.id);
         }, 0);
       } else {
+        // Reset business and admin state when user logs out
         setIsBusiness(false);
         setIsAdmin(false);
+        
+        // Auto-login as guest after logout if not already a guest
+        if (event === 'SIGNED_OUT') {
+          const currentGuestType = localStorage.getItem("userType");
+          if (!currentGuestType) {
+            autoLoginAsGuest();
+          }
+        }
       }
     });
 
@@ -105,20 +114,18 @@ const Index = () => {
   const isLoggedIn = user || isGuest;
 
   const handleLogout = async () => {
-    // Clear guest data if guest
-    if (isGuest) {
-      localStorage.removeItem("userType");
-      localStorage.removeItem("guestExpiry");
-      localStorage.removeItem("guestPreferences");
-      setIsGuest(false);
-    }
+    // Clear all session-related localStorage items
+    localStorage.removeItem("userType");
+    localStorage.removeItem("guestExpiry");
+    localStorage.removeItem("guestPreferences");
+    setIsGuest(false);
+    
     await supabase.auth.signOut();
     toast({
       title: "Uitgelogd",
       description: "Je bent succesvol uitgelogd.",
     });
-    // Re-login as guest after logout
-    autoLoginAsGuest();
+    // Auth state change listener will handle auto-login as guest
   };
 
   return (
