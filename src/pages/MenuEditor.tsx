@@ -304,11 +304,65 @@ const MenuEditor = () => {
     setMultipleImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const uploadMenuImage = async (imageData: string): Promise<string | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      // Convert base64 to blob
+      const base64Data = imageData.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+      // Create unique filename
+      const fileName = `${user.id}/${menuId}-${Date.now()}.jpg`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('menu-images')
+        .upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return null;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading menu image:', error);
+      return null;
+    }
+  };
+
   const analyzeImages = async () => {
     if (multipleImages.length === 0) return;
 
     setAnalyzing(true);
     try {
+      // Upload the first image to storage for later download with QR
+      const menuImageUrl = await uploadMenuImage(multipleImages[0]);
+      
+      if (menuImageUrl) {
+        // Update menu with image URL
+        await supabase
+          .from("menus")
+          .update({ menu_image_url: menuImageUrl })
+          .eq("id", menuId);
+      }
+
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
         body: { 
           images: multipleImages,
