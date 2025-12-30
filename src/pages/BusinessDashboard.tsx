@@ -607,12 +607,16 @@ const BusinessDashboard = () => {
                               <Download className="h-4 w-4 mr-1" />
                               {t("business.downloadQR")}
                             </Button>
-                            {menu.menu_image_url && (
-                              <Button variant="outline" size="sm" onClick={() => downloadMenuWithQR(menu)}>
-                                <Download className="h-4 w-4 mr-1" />
-                                {t("business.downloadMenuWithQR")}
-                              </Button>
-                            )}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => downloadMenuWithQR(menu)}
+                              disabled={!menu.menu_image_url}
+                              title={!menu.menu_image_url ? t("business.noMenuImage") : ""}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              {t("business.downloadMenuWithQR")}
+                            </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
