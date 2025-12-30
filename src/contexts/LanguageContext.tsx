@@ -1160,6 +1160,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Continua come Ospite",
     "auth.email": "Email",
     "auth.password": "Password",
+    // Statistics Page
+    "statistics.appGuidelines": "Linee Guida App",
+    "statistics.appGuidelinesDesc": "Come BitebuddyMatch contribuisce alla sicurezza alimentare",
+    "statistics.guideline1": "Si consiglia sempre agli utenti di verificare con il personale se i piatti sono sicuri.",
+    "statistics.guideline2": "L'app non sostituisce la consulenza professionale sugli allergeni o la diagnosi medica.",
+    "statistics.guideline3": "Le aziende sono responsabili delle informazioni corrette sugli allergeni nei loro menu.",
+    "statistics.guideline4": "Si raccomandano aggiornamenti regolari delle informazioni del menu per garantire l'accuratezza.",
+    
     "common.loading": "Caricamento...",
     "common.error": "Errore",
     "common.success": "Successo",
@@ -1238,6 +1246,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Folytatás Vendégként",
     "auth.email": "Email",
     "auth.password": "Jelszó",
+    // Statistics Page
+    "statistics.appGuidelines": "Alkalmazás Irányelvek",
+    "statistics.appGuidelinesDesc": "Hogyan járul hozzá a BitebuddyMatch az élelmiszer-biztonsághoz",
+    "statistics.guideline1": "A felhasználóknak mindig ajánlott megkérdezni a személyzetet, hogy biztonságos-e az étel.",
+    "statistics.guideline2": "Az alkalmazás nem helyettesíti a szakmai allergén tanácsadást vagy orvosi diagnózist.",
+    "statistics.guideline3": "A vállalkozások felelősek a menüik helyes allergéninformációiért.",
+    "statistics.guideline4": "A menüinformációk rendszeres frissítése javasolt a pontosság érdekében.",
+    
     "common.loading": "Betöltés...",
     "common.error": "Hiba",
     "common.success": "Sikeres",
@@ -1325,6 +1341,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Batal",
     "common.login": "Masuk",
     "common.continueAsGuest": "Lanjut sebagai Tamu",
+    
+    // Statistics Page
+    "statistics.appGuidelines": "Panduan Aplikasi",
+    "statistics.appGuidelinesDesc": "Bagaimana BitebuddyMatch berkontribusi pada keamanan pangan",
+    "statistics.guideline1": "Pengguna selalu disarankan untuk bertanya kepada staf apakah hidangan aman.",
+    "statistics.guideline2": "Aplikasi tidak menggantikan saran alergen profesional atau diagnosis medis.",
+    "statistics.guideline3": "Bisnis bertanggung jawab atas informasi alergen yang benar dalam menu mereka.",
+    "statistics.guideline4": "Pembaruan rutin informasi menu direkomendasikan untuk memastikan akurasi.",
   },
   // Turkish translations
   tr: {
@@ -1394,6 +1418,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Misafir Olarak Devam Et",
     "auth.email": "E-posta",
     "auth.password": "Şifre",
+    // Statistics Page
+    "statistics.appGuidelines": "Uygulama Yönergeleri",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch gıda güvenliğine nasıl katkıda bulunur",
+    "statistics.guideline1": "Kullanıcılara her zaman yemeklerin güvenli olup olmadığını personele sormaları tavsiye edilir.",
+    "statistics.guideline2": "Uygulama profesyonel alerjen danışmanlığının veya tıbbi teşhisin yerini almaz.",
+    "statistics.guideline3": "İşletmeler menülerindeki doğru alerjen bilgilerinden sorumludur.",
+    "statistics.guideline4": "Doğruluğu sağlamak için menü bilgilerinin düzenli güncellenmesi önerilir.",
+    
     "common.loading": "Yükleniyor...",
     "common.error": "Hata",
     "common.success": "Başarılı",
@@ -1472,6 +1504,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Tiếp tục với tư cách Khách",
     "auth.email": "Email",
     "auth.password": "Mật khẩu",
+    // Statistics Page
+    "statistics.appGuidelines": "Hướng dẫn ứng dụng",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch đóng góp như thế nào cho an toàn thực phẩm",
+    "statistics.guideline1": "Người dùng luôn được khuyên hỏi nhân viên xem món ăn có an toàn không.",
+    "statistics.guideline2": "Ứng dụng không thay thế tư vấn dị ứng chuyên nghiệp hoặc chẩn đoán y tế.",
+    "statistics.guideline3": "Doanh nghiệp chịu trách nhiệm về thông tin dị ứng chính xác trong menu.",
+    "statistics.guideline4": "Khuyến nghị cập nhật thông tin menu thường xuyên để đảm bảo độ chính xác.",
+    
     "common.loading": "Đang tải...",
     "common.error": "Lỗi",
     "common.success": "Thành công",
@@ -1550,6 +1590,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "ดำเนินการต่อในฐานะแขก",
     "auth.email": "อีเมล",
     "auth.password": "รหัสผ่าน",
+    // Statistics Page
+    "statistics.appGuidelines": "แนวทางแอป",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch มีส่วนช่วยความปลอดภัยด้านอาหารอย่างไร",
+    "statistics.guideline1": "แนะนำให้ผู้ใช้สอบถามพนักงานเสมอว่าอาหารปลอดภัยหรือไม่",
+    "statistics.guideline2": "แอปไม่ได้แทนที่คำแนะนำจากผู้เชี่ยวชาญด้านสารก่อภูมิแพ้หรือการวินิจฉัยทางการแพทย์",
+    "statistics.guideline3": "ธุรกิจมีหน้าที่รับผิดชอบข้อมูลสารก่อภูมิแพ้ที่ถูกต้องในเมนู",
+    "statistics.guideline4": "แนะนำให้อัปเดตข้อมูลเมนูเป็นประจำเพื่อความถูกต้อง",
+    
     "common.loading": "กำลังโหลด...",
     "common.error": "ข้อผิดพลาด",
     "common.success": "สำเร็จ",
@@ -1628,6 +1676,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Продовжити як гість",
     "auth.email": "Email",
     "auth.password": "Пароль",
+    // Statistics Page
+    "statistics.appGuidelines": "Інструкції застосунку",
+    "statistics.appGuidelinesDesc": "Як BitebuddyMatch сприяє безпеці харчування",
+    "statistics.guideline1": "Користувачам завжди рекомендується уточнювати у персоналу, чи безпечні страви.",
+    "statistics.guideline2": "Застосунок не замінює професійну консультацію щодо алергенів або медичний діагноз.",
+    "statistics.guideline3": "Підприємства відповідають за правильну інформацію про алергени в меню.",
+    "statistics.guideline4": "Рекомендується регулярно оновлювати інформацію меню для забезпечення точності.",
+    
     "common.loading": "Завантаження...",
     "common.error": "Помилка",
     "common.success": "Успішно",
@@ -1706,6 +1762,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Continuar como Convidado",
     "auth.email": "Email",
     "auth.password": "Senha",
+    // Statistics Page
+    "statistics.appGuidelines": "Diretrizes do App",
+    "statistics.appGuidelinesDesc": "Como o BitebuddyMatch contribui para a segurança alimentar",
+    "statistics.guideline1": "Os usuários são sempre aconselhados a verificar com a equipe se os pratos são seguros.",
+    "statistics.guideline2": "O aplicativo não substitui aconselhamento profissional sobre alérgenos ou diagnóstico médico.",
+    "statistics.guideline3": "As empresas são responsáveis pelas informações corretas sobre alérgenos em seus menus.",
+    "statistics.guideline4": "Atualizações regulares das informações do menu são recomendadas para garantir precisão.",
+    
     "common.loading": "Carregando...",
     "common.error": "Erro",
     "common.success": "Sucesso",
@@ -1784,6 +1848,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Продолжить как гость",
     "auth.email": "Email",
     "auth.password": "Пароль",
+    // Statistics Page
+    "statistics.appGuidelines": "Руководство приложения",
+    "statistics.appGuidelinesDesc": "Как BitebuddyMatch способствует безопасности питания",
+    "statistics.guideline1": "Пользователям всегда рекомендуется уточнять у персонала, безопасны ли блюда.",
+    "statistics.guideline2": "Приложение не заменяет профессиональную консультацию по аллергенам или медицинский диагноз.",
+    "statistics.guideline3": "Предприятия несут ответственность за правильную информацию об аллергенах в меню.",
+    "statistics.guideline4": "Рекомендуется регулярно обновлять информацию меню для обеспечения точности.",
+    
     "common.loading": "Загрузка...",
     "common.error": "Ошибка",
     "common.success": "Успешно",
@@ -1862,6 +1934,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "अतिथि के रूप में जारी रखें",
     "auth.email": "ईमेल",
     "auth.password": "पासवर्ड",
+    // Statistics Page
+    "statistics.appGuidelines": "ऐप दिशानिर्देश",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch खाद्य सुरक्षा में कैसे योगदान देता है",
+    "statistics.guideline1": "उपयोगकर्ताओं को हमेशा स्टाफ से पूछने की सलाह दी जाती है कि व्यंजन सुरक्षित हैं या नहीं।",
+    "statistics.guideline2": "ऐप पेशेवर एलर्जेन सलाह या चिकित्सा निदान की जगह नहीं लेता है।",
+    "statistics.guideline3": "व्यवसाय अपने मेनू में सही एलर्जेन जानकारी के लिए जिम्मेदार हैं।",
+    "statistics.guideline4": "सटीकता सुनिश्चित करने के लिए मेनू जानकारी के नियमित अपडेट की सिफारिश की जाती है।",
+    
     "common.loading": "लोड हो रहा है...",
     "common.error": "त्रुटि",
     "common.success": "सफल",
@@ -1940,6 +2020,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "Kontynuuj jako Gość",
     "auth.email": "Email",
     "auth.password": "Hasło",
+    // Statistics Page
+    "statistics.appGuidelines": "Wytyczne Aplikacji",
+    "statistics.appGuidelinesDesc": "Jak BitebuddyMatch przyczynia się do bezpieczeństwa żywności",
+    "statistics.guideline1": "Użytkownikom zawsze zaleca się pytanie personelu, czy dania są bezpieczne.",
+    "statistics.guideline2": "Aplikacja nie zastępuje profesjonalnego doradztwa w zakresie alergenów ani diagnozy medycznej.",
+    "statistics.guideline3": "Firmy są odpowiedzialne za prawidłowe informacje o alergenach w swoich menu.",
+    "statistics.guideline4": "Zaleca się regularne aktualizacje informacji o menu w celu zapewnienia dokładności.",
+    
     "common.loading": "Ładowanie...",
     "common.error": "Błąd",
     "common.success": "Sukces",
@@ -2018,6 +2106,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "以访客身份继续",
     "auth.email": "邮箱",
     "auth.password": "密码",
+    // Statistics Page
+    "statistics.appGuidelines": "应用指南",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch如何促进食品安全",
+    "statistics.guideline1": "始终建议用户向工作人员确认菜品是否安全。",
+    "statistics.guideline2": "该应用不能替代专业的过敏原建议或医疗诊断。",
+    "statistics.guideline3": "商家有责任在菜单中提供正确的过敏原信息。",
+    "statistics.guideline4": "建议定期更新菜单信息以确保准确性。",
+    
     "common.loading": "加载中...",
     "common.error": "错误",
     "common.success": "成功",
@@ -2096,6 +2192,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "ゲストとして続行",
     "auth.email": "メール",
     "auth.password": "パスワード",
+    // Statistics Page
+    "statistics.appGuidelines": "アプリガイドライン",
+    "statistics.appGuidelinesDesc": "BitebuddyMatchが食品安全にどう貢献するか",
+    "statistics.guideline1": "ユーザーは常にスタッフに料理が安全かどうか確認することをお勧めします。",
+    "statistics.guideline2": "アプリは専門的なアレルゲンアドバイスや医療診断に代わるものではありません。",
+    "statistics.guideline3": "事業者はメニューの正確なアレルゲン情報に責任を負います。",
+    "statistics.guideline4": "正確性を確保するため、メニュー情報の定期的な更新をお勧めします。",
+    
     "common.loading": "読み込み中...",
     "common.error": "エラー",
     "common.success": "成功",
@@ -2174,6 +2278,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "게스트로 계속",
     "auth.email": "이메일",
     "auth.password": "비밀번호",
+    // Statistics Page
+    "statistics.appGuidelines": "앱 가이드라인",
+    "statistics.appGuidelinesDesc": "BitebuddyMatch가 식품 안전에 어떻게 기여하는지",
+    "statistics.guideline1": "사용자는 항상 직원에게 요리가 안전한지 확인하는 것이 좋습니다.",
+    "statistics.guideline2": "앱은 전문적인 알레르기 조언이나 의료 진단을 대체하지 않습니다.",
+    "statistics.guideline3": "업체는 메뉴의 정확한 알레르기 정보에 대한 책임이 있습니다.",
+    "statistics.guideline4": "정확성을 보장하기 위해 메뉴 정보를 정기적으로 업데이트하는 것이 좋습니다.",
+    
     "common.loading": "로딩 중...",
     "common.error": "오류",
     "common.success": "성공",
@@ -2252,6 +2364,14 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.continueAsGuest": "المتابعة كضيف",
     "auth.email": "البريد الإلكتروني",
     "auth.password": "كلمة المرور",
+    // Statistics Page
+    "statistics.appGuidelines": "إرشادات التطبيق",
+    "statistics.appGuidelinesDesc": "كيف يساهم BitebuddyMatch في سلامة الغذاء",
+    "statistics.guideline1": "يُنصح المستخدمون دائمًا بالتحقق من الموظفين إذا كانت الأطباق آمنة.",
+    "statistics.guideline2": "التطبيق لا يحل محل استشارة المتخصصين في مسببات الحساسية أو التشخيص الطبي.",
+    "statistics.guideline3": "الشركات مسؤولة عن المعلومات الصحيحة للمواد المسببة للحساسية في قوائمها.",
+    "statistics.guideline4": "يُوصى بالتحديثات المنتظمة لمعلومات القائمة لضمان الدقة.",
+    
     "common.loading": "جارٍ التحميل...",
     "common.error": "خطأ",
     "common.success": "نجاح",
