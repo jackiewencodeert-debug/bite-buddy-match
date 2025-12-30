@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Shield, Plus, X, Camera, Home, QrCode } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import QRCode from "react-qr-code";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -664,32 +665,32 @@ const Profile = () => {
                     />
                   </div>
 
-                  {/* Preview */}
+                  {/* Preview with real QR code */}
                   <div className="mt-6 p-4 rounded-lg bg-muted/30 border border-border">
                     <Label className="text-sm font-medium mb-3 block">{t("profile.qrPreview")}</Label>
                     <div 
-                      className="flex flex-col items-center gap-2 p-4 rounded-lg"
-                      style={{ backgroundColor: qrColor === "white" ? "#1a1a1a" : "transparent" }}
+                      className="flex flex-col items-center gap-3 p-6 rounded-lg"
+                      style={{ backgroundColor: qrColor === "white" ? "#1a1a1a" : "#f5f5f5" }}
                     >
                       {qrTextAbove && (
-                        <p className={`text-sm font-medium ${qrColor === "white" ? "text-white" : "text-foreground"}`}>
+                        <p 
+                          className="text-base font-medium text-center"
+                          style={{ color: qrColor === "white" ? "#FFFFFF" : "#000000" }}
+                        >
                           {qrTextAbove}
                         </p>
                       )}
-                      <div 
-                        className="w-24 h-24 flex items-center justify-center rounded"
-                        style={{ backgroundColor: qrColor === "white" ? "#1a1a1a" : "transparent" }}
-                      >
-                        <div 
-                          className="w-16 h-16 rounded"
-                          style={{ 
-                            backgroundColor: qrColor === "black" ? "#000" : "#fff",
-                            opacity: 0.8
-                          }}
-                        ></div>
-                      </div>
+                      <QRCode
+                        value="https://example.com/menu/preview"
+                        size={120}
+                        bgColor="transparent"
+                        fgColor={qrColor === "white" ? "#FFFFFF" : "#000000"}
+                      />
                       {qrTextBelow && (
-                        <p className={`text-sm font-medium ${qrColor === "white" ? "text-white" : "text-foreground"}`}>
+                        <p 
+                          className="text-base font-medium text-center"
+                          style={{ color: qrColor === "white" ? "#FFFFFF" : "#000000" }}
+                        >
                           {qrTextBelow}
                         </p>
                       )}
@@ -772,25 +773,27 @@ const Profile = () => {
               size="lg"
               onClick={() => {
                 setShowSuccessDialog(false);
-                navigate("/");
+                navigate(userType === "eetgever" ? "/business" : "/");
               }}
               className="w-full"
             >
               <Home className="mr-2 h-5 w-5" />
-              {t("common.back")}
+              {userType === "eetgever" ? t("profile.businessDashboard") : t("common.back")}
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => {
-                setShowSuccessDialog(false);
-                navigate("/scan");
-              }}
-              className="w-full"
-            >
-              <Camera className="mr-2 h-5 w-5" />
-              {t("index.scanMenu")}
-            </Button>
+            {userType !== "eetgever" && (
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/scan");
+                }}
+                className="w-full"
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                {t("index.scanMenu")}
+              </Button>
+            )}
           </div>
         </AlertDialogContent>
       </AlertDialog>
