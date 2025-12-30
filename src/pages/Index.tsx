@@ -13,6 +13,7 @@ const Index = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [isBusiness, setIsBusiness] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -33,28 +34,38 @@ const Index = () => {
     }
 
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initializeUser = async () => {
+      setIsLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      
       if (session?.user) {
-        checkUserType(session.user.id);
-        checkAdminRole(session.user.id);
+        await Promise.all([
+          checkUserType(session.user.id),
+          checkAdminRole(session.user.id)
+        ]);
       } else {
         // Auto-login as guest if no session and not already a guest
         const currentGuestType = localStorage.getItem("userType");
         if (!currentGuestType) {
-          autoLoginAsGuest();
+          await autoLoginAsGuest();
         }
       }
-    });
+      setIsLoading(false);
+    };
+    
+    initializeUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => {
-          checkUserType(session.user.id);
-          checkAdminRole(session.user.id);
-        }, 0);
+        setIsLoading(true);
+        await Promise.all([
+          checkUserType(session.user.id),
+          checkAdminRole(session.user.id)
+        ]);
+        setIsLoading(false);
       } else {
         // Reset business and admin state when user logs out
         setIsBusiness(false);
@@ -64,7 +75,7 @@ const Index = () => {
         if (event === 'SIGNED_OUT') {
           const currentGuestType = localStorage.getItem("userType");
           if (!currentGuestType) {
-            autoLoginAsGuest();
+            await autoLoginAsGuest();
           }
         }
       }
@@ -150,7 +161,9 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            {isLoggedIn ? (
+            {isLoading ? (
+              <div className="h-12 w-48 bg-muted/50 rounded-lg animate-pulse" />
+            ) : isLoggedIn ? (
               <>
                 {isAdmin && (
                   <Link to="/admin">
@@ -190,7 +203,7 @@ const Index = () => {
                     {t("profile.logout")}
                   </Button>
                 )}
-                {isGuest && (
+                {isGuest && !user && (
                   <Link to="/scan">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
                       <Camera className="mr-2 h-5 w-5" />
