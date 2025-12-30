@@ -1,13 +1,59 @@
+/**
+ * =============================================================================
+ * ADMOB INTEGRATIE HANDLEIDING (Native App)
+ * =============================================================================
+ * 
+ * Dit bestand beheert AdMob advertenties voor de native iOS/Android app.
+ * AdMob werkt ALLEEN in de native Capacitor app, niet in de browser.
+ * 
+ * CONFIGURATIE STAPPEN:
+ * 
+ * 1. ADMOB ACCOUNT & APP IDS
+ *    - Maak een AdMob account aan op https://admob.google.com
+ *    - Maak een app aan voor Android en/of iOS
+ *    - Kopieer je App ID (ca-app-pub-XXXXX~YYYYY)
+ * 
+ * 2. CAPACITOR CONFIGURATIE (capacitor.config.ts)
+ *    plugins: {
+ *      AdMob: {
+ *        appId: {
+ *          android: 'ca-app-pub-XXXXX~YYYYY',  // Vervang met je Android App ID
+ *          ios: 'ca-app-pub-XXXXX~YYYYY'       // Vervang met je iOS App ID
+ *        }
+ *      }
+ *    }
+ * 
+ * 3. AD UNIT IDS
+ *    - Maak ad units aan in AdMob (Interstitial, Banner, etc.)
+ *    - Vervang de PRODUCTION_AD_UNIT_IDS hieronder met je eigen IDs
+ * 
+ * 4. TESTEN
+ *    - In development worden automatisch test ads gebruikt
+ *    - Voor productie: verander isDevelopment naar false of build in production mode
+ * 
+ * GEBRUIK:
+ *    import { AdMobService } from '@/services/admob';
+ *    
+ *    // Bij app start:
+ *    AdMobService.initialize();
+ *    
+ *    // Om een interstitial te tonen:
+ *    await AdMobService.showInterstitial();
+ * 
+ * =============================================================================
+ */
+
 import { AdMob, AdOptions, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
-// Productie Ad Unit IDs
+// ===== CONFIGURATIE - VERVANG MET JE EIGEN IDS =====
 const PRODUCTION_AD_UNIT_IDS = {
-  android: 'ca-app-pub-1597606960562339/4235309779',
-  ios: 'ca-app-pub-1597606960562339/4235309779'
+  android: 'ca-app-pub-1597606960562339/4235309779', // Vervang met je Android Interstitial Ad Unit ID
+  ios: 'ca-app-pub-1597606960562339/4235309779'      // Vervang met je iOS Interstitial Ad Unit ID
 };
+// ===================================================
 
-// Test Ad Unit IDs (voor development)
+// Test Ad Unit IDs (Google's officiële test IDs - NIET AANPASSEN)
 const TEST_AD_UNIT_IDS = {
   android: 'ca-app-pub-3940256099942544/1033173712',
   ios: 'ca-app-pub-3940256099942544/4411468910'
