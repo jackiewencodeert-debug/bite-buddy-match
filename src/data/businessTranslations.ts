@@ -97,6 +97,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "S'inscrire",
     "auth.alreadyAccount": "Vous avez déjà un compte?",
     "auth.signInLink": "Se connecter",
+    "auth.userType": "Je suis un...",
+    "auth.diner": "Client",
+    "auth.dinerDesc": "Je cherche des restaurants sûrs",
+    "auth.business": "Restaurant",
+    "auth.businessDesc": "J'ai un restaurant",
   },
   // Spanish
   es: {
@@ -195,6 +200,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Regístrate",
     "auth.alreadyAccount": "¿Ya tienes una cuenta?",
     "auth.signInLink": "Iniciar sesión",
+    "auth.userType": "Soy un...",
+    "auth.diner": "Comensal",
+    "auth.dinerDesc": "Busco restaurantes seguros",
+    "auth.business": "Restaurante",
+    "auth.businessDesc": "Tengo un restaurante",
   },
   // German
   de: {
@@ -293,6 +303,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Registrieren",
     "auth.alreadyAccount": "Haben Sie bereits ein Konto?",
     "auth.signInLink": "Anmelden",
+    "auth.userType": "Ich bin ein...",
+    "auth.diner": "Gast",
+    "auth.dinerDesc": "Ich suche sichere Restaurants",
+    "auth.business": "Restaurant",
+    "auth.businessDesc": "Ich habe ein Restaurant",
   },
   // Italian
   it: {
@@ -391,6 +406,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Registrati",
     "auth.alreadyAccount": "Hai già un account?",
     "auth.signInLink": "Accedi",
+    "auth.userType": "Sono un...",
+    "auth.diner": "Cliente",
+    "auth.dinerDesc": "Cerco ristoranti sicuri",
+    "auth.business": "Ristorante",
+    "auth.businessDesc": "Ho un ristorante",
   },
   // Hungarian
   hu: {
@@ -489,6 +509,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Regisztráció",
     "auth.alreadyAccount": "Már van fiókod?",
     "auth.signInLink": "Bejelentkezés",
+    "auth.userType": "Én vagyok...",
+    "auth.diner": "Vendég",
+    "auth.dinerDesc": "Biztonságos éttermeket keresek",
+    "auth.business": "Étterem",
+    "auth.businessDesc": "Éttermem van",
   },
   // Indonesian
   id: {
@@ -587,6 +612,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Daftar",
     "auth.alreadyAccount": "Sudah punya akun?",
     "auth.signInLink": "Masuk",
+    "auth.userType": "Saya adalah...",
+    "auth.diner": "Pengunjung",
+    "auth.dinerDesc": "Saya mencari restoran yang aman",
+    "auth.business": "Restoran",
+    "auth.businessDesc": "Saya punya restoran",
   },
   // Turkish
   tr: {
@@ -685,6 +715,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Kayıt Ol",
     "auth.alreadyAccount": "Zaten bir hesabınız var mı?",
     "auth.signInLink": "Giriş Yap",
+    "auth.userType": "Ben bir...",
+    "auth.diner": "Müşteri",
+    "auth.dinerDesc": "Güvenli restoranlar arıyorum",
+    "auth.business": "Restoran",
+    "auth.businessDesc": "Bir restoranım var",
   },
   // Vietnamese
   vi: {
@@ -783,6 +818,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Đăng ký",
     "auth.alreadyAccount": "Đã có tài khoản?",
     "auth.signInLink": "Đăng nhập",
+    "auth.userType": "Tôi là...",
+    "auth.diner": "Thực khách",
+    "auth.dinerDesc": "Tôi đang tìm nhà hàng an toàn",
+    "auth.business": "Nhà hàng",
+    "auth.businessDesc": "Tôi có một nhà hàng",
   },
   // Thai
   th: {
@@ -881,6 +921,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "สมัครสมาชิก",
     "auth.alreadyAccount": "มีบัญชีอยู่แล้ว?",
     "auth.signInLink": "เข้าสู่ระบบ",
+    "auth.userType": "ฉันเป็น...",
+    "auth.diner": "ลูกค้า",
+    "auth.dinerDesc": "ฉันกำลังมองหาร้านอาหารที่ปลอดภัย",
+    "auth.business": "ร้านอาหาร",
+    "auth.businessDesc": "ฉันมีร้านอาหาร",
   },
   // Ukrainian
   uk: {
@@ -979,6 +1024,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Зареєструватися",
     "auth.alreadyAccount": "Вже є обліковий запис?",
     "auth.signInLink": "Увійти",
+    "auth.userType": "Я...",
+    "auth.diner": "Клієнт",
+    "auth.dinerDesc": "Я шукаю безпечні ресторани",
+    "auth.business": "Ресторан",
+    "auth.businessDesc": "У мене є ресторан",
   },
   // Portuguese
   pt: {
@@ -1077,6 +1127,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Cadastrar",
     "auth.alreadyAccount": "Já tem uma conta?",
     "auth.signInLink": "Entrar",
+    "auth.userType": "Eu sou...",
+    "auth.diner": "Cliente",
+    "auth.dinerDesc": "Procuro restaurantes seguros",
+    "auth.business": "Restaurante",
+    "auth.businessDesc": "Tenho um restaurante",
   },
   // Russian
   ru: {
@@ -1175,6 +1230,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Зарегистрироваться",
     "auth.alreadyAccount": "Уже есть аккаунт?",
     "auth.signInLink": "Войти",
+    "auth.userType": "Я...",
+    "auth.diner": "Клиент",
+    "auth.dinerDesc": "Ищу безопасные рестораны",
+    "auth.business": "Ресторан",
+    "auth.businessDesc": "У меня есть ресторан",
   },
   // Hindi
   hi: {
@@ -1273,6 +1333,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "साइन अप करें",
     "auth.alreadyAccount": "पहले से खाता है?",
     "auth.signInLink": "साइन इन करें",
+    "auth.userType": "मैं हूँ...",
+    "auth.diner": "ग्राहक",
+    "auth.dinerDesc": "मैं सुरक्षित रेस्तरां की तलाश कर रहा हूँ",
+    "auth.business": "रेस्तरां",
+    "auth.businessDesc": "मेरा एक रेस्तरां है",
   },
   // Polish
   pl: {
@@ -1371,6 +1436,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "Zarejestruj się",
     "auth.alreadyAccount": "Masz już konto?",
     "auth.signInLink": "Zaloguj się",
+    "auth.userType": "Jestem...",
+    "auth.diner": "Klient",
+    "auth.dinerDesc": "Szukam bezpiecznych restauracji",
+    "auth.business": "Restauracja",
+    "auth.businessDesc": "Mam restaurację",
   },
   // Chinese
   zh: {
@@ -1469,6 +1539,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "注册",
     "auth.alreadyAccount": "已有账户？",
     "auth.signInLink": "登录",
+    "auth.userType": "我是...",
+    "auth.diner": "顾客",
+    "auth.dinerDesc": "我在寻找安全的餐厅",
+    "auth.business": "餐厅",
+    "auth.businessDesc": "我有一家餐厅",
   },
   // Japanese
   ja: {
@@ -1567,6 +1642,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "登録",
     "auth.alreadyAccount": "すでにアカウントをお持ちですか？",
     "auth.signInLink": "ログイン",
+    "auth.userType": "私は...",
+    "auth.diner": "お客様",
+    "auth.dinerDesc": "安全なレストランを探しています",
+    "auth.business": "レストラン",
+    "auth.businessDesc": "レストランを経営しています",
   },
   // Korean
   ko: {
@@ -1665,6 +1745,11 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "가입하기",
     "auth.alreadyAccount": "이미 계정이 있으신가요?",
     "auth.signInLink": "로그인",
+    "auth.userType": "저는...",
+    "auth.diner": "고객",
+    "auth.dinerDesc": "안전한 레스토랑을 찾고 있어요",
+    "auth.business": "레스토랑",
+    "auth.businessDesc": "레스토랑을 운영해요",
   },
   // Arabic
   ar: {
@@ -1763,5 +1848,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpLink": "التسجيل",
     "auth.alreadyAccount": "لديك حساب بالفعل؟",
     "auth.signInLink": "تسجيل الدخول",
+    "auth.userType": "أنا...",
+    "auth.diner": "زبون",
+    "auth.dinerDesc": "أبحث عن مطاعم آمنة",
+    "auth.business": "مطعم",
+    "auth.businessDesc": "لدي مطعم",
   },
 };
