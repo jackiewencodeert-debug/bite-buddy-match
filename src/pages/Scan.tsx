@@ -601,86 +601,98 @@ const Scan = () => {
             )}
 
             {mode === "camera" && !capturedImage && (
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">{t("scan.makePhoto")}</h1>
-                  <p className="text-muted-foreground">
-                    {t("scan.position")}
-                  </p>
-                </div>
+              <div className="fixed inset-0 z-50 bg-black">
+                {/* Back button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    stopCamera();
+                    if (multipleImages.length > 0) {
+                      setMode("multiple");
+                    } else {
+                      resetScan();
+                    }
+                  }}
+                  className="absolute top-4 left-4 z-50 text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full h-12 w-12"
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </Button>
 
-                <Card className="overflow-hidden">
-                  <div className="relative bg-black aspect-[4/3]">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      className="w-full h-full object-cover"
-                    />
-                    
-                    {cameraActive && (
-                      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-                        <div className="flex justify-center gap-4">
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            onClick={() => {
-                              stopCamera();
+                {/* Full screen camera */}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Bottom controls */}
+                {cameraActive && (
+                  <div className="absolute bottom-0 left-0 right-0 pb-8 pt-6 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="flex items-center justify-around max-w-sm mx-auto px-8">
+                      {/* Left button - Gallery/Upload */}
+                      <button
+                        onClick={() => {
+                          stopCamera();
+                          setMode("multiple");
+                          setTimeout(() => multipleFileInputRef.current?.click(), 100);
+                        }}
+                        className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                      >
+                        <Upload className="h-6 w-6 text-white" />
+                      </button>
+
+                      {/* Center button - Capture */}
+                      <button
+                        onClick={() => {
+                          if (videoRef.current) {
+                            const canvas = document.createElement("canvas");
+                            canvas.width = videoRef.current.videoWidth;
+                            canvas.height = videoRef.current.videoHeight;
+                            const ctx = canvas.getContext("2d");
+                            
+                            if (ctx) {
+                              ctx.drawImage(videoRef.current, 0, 0);
+                              const imageData = canvas.toDataURL("image/jpeg", 0.9);
+                              const imageItem = JSON.stringify({ data: imageData, type: 'image' });
+                              
                               if (multipleImages.length > 0) {
+                                setMultipleImages(prev => [...prev, imageItem]);
+                                toast({
+                                  title: "Foto toegevoegd!",
+                                  description: `Totaal: ${multipleImages.length + 1} foto's`,
+                                });
+                                stopCamera();
                                 setMode("multiple");
                               } else {
-                                resetScan();
+                                setCapturedImage(imageItem);
+                                stopCamera();
                               }
-                            }}
-                            className="bg-background/20 backdrop-blur-sm hover:bg-background/40"
-                          >
-                            <X className="mr-2 h-5 w-5" />
-                            {multipleImages.length > 0 ? t("scan.back") : t("scan.cancel")}
-                          </Button>
-                          <Button
-                            size="lg"
-                            onClick={() => {
-                              if (videoRef.current) {
-                                const canvas = document.createElement("canvas");
-                                canvas.width = videoRef.current.videoWidth;
-                                canvas.height = videoRef.current.videoHeight;
-                                const ctx = canvas.getContext("2d");
-                                
-                                if (ctx) {
-                                  ctx.drawImage(videoRef.current, 0, 0);
-                                  const imageData = canvas.toDataURL("image/jpeg", 0.9);
-                                  
-                                  if (multipleImages.length > 0 || mode === "camera") {
-                                    // Store as JSON format consistent with file uploads
-                                    const imageItem = JSON.stringify({ data: imageData, type: 'image' });
-                                    
-                                    // Add to multiple images if we came from multiple mode
-                                    if (multipleImages.length > 0) {
-                                      setMultipleImages(prev => [...prev, imageItem]);
-                                      toast({
-                                        title: "Foto toegevoegd!",
-                                        description: `Totaal: ${multipleImages.length + 1} foto's`,
-                                      });
-                                      stopCamera();
-                                      setMode("multiple");
-                                    } else {
-                                      setCapturedImage(imageItem);
-                                      stopCamera();
-                                    }
-                                  }
-                                }
-                              }
-                            }}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            <Camera className="mr-2 h-5 w-5" />
-                            {t("scan.takePhoto")}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                            }
+                          }
+                        }}
+                        className="w-20 h-20 rounded-full bg-white border-4 border-white/50 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-white" />
+                      </button>
+
+                      {/* Right button - Switch camera (placeholder) */}
+                      <button
+                        onClick={() => {
+                          // Could implement camera switch here
+                          toast({
+                            title: "Camera wisselen",
+                            description: "Deze functie komt binnenkort",
+                          });
+                        }}
+                        className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                      >
+                        <RotateCcw className="h-6 w-6 text-white" />
+                      </button>
+                    </div>
                   </div>
-                </Card>
+                )}
               </div>
             )}
 
