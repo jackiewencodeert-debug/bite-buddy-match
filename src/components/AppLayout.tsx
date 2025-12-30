@@ -14,6 +14,26 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   useEffect(() => {
     checkShowNavBar();
+    
+    // Listen for auth state changes to update navbar visibility
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        // User logged out, show navbar for guests
+        if (
+          !location.pathname.startsWith("/business") &&
+          !location.pathname.startsWith("/admin") &&
+          !location.pathname.startsWith("/auth") &&
+          !location.pathname.startsWith("/reset-password")
+        ) {
+          setShowNavBar(true);
+        }
+      } else {
+        // Re-check on other auth events
+        checkShowNavBar();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [location.pathname]);
 
   const checkShowNavBar = async () => {
