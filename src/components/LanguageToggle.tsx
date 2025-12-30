@@ -64,7 +64,7 @@ export const LanguageToggle = ({ fixed = true }: LanguageToggleProps) => {
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-background border border-border rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+        <div className="absolute top-full mt-2 right-0 bg-background border border-border rounded-xl shadow-lg overflow-hidden min-w-[140px] max-h-[156px] overflow-y-auto">
           {languages.map((lang) => (
             <button
               key={lang.code}
