@@ -111,6 +111,8 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.filesAdded": "bestand(en) toegevoegd",
     "scan.photosAddedPlural": "foto's toegevoegd",
     "scan.photoAdded": "foto toegevoegd",
+    "scan.photosAddedCount": "{count} foto's toegevoegd",
+    "scan.menuPage": "Menu pagina",
     "scan.total": "Totaal",
     "scan.errorTitle": "Oeps, dat ging niet goed",
     "scan.tryAgain": "Probeer Opnieuw",
@@ -570,6 +572,8 @@ const translations: Record<Language, Record<string, string>> = {
     "scan.filesAdded": "file(s) added",
     "scan.photosAddedPlural": "photos added",
     "scan.photoAdded": "photo added",
+    "scan.photosAddedCount": "{count} photos added",
+    "scan.menuPage": "Menu page",
     "scan.total": "Total",
     
     // Ad dialog
