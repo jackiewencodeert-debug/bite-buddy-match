@@ -3,6 +3,7 @@ import { Camera, Upload, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BottomNavBarProps {
   onCameraClick?: () => void;
@@ -13,6 +14,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { t } = useLanguage();
   
   useEffect(() => {
     checkAuthStatus();
@@ -64,7 +66,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
           )}
         >
           <User className="h-6 w-6" />
-          <span className="text-xs font-medium">Profiel</span>
+          <span className="text-xs font-medium">{t("nav.profile")}</span>
         </button>
 
         {/* Camera Button - Center (Primary) */}
@@ -84,7 +86,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
           )}
         >
           <Upload className="h-6 w-6" />
-          <span className="text-xs font-medium">Upload</span>
+          <span className="text-xs font-medium">{t("nav.upload")}</span>
         </button>
       </div>
     </nav>

@@ -131,6 +131,10 @@ const translations: Record<Language, Record<string, string>> = {
     "ad.continueToScan": "Doorgaan naar Scan",
     "ad.redirectMessage": "Je wordt doorgestuurd naar de scan na deze boodschap",
     
+    // Navigation
+    "nav.profile": "Profiel",
+    "nav.upload": "Upload",
+    
     // Menu Results
     "results.title": "Menu Resultaten",
     "results.found": "{count} gerechten gevonden - Gebaseerd op jouw voorkeuren en allergieën",
@@ -552,6 +556,10 @@ const translations: Record<Language, Record<string, string>> = {
     "ad.continueToScan": "Continue to Scan",
     "ad.redirectMessage": "You will be redirected to the scan after this message",
     
+    // Navigation
+    "nav.profile": "Profile",
+    "nav.upload": "Upload",
+    
     // Menu Results
     "results.title": "Menu Results",
     "results.found": "{count} dishes found - Based on your preferences and allergies",
@@ -943,6 +951,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Annuler",
     "common.login": "Se Connecter",
     "common.continueAsGuest": "Continuer en tant qu'Invité",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Télécharger",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Photos Multiples",
+    "scan.checkPhoto": "Vérifiez votre photo",
   },
   // Spanish translations
   es: {
@@ -1021,6 +1037,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Cancelar",
     "common.login": "Iniciar Sesión",
     "common.continueAsGuest": "Continuar como Invitado",
+    
+    // Navigation
+    "nav.profile": "Perfil",
+    "nav.upload": "Subir",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Fotos Múltiples",
+    "scan.checkPhoto": "Revisa tu foto",
   },
   // German translations
   de: {
@@ -1099,6 +1123,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Abbrechen",
     "common.login": "Anmelden",
     "common.continueAsGuest": "Als Gast Fortfahren",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Hochladen",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Mehrere Fotos",
+    "scan.checkPhoto": "Überprüfen Sie Ihr Foto",
   },
   // Italian translations
   it: {
@@ -1195,6 +1227,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Annulla",
     "common.login": "Accedi",
     "common.continueAsGuest": "Continua come Ospite",
+    
+    // Navigation
+    "nav.profile": "Profilo",
+    "nav.upload": "Carica",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Foto Multiple",
+    "scan.checkPhoto": "Controlla la tua foto",
   },
   // Hungarian translations
   hu: {
@@ -1291,6 +1331,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Mégse",
     "common.login": "Bejelentkezés",
     "common.continueAsGuest": "Folytatás Vendégként",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Feltöltés",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Több Fotó",
+    "scan.checkPhoto": "Ellenőrizze a fotóját",
   },
   // Indonesian translations
   id: {
@@ -1387,6 +1435,14 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "Aplikasi tidak menggantikan saran alergen profesional atau diagnosis medis.",
     "statistics.guideline3": "Bisnis bertanggung jawab atas informasi alergen yang benar dalam menu mereka.",
     "statistics.guideline4": "Pembaruan rutin informasi menu direkomendasikan untuk memastikan akurasi.",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Unggah",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Beberapa Foto",
+    "scan.checkPhoto": "Periksa foto Anda",
   },
   // Turkish translations
   tr: {
@@ -1483,6 +1539,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "İptal",
     "common.login": "Giriş Yap",
     "common.continueAsGuest": "Misafir Olarak Devam Et",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Yükle",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Birden Fazla Fotoğraf",
+    "scan.checkPhoto": "Fotoğrafınızı kontrol edin",
   },
   // Vietnamese translations
   vi: {
@@ -1579,6 +1643,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Hủy",
     "common.login": "Đăng nhập",
     "common.continueAsGuest": "Tiếp tục với tư cách Khách",
+    
+    // Navigation
+    "nav.profile": "Hồ sơ",
+    "nav.upload": "Tải lên",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Nhiều Ảnh",
+    "scan.checkPhoto": "Kiểm tra ảnh của bạn",
   },
   // Thai translations
   th: {
@@ -1675,6 +1747,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "ยกเลิก",
     "common.login": "เข้าสู่ระบบ",
     "common.continueAsGuest": "ดำเนินการต่อในฐานะแขก",
+    
+    // Navigation
+    "nav.profile": "โปรไฟล์",
+    "nav.upload": "อัปโหลด",
+    
+    // Scan page additional
+    "scan.multipleTitle": "หลายรูป",
+    "scan.checkPhoto": "ตรวจสอบรูปของคุณ",
   },
   // Ukrainian translations
   uk: {
@@ -1771,6 +1851,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Скасувати",
     "common.login": "Увійти",
     "common.continueAsGuest": "Продовжити як гість",
+    
+    // Navigation
+    "nav.profile": "Профіль",
+    "nav.upload": "Завантажити",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Кілька Фото",
+    "scan.checkPhoto": "Перевірте своє фото",
   },
   // Portuguese translations
   pt: {
@@ -1867,6 +1955,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Cancelar",
     "common.login": "Entrar",
     "common.continueAsGuest": "Continuar como Convidado",
+    
+    // Navigation
+    "nav.profile": "Perfil",
+    "nav.upload": "Carregar",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Várias Fotos",
+    "scan.checkPhoto": "Verifique sua foto",
   },
   // Russian translations
   ru: {
@@ -1963,6 +2059,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Отмена",
     "common.login": "Войти",
     "common.continueAsGuest": "Продолжить как гость",
+    
+    // Navigation
+    "nav.profile": "Профиль",
+    "nav.upload": "Загрузить",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Несколько Фото",
+    "scan.checkPhoto": "Проверьте ваше фото",
   },
   // Hindi translations
   hi: {
@@ -2059,6 +2163,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "रद्द करें",
     "common.login": "साइन इन",
     "common.continueAsGuest": "अतिथि के रूप में जारी रखें",
+    
+    // Navigation
+    "nav.profile": "प्रोफ़ाइल",
+    "nav.upload": "अपलोड",
+    
+    // Scan page additional
+    "scan.multipleTitle": "कई तस्वीरें",
+    "scan.checkPhoto": "अपनी तस्वीर जांचें",
   },
   // Polish translations
   pl: {
@@ -2155,6 +2267,14 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "Anuluj",
     "common.login": "Zaloguj się",
     "common.continueAsGuest": "Kontynuuj jako Gość",
+    
+    // Navigation
+    "nav.profile": "Profil",
+    "nav.upload": "Prześlij",
+    
+    // Scan page additional
+    "scan.multipleTitle": "Wiele Zdjęć",
+    "scan.checkPhoto": "Sprawdź swoje zdjęcie",
   },
   // Mandarin Chinese translations
   zh: {
@@ -2251,6 +2371,10 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "取消",
     "common.login": "登录",
     "common.continueAsGuest": "以访客身份继续",
+    "nav.profile": "资料",
+    "nav.upload": "上传",
+    "scan.multipleTitle": "多张照片",
+    "scan.checkPhoto": "检查您的照片",
   },
   // Japanese translations
   ja: {
@@ -2347,6 +2471,10 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "キャンセル",
     "common.login": "サインイン",
     "common.continueAsGuest": "ゲストとして続行",
+    "nav.profile": "プロフィール",
+    "nav.upload": "アップロード",
+    "scan.multipleTitle": "複数の写真",
+    "scan.checkPhoto": "写真を確認",
   },
   // Korean translations
   ko: {
@@ -2443,6 +2571,10 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "취소",
     "common.login": "로그인",
     "common.continueAsGuest": "게스트로 계속",
+    "nav.profile": "프로필",
+    "nav.upload": "업로드",
+    "scan.multipleTitle": "여러 사진",
+    "scan.checkPhoto": "사진 확인",
   },
   // Arabic translations
   ar: {
@@ -2539,6 +2671,10 @@ const translations: Record<Language, Record<string, string>> = {
     "common.cancel": "إلغاء",
     "common.login": "تسجيل الدخول",
     "common.continueAsGuest": "المتابعة كضيف",
+    "nav.profile": "الملف الشخصي",
+    "nav.upload": "تحميل",
+    "scan.multipleTitle": "صور متعددة",
+    "scan.checkPhoto": "تحقق من صورتك",
   },
 };
 
