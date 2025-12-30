@@ -747,7 +747,7 @@ const Scan = () => {
                       className="flex-1"
                     >
                       <Camera className="mr-2 h-5 w-5" />
-                      Nog foto toevoegen
+                      Foto toevoegen
                     </Button>
                     <Button
                       size="lg"
