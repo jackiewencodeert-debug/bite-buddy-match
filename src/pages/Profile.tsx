@@ -764,23 +764,36 @@ const Profile = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("profile.saved")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isGuest ? t("profile.savedGuestDesc") : t("profile.savedDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex flex-col gap-3 mt-4">
-            <Button
-              size="lg"
-              onClick={() => {
-                setShowSuccessDialog(false);
-                navigate(userType === "eetgever" ? "/business" : "/");
-              }}
-              className="w-full"
-            >
-              <Home className="mr-2 h-5 w-5" />
-              {userType === "eetgever" ? t("profile.businessDashboard") : t("common.back")}
-            </Button>
             {userType !== "eetgever" && (
+              <AlertDialogDescription>
+                {isGuest ? t("profile.savedGuestDesc") : t("profile.savedDesc")}
+              </AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          {userType === "eetgever" ? (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/business");
+                }}
+              >
+                OK
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 mt-4">
+              <Button
+                size="lg"
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/");
+                }}
+                className="w-full"
+              >
+                <Home className="mr-2 h-5 w-5" />
+                {t("common.back")}
+              </Button>
               <Button
                 size="lg"
                 variant="outline"
@@ -793,8 +806,8 @@ const Profile = () => {
                 <Camera className="mr-2 h-5 w-5" />
                 {t("index.scanMenu")}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </AlertDialogContent>
       </AlertDialog>
     </div>
