@@ -274,6 +274,7 @@ export type Database = {
           email: string
           id: string
           qr_color: string | null
+          qr_position: string | null
           qr_text_above: string | null
           qr_text_below: string | null
           updated_at: string
@@ -285,6 +286,7 @@ export type Database = {
           email: string
           id: string
           qr_color?: string | null
+          qr_position?: string | null
           qr_text_above?: string | null
           qr_text_below?: string | null
           updated_at?: string
@@ -296,6 +298,7 @@ export type Database = {
           email?: string
           id?: string
           qr_color?: string | null
+          qr_position?: string | null
           qr_text_above?: string | null
           qr_text_below?: string | null
           updated_at?: string
