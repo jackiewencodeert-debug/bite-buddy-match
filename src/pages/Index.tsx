@@ -203,7 +203,7 @@ const Index = () => {
                     {t("profile.logout")}
                   </Button>
                 )}
-                {isGuest && !user && (
+                {isGuest && (
                   <Link to="/scan">
                     <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
                       <Camera className="mr-2 h-5 w-5" />
