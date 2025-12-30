@@ -85,13 +85,87 @@ const Profile = () => {
 
   const checkAuth = async () => {
     try {
-      // Check if user is guest
+      // If there is an authenticated session, ALWAYS treat the user as logged in.
+      // This prevents stale guest localStorage from overriding real accounts.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        // Clear guest flags that could hijack the profile view
+        localStorage.removeItem("userType");
+        localStorage.removeItem("guestExpiry");
+        localStorage.removeItem("guestPreferences");
+
+        setIsGuest(false);
+
+        const user = session.user;
+
+        // Load user profile to check user_type, business warnings, and QR settings
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_type, business_allergen_warnings, qr_color, qr_text_above, qr_text_below")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          setUserType(profile.user_type);
+          if (profile.user_type === "eetgever") {
+            if (profile.business_allergen_warnings) {
+              setBusinessAllergenWarnings(profile.business_allergen_warnings);
+            }
+            // Load QR settings
+            setQrColor((profile as any).qr_color || "black");
+            setQrTextAbove((profile as any).qr_text_above || "");
+            setQrTextBelow((profile as any).qr_text_below || "");
+          }
+        }
+
+        // Check if user is admin
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id);
+
+        if (roles?.some((r) => r.role === "admin")) {
+          setIsAdmin(true);
+        }
+
+        // Load existing preferences
+        const { data: prefs } = await supabase
+          .from("preferences")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (prefs) {
+          const allergiesList = prefs
+            .filter((p) => p.preference_type === "allergie" && !p.characteristics)
+            .map((p) => p.preference_value);
+          const prefsList = prefs
+            .filter((p) => p.preference_type === "dieet")
+            .map((p) => p.preference_value);
+          const customList = prefs
+            .filter((p) => p.preference_type === "allergie" && p.characteristics)
+            .map((p) => ({
+              id: p.id,
+              name: p.preference_value,
+              characteristics: p.characteristics || [],
+            }));
+
+          setSelectedAllergies(allergiesList);
+          setSelectedPreferences(prefsList);
+          setCustomAllergies(customList);
+        }
+
+        return;
+      }
+
+      // No authenticated session -> allow guest profile
       const guestType = localStorage.getItem("userType");
       if (guestType === "gast") {
         setIsGuest(true);
         setUserType("gast");
-        
-        // Load guest preferences from localStorage
+
         const guestPrefs = localStorage.getItem("guestPreferences");
         if (guestPrefs) {
           const prefs = JSON.parse(guestPrefs);
@@ -99,74 +173,12 @@ const Profile = () => {
           setSelectedPreferences(prefs.preferences || []);
           setCustomAllergies(prefs.customAllergies || []);
         }
-        
-        setLoading(false);
+
         return;
       }
 
-      // Check if regular user is logged in
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-
-      // Load user profile to check user_type, business warnings, and QR settings
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_type, business_allergen_warnings, qr_color, qr_text_above, qr_text_below")
-        .eq("id", user.id)
-        .single();
-
-      if (profile) {
-        setUserType(profile.user_type);
-        if (profile.user_type === "eetgever") {
-          if (profile.business_allergen_warnings) {
-            setBusinessAllergenWarnings(profile.business_allergen_warnings);
-          }
-          // Load QR settings
-          setQrColor((profile as any).qr_color || "black");
-          setQrTextAbove((profile as any).qr_text_above || "");
-          setQrTextBelow((profile as any).qr_text_below || "");
-        }
-      }
-
-      // Check if user is admin
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      if (roles?.some(r => r.role === "admin")) {
-        setIsAdmin(true);
-      }
-
-      // Load existing preferences
-      const { data: prefs } = await supabase
-        .from("preferences")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (prefs) {
-        const allergiesList = prefs
-          .filter(p => p.preference_type === "allergie" && !p.characteristics)
-          .map(p => p.preference_value);
-        const prefsList = prefs
-          .filter(p => p.preference_type === "dieet")
-          .map(p => p.preference_value);
-        const customList = prefs
-          .filter(p => p.preference_type === "allergie" && p.characteristics)
-          .map(p => ({
-            id: p.id,
-            name: p.preference_value,
-            characteristics: p.characteristics || []
-          }));
-        
-        setSelectedAllergies(allergiesList);
-        setSelectedPreferences(prefsList);
-        setCustomAllergies(customList);
-      }
+      // Neither guest nor logged in
+      navigate("/auth");
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
@@ -715,22 +727,23 @@ const Profile = () => {
               </Card>
             )}
 
-            <Card className="p-6 bg-gradient-hero border-primary/20">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">💡</div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-2">
-                    {isGuest ? "Je voorkeuren worden tijdelijk opgeslagen" : "Je voorkeuren worden opgeslagen"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {isGuest 
-                      ? "Als gast worden je voorkeuren alleen voor deze sessie opgeslagen. Maak een account om je voorkeuren permanent op te slaan."
-                      : "Na het opslaan worden al je scans automatisch gecontroleerd tegen deze voorkeuren. Je kunt ze altijd aanpassen als je wilt."
-                    }
-                  </p>
+            {userType !== "eetgever" && (
+              <Card className="p-6 bg-gradient-hero border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="text-3xl">💡</div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">
+                      {isGuest ? "Je voorkeuren worden tijdelijk opgeslagen" : "Je voorkeuren worden opgeslagen"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {isGuest
+                        ? "Als gast worden je voorkeuren alleen voor deze sessie opgeslagen. Maak een account om je voorkeuren permanent op te slaan."
+                        : "Na het opslaan worden al je scans automatisch gecontroleerd tegen deze voorkeuren. Je kunt ze altijd aanpassen als je wilt."}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
 
             <div className="flex justify-center pt-4">
               <Button
