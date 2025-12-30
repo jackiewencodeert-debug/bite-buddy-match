@@ -22,9 +22,12 @@ interface Dish {
     es?: string;
     de?: string;
   };
-  ingredients: (string | TranslatedItem)[];
-  allergens?: (string | TranslatedItem)[];
-  dietary_info?: (string | TranslatedItem)[];
+  ingredients: string[];
+  ingredients_translations?: TranslatedItem[];
+  allergens?: string[];
+  allergens_translations?: TranslatedItem[];
+  dietary_info?: string[];
+  dietary_info_translations?: TranslatedItem[];
   price?: string;
   description?: string;
   category?: string;
@@ -56,11 +59,35 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
     return `${dish.name} / ${translatedName}`;
   };
 
-  // Get translated allergen or dietary info
-  const getTranslatedItem = (item: string | TranslatedItem): string => {
-    if (typeof item === 'string') return item;
-    const translated = item[language as keyof TranslatedItem];
-    return (typeof translated === 'string' ? translated : item.original) || item.original;
+  // Get translated item from translations array by index, or fallback to original string
+  const getTranslatedIngredient = (dish: Dish, index: number): string => {
+    const translation = dish.ingredients_translations?.[index];
+    if (translation) {
+      const translated = translation[language as keyof TranslatedItem];
+      if (typeof translated === 'string') return translated;
+      return translation.original;
+    }
+    return dish.ingredients[index] || '';
+  };
+
+  const getTranslatedAllergen = (dish: Dish, index: number): string => {
+    const translation = dish.allergens_translations?.[index];
+    if (translation) {
+      const translated = translation[language as keyof TranslatedItem];
+      if (typeof translated === 'string') return translated;
+      return translation.original;
+    }
+    return dish.allergens?.[index] || '';
+  };
+
+  const getTranslatedDietaryInfo = (dish: Dish, index: number): string => {
+    const translation = dish.dietary_info_translations?.[index];
+    if (translation) {
+      const translated = translation[language as keyof TranslatedItem];
+      if (typeof translated === 'string') return translated;
+      return translation.original;
+    }
+    return dish.dietary_info?.[index] || '';
   };
 
   // Group dishes by category if categories exist
@@ -130,18 +157,21 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                       {dish.dietary_info && dish.dietary_info.length > 0 && (
                         <div className="flex gap-1">
                           {dish.dietary_info
-                            .filter(info => {
-                              const infoStr = getTranslatedItem(info).toLowerCase();
-                              const hasVegan = dish.dietary_info?.some(d => getTranslatedItem(d).toLowerCase().includes('vegan'));
+                            .map((_, idx) => ({ info: getTranslatedDietaryInfo(dish, idx), idx }))
+                            .filter(({ info }) => {
+                              const infoStr = info.toLowerCase();
+                              const hasVegan = dish.dietary_info?.some((_, i) => 
+                                getTranslatedDietaryInfo(dish, i).toLowerCase().includes('vegan')
+                              );
                               return !infoStr.includes('vegetar') || !hasVegan;
                             })
-                            .map((info, idx) => (
+                            .map(({ info, idx }) => (
                               <Badge
                                 key={`diet-${idx}`}
                                 variant="outline"
                                 className="text-xs bg-success/10 text-success border-success/20"
                               >
-                                {getTranslatedItem(info)}
+                                {info}
                               </Badge>
                             ))}
                         </div>
@@ -151,26 +181,26 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                       <p className="text-sm text-muted-foreground mb-3">{dish.description}</p>
                     )}
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {dish.ingredients.map((ingredient, idx) => (
+                      {dish.ingredients.map((_, idx) => (
                         <Badge
                           key={`ingredient-${idx}`}
                           variant="secondary"
                           className="text-xs"
                         >
-                          {getTranslatedItem(ingredient)}
+                          {getTranslatedIngredient(dish, idx)}
                         </Badge>
                       ))}
                     </div>
                     {dish.allergens && dish.allergens.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         <span className="text-xs text-muted-foreground mr-1">{t("results.allergens") || "Allergenen"}:</span>
-                        {dish.allergens.map((allergen, idx) => (
+                        {dish.allergens.map((_, idx) => (
                           <Badge
                             key={`allergen-${idx}`}
                             variant="outline"
                             className="text-xs bg-destructive/20 text-destructive border-destructive/30"
                           >
-                            {getTranslatedItem(allergen)}
+                            {getTranslatedAllergen(dish, idx)}
                           </Badge>
                         ))}
                       </div>

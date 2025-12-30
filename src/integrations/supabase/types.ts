@@ -116,40 +116,52 @@ export type Database = {
       dishes: {
         Row: {
           allergens: string[] | null
+          allergens_translations: Json | null
           created_at: string
           description: string | null
           dietary_info: string[] | null
+          dietary_info_translations: Json | null
           id: string
           ingredients: string[] | null
+          ingredients_translations: Json | null
           is_available: boolean | null
           menu_id: string
           name: string
+          name_translations: Json | null
           price: string | null
           updated_at: string
         }
         Insert: {
           allergens?: string[] | null
+          allergens_translations?: Json | null
           created_at?: string
           description?: string | null
           dietary_info?: string[] | null
+          dietary_info_translations?: Json | null
           id?: string
           ingredients?: string[] | null
+          ingredients_translations?: Json | null
           is_available?: boolean | null
           menu_id: string
           name: string
+          name_translations?: Json | null
           price?: string | null
           updated_at?: string
         }
         Update: {
           allergens?: string[] | null
+          allergens_translations?: Json | null
           created_at?: string
           description?: string | null
           dietary_info?: string[] | null
+          dietary_info_translations?: Json | null
           id?: string
           ingredients?: string[] | null
+          ingredients_translations?: Json | null
           is_available?: boolean | null
           menu_id?: string
           name?: string
+          name_translations?: Json | null
           price?: string | null
           updated_at?: string
         }

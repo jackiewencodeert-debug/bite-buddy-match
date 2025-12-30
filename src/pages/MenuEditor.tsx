@@ -389,15 +389,27 @@ const MenuEditor = () => {
           return String(item);
         };
 
-        // Add analyzed dishes to database
+        // Helper function to preserve translation object or create one from string
+        const preserveTranslation = (item: any): any => {
+          if (typeof item === 'string') {
+            return { original: item };
+          }
+          return item;
+        };
+
+        // Add analyzed dishes to database with translations
         const dishesToInsert = analysisData.dishes.map((dish: any) => ({
           menu_id: menuId,
           name: dish.name,
+          name_translations: dish.name_translations || {},
           description: dish.description || '',
           price: dish.price || '',
           ingredients: (dish.ingredients || []).map(extractOriginal),
+          ingredients_translations: (dish.ingredients || []).map(preserveTranslation),
           allergens: [...new Set([...(dish.allergens || []).map(extractOriginal), ...businessAllergens])],
+          allergens_translations: (dish.allergens || []).map(preserveTranslation),
           dietary_info: (dish.dietary_info || []).map(extractOriginal),
+          dietary_info_translations: (dish.dietary_info || []).map(preserveTranslation),
         }));
 
         const { error: insertError } = await supabase
