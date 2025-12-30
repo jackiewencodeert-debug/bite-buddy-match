@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3, User } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3, User, Download } from "lucide-react";
+import QRCode from "react-qr-code";
+import jsPDF from "jspdf";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -143,6 +145,78 @@ const BusinessDashboard = () => {
     setShowNameDialog(false);
     setShowMethodDialog(true);
   };
+  const downloadQRCode = (menu: any) => {
+    const menuData = menu.menu_data as { name?: string } | null;
+    const menuName = menuData?.name || t("business.untitledMenu");
+    
+    // Create a temporary container for the QR code
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    // Render QR code to the temp container
+    const qrUrl = `${window.location.origin}/menu/${menu.qr_code}`;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '256');
+    svg.setAttribute('height', '256');
+    svg.setAttribute('viewBox', '0 0 256 256');
+    tempDiv.appendChild(svg);
+    
+    // Use canvas to convert SVG to image
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    // Create QR code image
+    const qrContainer = document.createElement('div');
+    document.body.appendChild(qrContainer);
+    
+    // Use react-qr-code's SVG output
+    const qrSvg = document.querySelector(`[data-qr-menu-id="${menu.id}"]`) as SVGElement;
+    
+    if (qrSvg && ctx) {
+      const svgData = new XMLSerializer().serializeToString(qrSvg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, 256, 256);
+        
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const qrSize = 80;
+        const xPos = (pageWidth - qrSize) / 2;
+        
+        pdf.setFontSize(24);
+        pdf.text(menuName, pageWidth / 2, 40, { align: 'center' });
+        
+        const imgData = canvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', xPos, 60, qrSize, qrSize);
+        
+        pdf.setFontSize(12);
+        pdf.text(t("business.scanToView"), pageWidth / 2, 155, { align: 'center' });
+        
+        pdf.save(`${menuName.replace(/[^a-zA-Z0-9]/g, '_')}_QR.pdf`);
+        
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+    
+    document.body.removeChild(tempDiv);
+    document.body.removeChild(qrContainer);
+  };
+
   const handleMethodSelect = async (method: "scan" | "manual") => {
     setCreatingMenu(true);
     try {
@@ -322,6 +396,18 @@ const BusinessDashboard = () => {
                             <Button variant="outline" size="sm" onClick={() => navigate(`/menu/${menu.qr_code}`)}>
                               {t("business.viewQR")}
                             </Button>
+                            <Button variant="outline" size="sm" onClick={() => downloadQRCode(menu)}>
+                              <Download className="h-4 w-4 mr-1" />
+                              {t("business.downloadQR")}
+                            </Button>
+                            {/* Hidden QR code for PDF generation */}
+                            <div className="hidden">
+                              <QRCode
+                                data-qr-menu-id={menu.id}
+                                value={`${window.location.origin}/menu/${menu.qr_code}`}
+                                size={256}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>;
