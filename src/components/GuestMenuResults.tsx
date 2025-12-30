@@ -2,6 +2,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
+import { translateItem } from "@/lib/translations";
+
+type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
 
 interface TranslatedItem {
   original: string;
@@ -52,11 +55,11 @@ interface Dish {
     ko?: string;
     ar?: string;
   };
-  ingredients: string[];
+  ingredients: (string | TranslatedItem)[];
   ingredients_translations?: TranslatedItem[];
-  allergens?: string[];
+  allergens?: (string | TranslatedItem)[];
   allergens_translations?: TranslatedItem[];
-  dietary_info?: string[];
+  dietary_info?: (string | TranslatedItem)[];
   dietary_info_translations?: TranslatedItem[];
   price?: string;
   description?: string;
@@ -76,48 +79,79 @@ interface GuestMenuResultsProps {
 
 export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuResultsProps) => {
   const { t, language } = useLanguage();
+  const lang = language as LangCode;
 
   // Get translated dish name with original if different
   const getDishDisplayName = (dish: Dish) => {
     const translations = dish.name_translations;
     if (!translations) return dish.name;
     
-    const translatedName = translations[language as keyof typeof translations];
+    const translatedName = translations[lang];
     if (!translatedName || translatedName.toLowerCase() === dish.name.toLowerCase()) {
       return dish.name;
     }
     return `${dish.name} / ${translatedName}`;
   };
 
-  // Get translated item from translations array by index, or fallback to original string
+  // Get translated item - supports both string[] and TranslatedItem[]
   const getTranslatedIngredient = (dish: Dish, index: number): string => {
+    const item = dish.ingredients[index];
+    if (!item) return "";
+
+    if (typeof item === "object" && item.original) {
+      const translated = item[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(item.original, lang);
+    }
+
     const translation = dish.ingredients_translations?.[index];
     if (translation) {
-      const translated = translation[language as keyof TranslatedItem];
-      if (typeof translated === 'string') return translated;
-      return translation.original;
+      const translated = translation[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(translation.original, lang);
     }
-    return dish.ingredients[index] || '';
+
+    return translateItem(String(item), lang);
   };
 
   const getTranslatedAllergen = (dish: Dish, index: number): string => {
+    const item = dish.allergens?.[index];
+    if (!item) return "";
+
+    if (typeof item === "object" && item.original) {
+      const translated = item[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(item.original, lang);
+    }
+
     const translation = dish.allergens_translations?.[index];
     if (translation) {
-      const translated = translation[language as keyof TranslatedItem];
-      if (typeof translated === 'string') return translated;
-      return translation.original;
+      const translated = translation[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(translation.original, lang);
     }
-    return dish.allergens?.[index] || '';
+
+    return translateItem(String(item), lang);
   };
 
   const getTranslatedDietaryInfo = (dish: Dish, index: number): string => {
+    const item = dish.dietary_info?.[index];
+    if (!item) return "";
+
+    if (typeof item === "object" && item.original) {
+      const translated = item[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(item.original, lang);
+    }
+
     const translation = dish.dietary_info_translations?.[index];
     if (translation) {
-      const translated = translation[language as keyof TranslatedItem];
-      if (typeof translated === 'string') return translated;
-      return translation.original;
+      const translated = translation[lang];
+      if (typeof translated === "string") return translated;
+      return translateItem(translation.original, lang);
     }
-    return dish.dietary_info?.[index] || '';
+
+    return translateItem(String(item), lang);
   };
 
   // Group dishes by category if categories exist
