@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AdSenseAd } from "./AdSenseAd";
+import { X } from "lucide-react";
 
 export const AdBanner = () => {
   const location = useLocation();
   const [showBanner, setShowBanner] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     checkShouldShowBanner();
@@ -63,10 +65,21 @@ export const AdBanner = () => {
     }
   };
 
-  if (!showBanner) return null;
+  const handleDismiss = () => {
+    setIsDismissed(true);
+  };
+
+  if (!showBanner || isDismissed) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t border-border max-h-[7vh] overflow-hidden">
+      <button
+        onClick={handleDismiss}
+        className="absolute top-1 right-1 z-10 p-1 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Sluiten"
+      >
+        <X className="h-3 w-3" />
+      </button>
       <div className="max-w-lg mx-auto h-full">
         <AdSenseAd 
           adSlot="7704507845" 
