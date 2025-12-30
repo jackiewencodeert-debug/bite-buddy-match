@@ -260,12 +260,19 @@ const MenuEditor = () => {
       const validFiles: File[] = [];
       const oversizedFiles: string[] = [];
 
-      Array.from(files).forEach(file => {
+      Array.from(files).forEach((file) => {
         if (file.size > MAX_FILE_SIZE) {
           oversizedFiles.push(file.name);
-        } else {
-          validFiles.push(file);
+          return;
         }
+
+        // Allow images + PDF
+        if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+          oversizedFiles.push(`${file.name} (${t("scan.invalidFileType") || "ongeldig type"})`);
+          return;
+        }
+
+        validFiles.push(file);
       });
 
       if (oversizedFiles.length > 0) {
@@ -278,22 +285,29 @@ const MenuEditor = () => {
 
       if (validFiles.length === 0) return;
 
-      const readers = validFiles.map(file => {
-        return new Promise<string>((resolve) => {
+      const readers = validFiles.map((file) => {
+        return new Promise<{ data: string; type: "image" | "pdf" }>((resolve) => {
           const reader = new FileReader();
           reader.onload = (e) => {
-            resolve(e.target?.result as string);
+            resolve({
+              data: e.target?.result as string,
+              type: file.type === "application/pdf" ? "pdf" : "image",
+            });
           };
           reader.readAsDataURL(file);
         });
       });
 
-      Promise.all(readers).then(images => {
-        setMultipleImages(prev => [...prev, ...images]);
-        const fileCount = images.length;
-        const isPdf = validFiles.some(f => f.type === 'application/pdf');
+      Promise.all(readers).then((results) => {
+        // Store as JSON strings so the backend can correctly handle PDFs
+        const items = results.map((r) => JSON.stringify(r));
+        setMultipleImages((prev) => [...prev, ...items]);
+
+        const fileCount = results.length;
+        const pdfCount = results.filter((r) => r.type === "pdf").length;
+
         toast({
-          title: `${fileCount} ${isPdf ? t("scan.filesAdded") : (fileCount > 1 ? t("scan.photosAddedPlural") : t("scan.photoAdded"))}`,
+          title: `${fileCount} ${pdfCount > 0 ? t("scan.filesAdded") : fileCount > 1 ? t("scan.photosAddedPlural") : t("scan.photoAdded")}`,
           description: `${t("scan.total")}: ${multipleImages.length + fileCount}`,
         });
       });
@@ -304,45 +318,63 @@ const MenuEditor = () => {
     setMultipleImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadMenuImage = async (imageData: string): Promise<string | null> => {
+  const uploadMenuImage = async (imageItem: string): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
+      // Support both legacy DataURL strings and new JSON { data, type }
+      let dataUrl = imageItem;
+      let mimeType = imageItem.startsWith("data:") ? imageItem.substring(5, imageItem.indexOf(";")) : "image/jpeg";
+      let ext = mimeType === "application/pdf" ? "pdf" : "jpg";
+
+      try {
+        const parsed = JSON.parse(imageItem);
+        if (parsed?.data && typeof parsed.data === "string") {
+          dataUrl = parsed.data;
+          mimeType = dataUrl.startsWith("data:") ? dataUrl.substring(5, dataUrl.indexOf(";")) : mimeType;
+          ext = parsed.type === "pdf" || mimeType === "application/pdf" ? "pdf" : "jpg";
+        }
+      } catch {
+        // ignore
+      }
+
+      if (!dataUrl.includes(",")) return null;
+
       // Convert base64 to blob
-      const base64Data = imageData.split(',')[1];
+      const base64Data = dataUrl.split(",")[1];
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'image/jpeg' });
+      const blob = new Blob([byteArray], { type: mimeType });
 
       // Create unique filename
-      const fileName = `${user.id}/${menuId}-${Date.now()}.jpg`;
+      const fileName = `${user.id}/${menuId}-${Date.now()}.${ext}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
-        .from('menu-images')
+        .from("menu-images")
         .upload(fileName, blob, {
-          contentType: 'image/jpeg',
-          upsert: true
+          contentType: mimeType,
+          upsert: true,
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error("Upload error:", uploadError);
         return null;
       }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('menu-images')
+        .from("menu-images")
         .getPublicUrl(fileName);
 
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading menu image:', error);
+      console.error("Error uploading menu image:", error);
       return null;
     }
   };
