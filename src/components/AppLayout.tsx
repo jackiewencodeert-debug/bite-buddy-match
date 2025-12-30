@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { BottomNavBar } from "./BottomNavBar";
 import { AdBanner } from "./AdBanner";
+import { TempBanner } from "./TempBanner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -108,6 +109,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className={`min-h-screen ${bottomPadding}`}>
+      <TempBanner />
       {children}
       {showNavBar && (
         <>
