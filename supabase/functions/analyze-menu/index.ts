@@ -151,9 +151,10 @@ Hard requirements:
 - Infer allergens from ingredients. Bread/pasta/noodles/flour/wheat/tarwe/meel/spelt/rogge/gerst => gluten.
 - If something is explicitly gluten-free / lactose-free, do NOT add that allergen.
 
-Translations:
+Translations (CRITICAL):
 - Provide name_translations for ALL ${langKeys.length} languages: ${langKeys.join(", ")}.
-- Do NOT translate ingredients/allergens/dietary_info; return them as simple string arrays.
+- ALSO provide ingredients, allergens, and dietary_info as arrays of translation objects.
+- Each item must be an object with "original" (source language) plus translations for all ${langKeys.length} languages.
 
 Limits:
 - Extract at most 40 dishes (for speed). If more exist, prioritize the most prominent or first listed.
@@ -164,9 +165,9 @@ Return JSON exactly in this shape:
   "dishes": [{
     "name": string,
     "name_translations": { ${langKeys.map((k) => `"${k}": string`).join(", ")} },
-    "ingredients": string[],
-    "allergens": string[],
-    "dietary_info": string[],
+    "ingredients": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
+    "allergens": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
+    "dietary_info": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
     "price": string|null,
     "description": string|null,
     "category": string|null
