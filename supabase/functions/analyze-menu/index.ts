@@ -72,19 +72,29 @@ serve(async (req) => {
       ? `\n\nAdditional learned allergen patterns to consider:\n${Array.from(learnedPatterns.entries()).map(([ingredient, allergens]) => `- "${ingredient}" often contains: ${allergens.join(", ")}`).join("\n")}`
       : "";
 
+const allLanguages = {
+  nl: "Dutch", en: "English", fr: "French", es: "Spanish", de: "German",
+  it: "Italian", hu: "Hungarian", id: "Indonesian", tr: "Turkish", vi: "Vietnamese",
+  th: "Thai", uk: "Ukrainian", pt: "Portuguese", ru: "Russian", hi: "Hindi",
+  pl: "Polish", zh: "Chinese", ja: "Japanese", ko: "Korean", ar: "Arabic"
+};
+
+const langKeys = Object.keys(allLanguages);
+const langList = langKeys.map(k => `"${k}": "${allLanguages[k as keyof typeof allLanguages]} translation"`).join(", ");
+
 const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
 
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
 - name: dish name EXACTLY as it appears on the menu (required)
-- name_translations: REQUIRED object with translations of the dish name. ALWAYS provide this for every dish, even if the original is already in one of the target languages: { "nl": "Dutch translation", "en": "English translation", "fr": "French translation", "es": "Spanish translation", "de": "German translation" }
-- ingredients: array of ingredient objects, each with translations: [{ "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen" }]
-- allergens: array of allergen objects, each with translations: [{ "original": "noten", "nl": "Noten", "en": "Nuts", "fr": "Noix", "es": "Frutos secos", "de": "Nüsse" }]
-- dietary_info: array of dietary info objects, each with translations: [{ "original": "vegetarisch", "nl": "Vegetarisch", "en": "Vegetarian", "fr": "Végétarien", "es": "Vegetariano", "de": "Vegetarisch" }]
+- name_translations: REQUIRED object with translations of the dish name in ALL 20 languages: { ${langList} }
+- ingredients: array of ingredient objects, each with translations in ALL 20 languages: [{ "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen", "it": "Pollo", "hu": "Csirke", "id": "Ayam", "tr": "Tavuk", "vi": "Gà", "th": "ไก่", "uk": "Курка", "pt": "Frango", "ru": "Курица", "hi": "मुर्गी", "pl": "Kurczak", "zh": "鸡肉", "ja": "鶏肉", "ko": "닭고기", "ar": "دجاج" }]
+- allergens: array of allergen objects, each with translations in ALL 20 languages (same format as ingredients)
+- dietary_info: array of dietary info objects, each with translations in ALL 20 languages (same format as ingredients)
 - price: price if visible (include € symbol)
 - description: brief description if available
 - category: the section/category this dish belongs to (e.g., "Voorgerechten", "Hoofdgerechten", "Desserts", "Soepen", "Salades", "Drankjes", etc.)
 
-IMPORTANT: The name_translations field is MANDATORY for every dish. Always provide translations in all 5 languages (nl, en, fr, es, de).
+IMPORTANT: ALL translation objects MUST include translations in ALL 20 languages: nl, en, fr, es, de, it, hu, id, tr, vi, th, uk, pt, ru, hi, pl, zh, ja, ko, ar.
 
 Common allergens to detect (with their standard translations):
 - noten/nuts, gluten, lactose, schaaldieren/shellfish, vis/fish, eieren/eggs, soja/soy, sulfiet/sulfite, selderij/celery, mosterd/mustard, sesam/sesame, weekdieren/mollusks, lupine
@@ -99,19 +109,17 @@ Also extract menu template information:
   - secondaryColor: secondary/accent color (hex format)
   - fontStyle: general font style description (e.g., "elegant", "modern", "rustic", "casual")
 
-Return in this exact JSON format (name_translations is REQUIRED for every dish):
+Return in this exact JSON format (ALL 20 language translations are REQUIRED):
 {
   "isMenu": true/false,
   "dishes": [
     {
       "name": "Kippensoep",
-      "name_translations": { "nl": "Kippensoep", "en": "Chicken soup", "fr": "Soupe au poulet", "es": "Sopa de pollo", "de": "Hühnersuppe" },
+      "name_translations": { "nl": "Kippensoep", "en": "Chicken soup", "fr": "Soupe au poulet", "es": "Sopa de pollo", "de": "Hühnersuppe", "it": "Zuppa di pollo", "hu": "Csirkeleves", "id": "Sup ayam", "tr": "Tavuk çorbası", "vi": "Súp gà", "th": "ซุปไก่", "uk": "Курячий суп", "pt": "Sopa de frango", "ru": "Куриный суп", "hi": "चिकन सूप", "pl": "Zupa z kurczaka", "zh": "鸡汤", "ja": "チキンスープ", "ko": "치킨 수프", "ar": "حساء الدجاج" },
       "ingredients": [
-        { "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen" },
-        { "original": "wortel", "nl": "Wortel", "en": "Carrot", "fr": "Carotte", "es": "Zanahoria", "de": "Karotte" },
-        { "original": "selderij", "nl": "Selderij", "en": "Celery", "fr": "Céleri", "es": "Apio", "de": "Sellerie" }
+        { "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen", "it": "Pollo", "hu": "Csirke", "id": "Ayam", "tr": "Tavuk", "vi": "Gà", "th": "ไก่", "uk": "Курка", "pt": "Frango", "ru": "Курица", "hi": "मुर्गी", "pl": "Kurczak", "zh": "鸡肉", "ja": "鶏肉", "ko": "닭고기", "ar": "دجاج" }
       ],
-      "allergens": [{ "original": "selderij", "nl": "Selderij", "en": "Celery", "fr": "Céleri", "es": "Apio", "de": "Sellerie" }],
+      "allergens": [],
       "dietary_info": [],
       "price": "€7,50",
       "description": "Huisgemaakte kippensoep met verse groenten",
