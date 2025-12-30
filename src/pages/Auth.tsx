@@ -42,8 +42,8 @@ const Auth = () => {
   const handlePasswordReset = async () => {
     if (!email.trim()) {
       toast({
-        title: "E-mail vereist",
-        description: "Vul eerst je e-mailadres in om je wachtwoord te resetten.",
+        title: t("auth.resetEmailRequired"),
+        description: t("auth.resetEmailRequiredDesc"),
         variant: "destructive",
       });
       setShowResetDialog(false);
@@ -53,8 +53,8 @@ const Auth = () => {
     const emailValidation = z.string().email().safeParse(email);
     if (!emailValidation.success) {
       toast({
-        title: "Ongeldig e-mailadres",
-        description: "Vul een geldig e-mailadres in.",
+        title: t("auth.resetInvalidEmail"),
+        description: t("auth.resetInvalidEmailDesc"),
         variant: "destructive",
       });
       setShowResetDialog(false);
@@ -70,13 +70,13 @@ const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: "E-mail verzonden!",
-        description: "Check je inbox voor de link om je wachtwoord te resetten.",
+        title: t("auth.resetEmailSent"),
+        description: t("auth.resetEmailSentDesc"),
       });
     } catch (error: any) {
       toast({
-        title: "Fout",
-        description: error.message || "Er is iets misgegaan. Probeer het opnieuw.",
+        title: t("auth.resetError"),
+        description: error.message || t("auth.resetErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -386,7 +386,7 @@ const Auth = () => {
                       className="text-sm text-primary hover:underline"
                       disabled={loading}
                     >
-                      Wachtwoord vergeten?
+                      {t("auth.forgotPassword")}
                     </button>
                   )}
                 </div>
@@ -423,21 +423,24 @@ const Auth = () => {
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Wachtwoord resetten</AlertDialogTitle>
+            <AlertDialogTitle>{t("auth.resetPasswordTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Wil je een nieuw wachtwoord aanmaken? We sturen een e-mail naar {email || "het opgegeven adres"} met een link om je wachtwoord te resetten.
+              {email 
+                ? t("auth.resetPasswordDesc").replace("{email}", email)
+                : t("auth.resetPasswordDescNoEmail")
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={resetLoading}>Nee</AlertDialogCancel>
+            <AlertDialogCancel disabled={resetLoading}>{t("auth.resetNo")}</AlertDialogCancel>
             <AlertDialogAction onClick={handlePasswordReset} disabled={resetLoading}>
               {resetLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verzenden...
+                  {t("auth.resetSending")}
                 </>
               ) : (
-                "Ja"
+                t("auth.resetYes")
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
