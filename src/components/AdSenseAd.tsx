@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import logoGrid from '@/assets/logo-grid.png';
 
 /**
  * =============================================================================
@@ -51,22 +50,8 @@ interface AdSenseAdProps {
  * Eigen advertentie content - Pas dit aan voor je eigen advertenties
  */
 const CustomAdContent = () => (
-  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
-    <div className="flex items-center gap-3 px-4">
-      {/* Logo uit logo-grid.png - middelste van bovenste rij */}
-      <div 
-        className="w-12 h-12 bg-cover bg-no-repeat rounded-lg shadow-sm"
-        style={{
-          backgroundImage: `url(${logoGrid})`,
-          backgroundPosition: '-96px 0px', // Middelste logo bovenste rij
-          backgroundSize: '288px 192px'
-        }}
-      />
-      <div className="flex flex-col">
-        <span className="text-sm font-bold text-foreground">BiteBuddy</span>
-        <span className="text-xs text-muted-foreground">Slim menu scannen</span>
-      </div>
-    </div>
+  <div className="w-full h-full flex items-center justify-center bg-muted/50">
+    <span className="text-sm font-medium text-muted-foreground">Advertentie</span>
   </div>
 );
 
