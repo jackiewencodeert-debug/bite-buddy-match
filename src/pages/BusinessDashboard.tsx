@@ -34,6 +34,7 @@ const BusinessDashboard = () => {
   const [qrColor, setQrColor] = useState<string>("black");
   const [qrTextAbove, setQrTextAbove] = useState<string>("");
   const [qrTextBelow, setQrTextBelow] = useState<string>("");
+  const [qrPosition, setQrPosition] = useState<string>("bottom-right");
   const {
     t
   } = useLanguage();
@@ -60,7 +61,7 @@ const BusinessDashboard = () => {
       }
       const {
         data: profile
-      } = await supabase.from("profiles").select("user_type, qr_color, qr_text_above, qr_text_below").eq("id", user.id).single();
+      } = await supabase.from("profiles").select("user_type, qr_color, qr_text_above, qr_text_below, qr_position").eq("id", user.id).single();
       if (profile?.user_type !== "eetgever") {
         toast({
           title: t("business.noAccess"),
@@ -75,6 +76,7 @@ const BusinessDashboard = () => {
       setQrColor((profile as any).qr_color || "black");
       setQrTextAbove((profile as any).qr_text_above || "");
       setQrTextBelow((profile as any).qr_text_below || "");
+      setQrPosition((profile as any).qr_position || "bottom-right");
       await loadMenusAndStats(user.id);
     } catch (error: any) {
       toast({
@@ -244,6 +246,130 @@ const BusinessDashboard = () => {
     }
     
     document.body.removeChild(tempDiv);
+  };
+
+  const downloadMenuWithQR = async (menu: any) => {
+    const menuData = menu.menu_data as { name?: string } | null;
+    const menuDisplayName = menuData?.name || t("business.untitledMenu");
+    
+    // Check if menu has an image
+    if (!menu.menu_image_url) {
+      toast({
+        title: t("business.noMenuImage"),
+        description: t("business.noMenuImageDesc"),
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Load the menu image
+      const menuImg = new Image();
+      menuImg.crossOrigin = "anonymous";
+      
+      await new Promise<void>((resolve, reject) => {
+        menuImg.onload = () => resolve();
+        menuImg.onerror = () => reject(new Error("Failed to load menu image"));
+        menuImg.src = menu.menu_image_url;
+      });
+
+      // Create canvas with menu image
+      const canvas = document.createElement('canvas');
+      canvas.width = menuImg.width;
+      canvas.height = menuImg.height;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) return;
+
+      // Draw the menu image
+      ctx.drawImage(menuImg, 0, 0);
+
+      // Create QR code canvas
+      const qrSvg = document.querySelector(`[data-qr-menu-id="${menu.id}"]`) as SVGElement;
+      if (!qrSvg) return;
+
+      const clonedSvg = qrSvg.cloneNode(true) as SVGElement;
+      
+      // Change QR code color
+      const paths = clonedSvg.querySelectorAll('path');
+      paths.forEach(path => {
+        if (path.getAttribute('fill') === '#000000' || path.getAttribute('fill') === 'black') {
+          path.setAttribute('fill', qrColor === 'white' ? '#FFFFFF' : '#000000');
+        }
+      });
+      
+      const rects = clonedSvg.querySelectorAll('rect');
+      rects.forEach(rect => {
+        const fill = rect.getAttribute('fill');
+        if (fill === '#000000' || fill === 'black') {
+          rect.setAttribute('fill', qrColor === 'white' ? '#FFFFFF' : '#000000');
+        }
+        // Remove white background for transparency
+        if (fill === '#FFFFFF' || fill === 'white') {
+          rect.setAttribute('fill', 'transparent');
+        }
+      });
+
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const qrUrl = URL.createObjectURL(svgBlob);
+
+      const qrImg = new Image();
+      await new Promise<void>((resolve, reject) => {
+        qrImg.onload = () => resolve();
+        qrImg.onerror = () => reject(new Error("Failed to load QR code"));
+        qrImg.src = qrUrl;
+      });
+
+      // Calculate QR code size and position
+      const qrSize = Math.min(canvas.width, canvas.height) * 0.15; // 15% of smallest dimension
+      const padding = qrSize * 0.2;
+      
+      let qrX: number, qrY: number;
+      
+      switch (qrPosition) {
+        case 'top-left':
+          qrX = padding;
+          qrY = padding;
+          break;
+        case 'top-right':
+          qrX = canvas.width - qrSize - padding;
+          qrY = padding;
+          break;
+        case 'bottom-left':
+          qrX = padding;
+          qrY = canvas.height - qrSize - padding;
+          break;
+        case 'bottom-right':
+        default:
+          qrX = canvas.width - qrSize - padding;
+          qrY = canvas.height - qrSize - padding;
+          break;
+      }
+
+      // Draw QR code on menu
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      URL.revokeObjectURL(qrUrl);
+
+      // Download the combined image
+      const link = document.createElement('a');
+      link.download = `${menuDisplayName.replace(/[^a-zA-Z0-9]/g, '_')}_met_QR.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      toast({
+        title: t("business.menuDownloaded"),
+        description: t("business.menuDownloadedDesc"),
+      });
+    } catch (error) {
+      console.error("Error downloading menu with QR:", error);
+      toast({
+        title: t("common.error"),
+        description: t("business.downloadError"),
+        variant: "destructive"
+      });
+    }
   };
 
   const handleMethodSelect = async (method: "scan" | "manual") => {
@@ -429,6 +555,12 @@ const BusinessDashboard = () => {
                               <Download className="h-4 w-4 mr-1" />
                               {t("business.downloadQR")}
                             </Button>
+                            {menu.menu_image_url && (
+                              <Button variant="outline" size="sm" onClick={() => downloadMenuWithQR(menu)}>
+                                <Download className="h-4 w-4 mr-1" />
+                                {t("business.downloadMenuWithQR")}
+                              </Button>
+                            )}
                             {/* Hidden QR code for PDF generation */}
                             <div className="hidden">
                               <QRCode

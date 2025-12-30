@@ -76,6 +76,7 @@ const Profile = () => {
   const [qrColor, setQrColor] = useState<string>("black");
   const [qrTextAbove, setQrTextAbove] = useState<string>("");
   const [qrTextBelow, setQrTextBelow] = useState<string>("");
+  const [qrPosition, setQrPosition] = useState<string>("bottom-right");
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -105,7 +106,7 @@ const Profile = () => {
         // Load user profile to check user_type, business warnings, and QR settings
         const { data: profile } = await supabase
           .from("profiles")
-          .select("user_type, business_allergen_warnings, qr_color, qr_text_above, qr_text_below")
+          .select("user_type, business_allergen_warnings, qr_color, qr_text_above, qr_text_below, qr_position")
           .eq("id", user.id)
           .single();
 
@@ -119,6 +120,7 @@ const Profile = () => {
             setQrColor((profile as any).qr_color || "black");
             setQrTextAbove((profile as any).qr_text_above || "");
             setQrTextBelow((profile as any).qr_text_below || "");
+            setQrPosition((profile as any).qr_position || "bottom-right");
           }
         }
 
@@ -335,7 +337,8 @@ const Profile = () => {
             business_allergen_warnings: businessAllergenWarnings,
             qr_color: qrColor,
             qr_text_above: qrTextAbove,
-            qr_text_below: qrTextBelow
+            qr_text_below: qrTextBelow,
+            qr_position: qrPosition
           })
           .eq("id", user.id);
       }
@@ -694,6 +697,37 @@ const Profile = () => {
                           {qrTextBelow}
                         </p>
                       )}
+                    </div>
+                  </div>
+
+                  {/* QR Position Selection */}
+                  <div className="mt-6">
+                    <Label className="text-base font-medium mb-3 block">
+                      {t("profile.qrPosition")}
+                    </Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {t("profile.qrPositionDesc")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { id: "top-left", label: t("profile.topLeft") },
+                        { id: "top-right", label: t("profile.topRight") },
+                        { id: "bottom-left", label: t("profile.bottomLeft") },
+                        { id: "bottom-right", label: t("profile.bottomRight") },
+                      ].map((pos) => (
+                        <button
+                          key={pos.id}
+                          type="button"
+                          onClick={() => setQrPosition(pos.id)}
+                          className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                            qrPosition === pos.id
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
