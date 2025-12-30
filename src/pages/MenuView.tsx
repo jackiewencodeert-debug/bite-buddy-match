@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import QRCode from "react-qr-code";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { GuestMenuResults } from "@/components/GuestMenuResults";
+import { MenuResults } from "@/components/MenuResults";
 
 const MenuView = () => {
   const { qrCode } = useParams();
@@ -265,140 +266,14 @@ const MenuView = () => {
                 </Button>
 
                 {matchResults && (
-                  <div className="space-y-3 mt-6">
-                    <h3 className="font-semibold text-lg">{t("menuView.results")}</h3>
-                    {matchResults.map((result: any, index: number) => {
-                      const getStatusColor = () => {
-                        switch (result.status) {
-                          case "safe":
-                            return "border-success/50 bg-success/5";
-                          case "caution":
-                            return "border-warning/50 bg-warning/5";
-                          case "avoid":
-                            return "border-destructive/50 bg-destructive/5";
-                          default:
-                            return "";
-                        }
-                      };
-
-                      const getStatusEmoji = () => {
-                        switch (result.status) {
-                          case "safe":
-                            return "😊";
-                          case "caution":
-                            return "😐";
-                          case "avoid":
-                            return "🤢";
-                          default:
-                            return "";
-                        }
-                      };
-
-                      const getStatusText = () => {
-                        switch (result.status) {
-                          case "safe":
-                            return t("results.safe");
-                          case "caution":
-                            return t("results.adjustable");
-                          case "avoid":
-                            return t("results.containsAllergens");
-                          default:
-                            return "";
-                        }
-                      };
-
-                      return (
-                        <Card key={index} className={`p-4 ${getStatusColor()}`}>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-2xl">{getStatusEmoji()}</span>
-                                <div>
-                                  <h4 className="font-semibold">{result.dish.name}</h4>
-                                  <p className="text-xs text-muted-foreground">{getStatusText()}</p>
-                                </div>
-                              </div>
-                              {result.dish.description && (
-                                <p className="text-sm text-muted-foreground mb-2">{result.dish.description}</p>
-                              )}
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {result.dish.ingredients.map((ing: string, i: number) => (
-                                  <Badge key={i} variant="outline" className="text-xs">
-                                    {ing}
-                                  </Badge>
-                                ))}
-                              </div>
-                              {result.status === "avoid" && (result.matchedAllergens.length > 0 || result.matchedCustom.length > 0) && (
-                                <div className="mt-2">
-                                  <p className="text-sm font-semibold text-destructive">{t("menuView.foundAllergens")}</p>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {result.matchedAllergens.map((a: string) => (
-                                      <Badge key={a} variant="destructive" className="text-xs">
-                                        {a}
-                                      </Badge>
-                                    ))}
-                                    {result.matchedCustom.map((c: string) => (
-                                      <Badge key={c} variant="destructive" className="text-xs">
-                                        {c}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {result.status === "caution" && (
-                                <p className="text-sm text-warning mt-2">
-                                  {t("menuView.otherAllergensWarning")}
-                                </p>
-                              )}
-                            </div>
-                            {result.dish.price && (
-                              <span className="font-semibold text-muted-foreground">
-                                {result.dish.price}
-                              </span>
-                            )}
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
+                  <MenuResults 
+                    dishes={dishes} 
+                    userAllergies={[...userAllergies, ...userCustomAllergies.map((ca: any) => ca.name)]}
+                  />
                 )}
               </>
             ) : dishes.length > 0 ? (
-              <div className="space-y-3">
-                {dishes.map((dish) => (
-                  <Card key={dish.id} className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-1">{dish.name}</h4>
-                        {dish.description && (
-                          <p className="text-sm text-muted-foreground mb-2">{dish.description}</p>
-                        )}
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {dish.ingredients.map((ing: string, i: number) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {ing}
-                            </Badge>
-                          ))}
-                        </div>
-                        {dish.allergens && dish.allergens.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {dish.allergens.map((allergen: string, i: number) => (
-                              <Badge key={i} variant="destructive" className="text-xs">
-                                {allergen}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      {dish.price && (
-                        <span className="font-semibold text-muted-foreground">
-                          {dish.price}
-                        </span>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <GuestMenuResults dishes={dishes} />
             ) : (
               <p className="text-center text-muted-foreground py-8">
                 {t("menuView.noDishesAdded")}

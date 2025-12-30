@@ -330,7 +330,7 @@ ${patternsHint}`;
         continue;
       }
 
-      if (parsedContent.isMenu) {
+    if (parsedContent.isMenu) {
         foundMenu = true;
         allDishes = allDishes.concat(parsedContent.dishes || []);
 
@@ -341,6 +341,33 @@ ${patternsHint}`;
         if (!templateStyle && parsedContent.template?.style) {
           templateStyle = parsedContent.template.style;
         }
+      }
+
+      // Collect translations from the parsed content
+      if (parsedContent.translations) {
+        // Merge translations into response
+        const translationsResponse = parsedContent.translations;
+        
+        // Remove duplicate dishes based on name
+        const uniqueDishes = allDishes.filter((dish, index, self) =>
+          index === self.findIndex((d) => d.name.toLowerCase() === dish.name.toLowerCase())
+        );
+
+        const totalElapsed = Date.now() - startTime;
+        console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length, ", categories =", allCategories.length, ", totalTime =", totalElapsed, "ms");
+
+        return new Response(
+          JSON.stringify({
+            isMenu: foundMenu,
+            dishes: uniqueDishes,
+            translations: translationsResponse,
+            template: foundMenu ? {
+              categories: allCategories,
+              style: templateStyle
+            } : null
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
 
@@ -356,6 +383,7 @@ ${patternsHint}`;
       JSON.stringify({
         isMenu: foundMenu,
         dishes: uniqueDishes,
+        translations: null,
         template: foundMenu ? {
           categories: allCategories,
           style: templateStyle
