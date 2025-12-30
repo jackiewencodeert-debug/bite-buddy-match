@@ -161,12 +161,23 @@ const Index = () => {
                   </Link>
                 )}
                 {isBusiness && (
-                  <Link to="/business">
-                    <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
-                      <Building2 className="mr-2 h-5 w-5" />
-                      {t("index.businessDashboard")}
+                  <>
+                    <Link to="/business">
+                      <Button size="lg" className="text-lg px-8 shadow-hover transition-all hover:scale-105">
+                        <Building2 className="mr-2 h-5 w-5" />
+                        {t("index.businessDashboard")}
+                      </Button>
+                    </Link>
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="text-lg px-8 transition-all hover:scale-105"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-5 w-5" />
+                      {t("profile.logout")}
                     </Button>
-                  </Link>
+                  </>
                 )}
                 {!isBusiness && !isAdmin && !isGuest && (
                   <Button 

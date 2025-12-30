@@ -410,9 +410,12 @@ const Profile = () => {
               </Link>
             )}
 
-            <Button variant="outline" onClick={handleLogout} className="gap-2">
-              {t("profile.logout")}
-            </Button>
+            {/* Hide logout button for business users - they have logout on Index page */}
+            {userType !== "eetgever" && (
+              <Button variant="outline" onClick={handleLogout} className="gap-2">
+                {t("profile.logout")}
+              </Button>
+            )}
           </div>
         </div>
 
