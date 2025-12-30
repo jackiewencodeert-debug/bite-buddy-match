@@ -672,15 +672,19 @@ const Scan = () => {
                   </h1>
                   <p className="text-muted-foreground">
                     {multipleImages.length > 0 
-                      ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} gemaakt`
+                      ? `${multipleImages.length} van 4 foto${multipleImages.length > 1 ? "'s" : ""} gemaakt`
                       : t("scan.addPhotos")
                     }
                   </p>
                 </div>
 
-                {/* Display images stacked vertically */}
+                {/* Display images in dynamic grid based on count */}
                 {multipleImages.length > 0 && (
-                  <div className="mb-6 space-y-4">
+                  <div className={`mb-6 grid gap-4 ${
+                    multipleImages.length === 1 
+                      ? 'grid-cols-1' 
+                      : 'grid-cols-2'
+                  }`}>
                     {multipleImages.map((item, index) => {
                       let itemData: string;
                       let itemType: string;
@@ -696,7 +700,7 @@ const Scan = () => {
                       return (
                         <Card key={index} className="overflow-hidden relative group">
                           {itemType === 'pdf' ? (
-                            <div className="w-full h-48 bg-muted flex flex-col items-center justify-center">
+                            <div className="w-full aspect-square bg-muted flex flex-col items-center justify-center">
                               <svg className="h-16 w-16 text-primary mb-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8.5 13h2v5h-2v-5zm5 0h2v5h-2v-5z"/>
                               </svg>
@@ -706,7 +710,9 @@ const Scan = () => {
                             <img
                               src={itemData}
                               alt={`Menu foto ${index + 1}`}
-                              className="w-full h-auto"
+                              className={`w-full object-cover ${
+                                multipleImages.length === 1 ? 'h-auto' : 'aspect-square'
+                              }`}
                             />
                           )}
                           <Button
@@ -735,24 +741,26 @@ const Scan = () => {
                   className="hidden"
                 />
 
-                {/* Buttons: Add photo + Scan side by side */}
+                {/* Buttons: Add photo (if < 4) + Scan side by side */}
                 {multipleImages.length > 0 && (
                   <div className="flex gap-4">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={() => {
-                        setMode("camera");
-                      }}
-                      className="flex-1"
-                    >
-                      <Camera className="mr-2 h-5 w-5" />
-                      Foto toevoegen
-                    </Button>
+                    {multipleImages.length < 4 && (
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={() => {
+                          setMode("camera");
+                        }}
+                        className="flex-1"
+                      >
+                        <Camera className="mr-2 h-5 w-5" />
+                        Foto toevoegen
+                      </Button>
+                    )}
                     <Button
                       size="lg"
                       onClick={processImage}
-                      className="flex-1 bg-primary hover:bg-primary/90"
+                      className={`bg-primary hover:bg-primary/90 ${multipleImages.length >= 4 ? 'w-full' : 'flex-1'}`}
                     >
                       {t("scan.scanButton")}
                     </Button>
