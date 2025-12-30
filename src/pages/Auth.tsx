@@ -20,9 +20,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const authSchema = z.object({
-  email: z.string().trim().email("Ongeldig e-mailadres").max(255, "E-mail is te lang"),
-  password: z.string().min(6, "Wachtwoord moet minimaal 6 tekens bevatten").max(128, "Wachtwoord is te lang"),
+// Validation schema - error messages are handled via translations in component
+const createAuthSchema = (t: (key: string) => string) => z.object({
+  email: z.string().trim().email(t("auth.invalidEmail")).max(255, t("auth.emailTooLong")),
+  password: z.string().min(6, t("auth.passwordTooShort")).max(128, t("auth.passwordTooLong")),
 });
 
 const Auth = () => {
@@ -174,6 +175,7 @@ const Auth = () => {
     setErrors({});
 
     // Validate inputs with zod
+    const authSchema = createAuthSchema(t);
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
       const fieldErrors: { email?: string; password?: string } = {};
@@ -183,7 +185,7 @@ const Auth = () => {
       });
       setErrors(fieldErrors);
       toast({
-        title: "Validatiefout",
+        title: t("auth.validationError"),
         description: Object.values(fieldErrors).join(". "),
         variant: "destructive",
       });
@@ -210,8 +212,8 @@ const Auth = () => {
           .maybeSingle();
 
         toast({
-          title: "Welkom terug!",
-          description: "Je bent succesvol ingelogd.",
+          title: t("auth.loginSuccess"),
+          description: t("auth.loginSuccessDesc"),
         });
 
         // Redirect admins to admin dashboard
@@ -261,14 +263,14 @@ const Auth = () => {
         if (error) throw error;
 
         toast({
-          title: "Account aangemaakt!",
-          description: "Check je e-mail om je account te bevestigen.",
+          title: t("auth.signUpSuccess"),
+          description: t("auth.signUpSuccessDesc"),
         });
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Er is iets misgegaan. Probeer het opnieuw.",
+        description: error.message || t("auth.genericError"),
         variant: "destructive",
       });
     } finally {
@@ -334,7 +336,7 @@ const Auth = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="naam@voorbeeld.nl"
+                    placeholder={t("auth.emailPlaceholder")}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
