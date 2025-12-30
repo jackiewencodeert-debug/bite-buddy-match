@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Shield, Scale, FileText, Users, AlertTriangle, Chec
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { translateAllergen } from "@/data/businessTranslations";
 
 // EU 14 major allergens as defined in Regulation (EU) No 1169/2011
 const EU_ALLERGENS = [
@@ -30,7 +31,7 @@ const BusinessStatistics = () => {
   const [totalScans, setTotalScans] = useState(0);
   const [totalMenus, setTotalMenus] = useState(0);
   const [uniqueUsers, setUniqueUsers] = useState(0);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     loadStatistics();
@@ -240,7 +241,7 @@ const BusinessStatistics = () => {
                         : 'border-muted bg-muted/20'
                     }`}
                   >
-                    <p className="font-medium capitalize">{allergen}</p>
+                    <p className="font-medium capitalize">{translateAllergen(allergen, language)}</p>
                     {stat && (
                       <p className="text-xs text-muted-foreground">{stat.count}x</p>
                     )}
@@ -268,7 +269,7 @@ const BusinessStatistics = () => {
                     className="flex items-center justify-between p-3 rounded-lg border"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="capitalize">{stat.allergen}</span>
+                      <span className="capitalize">{translateAllergen(stat.allergen, language)}</span>
                       {stat.isEuAllergen && (
                         <Badge variant="secondary" className="text-xs">EU-14</Badge>
                       )}
