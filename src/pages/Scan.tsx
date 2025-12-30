@@ -627,22 +627,10 @@ const Scan = () => {
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Bottom controls */}
+                {/* Bottom controls - only capture button */}
                 {cameraActive && (
                   <div className="absolute bottom-0 left-0 right-0 pb-8 pt-6 bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="flex items-center justify-around max-w-sm mx-auto px-8">
-                      {/* Left button - Gallery/Upload */}
-                      <button
-                        onClick={() => {
-                          stopCamera();
-                          setMode("multiple");
-                          setTimeout(() => multipleFileInputRef.current?.click(), 100);
-                        }}
-                        className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
-                      >
-                        <Upload className="h-6 w-6 text-white" />
-                      </button>
-
+                    <div className="flex items-center justify-center">
                       {/* Center button - Capture */}
                       <button
                         onClick={() => {
@@ -657,18 +645,10 @@ const Scan = () => {
                               const imageData = canvas.toDataURL("image/jpeg", 0.9);
                               const imageItem = JSON.stringify({ data: imageData, type: 'image' });
                               
-                              if (multipleImages.length > 0) {
-                                setMultipleImages(prev => [...prev, imageItem]);
-                                toast({
-                                  title: "Foto toegevoegd!",
-                                  description: `Totaal: ${multipleImages.length + 1} foto's`,
-                                });
-                                stopCamera();
-                                setMode("multiple");
-                              } else {
-                                setCapturedImage(imageItem);
-                                stopCamera();
-                              }
+                              // Add to multiple images array
+                              setMultipleImages(prev => [...prev, imageItem]);
+                              stopCamera();
+                              setMode("multiple");
                             }
                           }
                         }}
@@ -676,94 +656,32 @@ const Scan = () => {
                       >
                         <div className="w-16 h-16 rounded-full bg-white" />
                       </button>
-
-                      {/* Right button - Switch camera (placeholder) */}
-                      <button
-                        onClick={() => {
-                          // Could implement camera switch here
-                          toast({
-                            title: "Camera wisselen",
-                            description: "Deze functie komt binnenkort",
-                          });
-                        }}
-                        className="w-12 h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
-                      >
-                        <RotateCcw className="h-6 w-6 text-white" />
-                      </button>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
-            {capturedImage && mode !== "multiple" && (
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">{t("scan.checkPhoto")}</h1>
-                  <p className="text-muted-foreground">
-                    {t("scan.readable")}
-                  </p>
-                </div>
-
-                <Card className="overflow-hidden">
-                  <div className="relative">
-                    {(() => {
-                      // Parse the captured image to get the actual data URL
-                      let imageUrl = capturedImage;
-                      try {
-                        const parsed = JSON.parse(capturedImage);
-                        imageUrl = parsed.data;
-                      } catch {
-                        // Already a raw base64, use as-is
-                      }
-                      return (
-                        <img
-                          src={imageUrl}
-                          alt="Captured menu"
-                          className="w-full h-auto"
-                        />
-                      );
-                    })()}
-                  </div>
-                  
-                  <div className="p-6 flex justify-center gap-4">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={resetScan}
-                    >
-                      <RotateCcw className="mr-2 h-5 w-5" />
-                      {t("scan.retry")}
-                    </Button>
-                    <Button
-                      size="lg"
-                      onClick={processImage}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      <Camera className="mr-2 h-5 w-5" />
-                      {t("scan.scanButton")}
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            )}
+{/* Old single image view removed - now using multiple images view */}
 
             {mode === "multiple" && (
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold mb-2">{t("scan.multipleTitle")}</h1>
+                  <h1 className="text-3xl font-bold mb-2">
+                    {multipleImages.length > 0 ? t("scan.checkPhoto") : t("scan.multipleTitle")}
+                  </h1>
                   <p className="text-muted-foreground">
                     {multipleImages.length > 0 
-                      ? t("scan.photosAdded").replace("{count}", multipleImages.length.toString()).replace("{s}", multipleImages.length > 1 ? "'s" : "")
+                      ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} gemaakt`
                       : t("scan.addPhotos")
                     }
                   </p>
                 </div>
 
+                {/* Display images stacked vertically */}
                 {multipleImages.length > 0 && (
-                  <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="mb-6 space-y-4">
                     {multipleImages.map((item, index) => {
-                      // Parse item to check type
                       let itemData: string;
                       let itemType: string;
                       try {
@@ -782,13 +700,13 @@ const Scan = () => {
                               <svg className="h-16 w-16 text-primary mb-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8.5 13h2v5h-2v-5zm5 0h2v5h-2v-5z"/>
                               </svg>
-                              <span className="text-sm text-muted-foreground">PDF</span>
+                              <span className="text-sm text-muted-foreground">PDF {index + 1}</span>
                             </div>
                           ) : (
                             <img
                               src={itemData}
-                              alt={`Menu pagina ${index + 1}`}
-                              className="w-full h-48 object-cover"
+                              alt={`Menu foto ${index + 1}`}
+                              className="w-full h-auto"
                             />
                           )}
                           <Button
@@ -799,8 +717,8 @@ const Scan = () => {
                           >
                             <X className="h-4 w-4" />
                           </Button>
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-1 text-sm">
-                            {itemType === 'pdf' ? 'PDF' : t("scan.page")} {index + 1}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-2 text-sm font-medium">
+                            Foto {index + 1}
                           </div>
                         </Card>
                       );
@@ -817,28 +735,44 @@ const Scan = () => {
                   className="hidden"
                 />
 
-                <div className="flex flex-col gap-4">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => multipleFileInputRef.current?.click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-5 w-5" />
-                    {t("scan.addMore")}
-                  </Button>
-
-                  {multipleImages.length > 0 && (
+                {/* Buttons: Add photo + Scan side by side */}
+                {multipleImages.length > 0 && (
+                  <div className="flex gap-4">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => {
+                        setMode("camera");
+                      }}
+                      className="flex-1"
+                    >
+                      <Camera className="mr-2 h-5 w-5" />
+                      Nog foto toevoegen
+                    </Button>
                     <Button
                       size="lg"
                       onClick={processImage}
-                      className="w-full bg-primary hover:bg-primary/90"
+                      className="flex-1 bg-primary hover:bg-primary/90"
+                    >
+                      {t("scan.scanButton")}
+                    </Button>
+                  </div>
+                )}
+
+                {/* If no images yet, show message to take photo */}
+                {multipleImages.length === 0 && (
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-4">Maak eerst een foto van het menu</p>
+                    <Button
+                      size="lg"
+                      onClick={() => setMode("camera")}
+                      className="bg-primary hover:bg-primary/90"
                     >
                       <Camera className="mr-2 h-5 w-5" />
-                      {t("scan.scanMultiple").replace("{count}", multipleImages.length.toString()).replace("{s}", multipleImages.length > 1 ? "'s" : "")}
+                      Foto maken
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
