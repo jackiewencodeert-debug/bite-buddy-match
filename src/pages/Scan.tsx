@@ -20,6 +20,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { extractTextFromImage, parseImageData, OCRProgress } from "@/services/ocrService";
 import { parseMenuFromText, enhanceDishAllergens } from "@/services/menuParserService";
+import { canGuestScan, incrementScanCount, getScanLimitInfo, isGuestUser } from "@/services/rateLimitService";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -107,17 +108,28 @@ const Scan = () => {
     // Check if user is actually logged in (authenticated)
     const { data: { user } } = await supabase.auth.getUser();
     
-    // If user is logged in (not guest), skip the ad completely
+    // If user is logged in (not guest), skip the ad and rate limit
     if (user) {
       proceedWithMode(selectedMode);
       return;
     }
     
-    // Only show ad to guests when scanning
+    // Check rate limit for guests
     const guestType = localStorage.getItem("userType");
     const currentIsGuest = guestType === "gast";
     
     if (currentIsGuest) {
+      // Check rate limit first
+      if (!canGuestScan()) {
+        const limitInfo = getScanLimitInfo();
+        toast({
+          title: "Dagelijkse limiet bereikt",
+          description: `Je hebt ${limitInfo.limit} gratis scans per dag. Upgrade naar premium of wacht tot ${limitInfo.resetsAt}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Log ad shown event
       await logAdEvent('shown');
       
@@ -484,6 +496,18 @@ const Scan = () => {
           title: "Menu Geanalyseerd! ✓",
           description: `${enhancedDishes.length} gerechten gevonden en vergeleken met je voorkeuren.`,
         });
+      }
+      
+      // Increment scan count for rate limiting (guests only)
+      if (isGuestUser()) {
+        incrementScanCount();
+        const remaining = getScanLimitInfo().remaining;
+        if (remaining <= 2 && remaining > 0) {
+          toast({
+            title: `Nog ${remaining} gratis scan${remaining === 1 ? '' : 's'} over vandaag`,
+            description: "Maak een account aan voor onbeperkte scans!",
+          });
+        }
       }
       
       setScanned(true);

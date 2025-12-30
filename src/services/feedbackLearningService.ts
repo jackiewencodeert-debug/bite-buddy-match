@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getCachedPatterns, setCachedPatterns } from "./indexedDBCache";
 
 export interface LearnedPattern {
   ingredient_pattern: string;
@@ -7,37 +8,56 @@ export interface LearnedPattern {
   feedback_count: number;
 }
 
-// Cache for learned patterns to avoid repeated DB calls
+// In-memory cache for current session
 let patternsCache: LearnedPattern[] = [];
 let lastCacheUpdate = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MEMORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in-memory
 
 /**
- * Load learned allergen patterns from the database
+ * Load learned allergen patterns with IndexedDB + memory caching
+ * Priority: Memory cache -> IndexedDB -> Database
  */
 export async function loadLearnedPatterns(): Promise<LearnedPattern[]> {
   const now = Date.now();
   
-  // Return cache if still valid
-  if (patternsCache.length > 0 && now - lastCacheUpdate < CACHE_TTL) {
+  // 1. Return memory cache if still valid
+  if (patternsCache.length > 0 && now - lastCacheUpdate < MEMORY_CACHE_TTL) {
     return patternsCache;
   }
 
+  // 2. Try IndexedDB cache (persists across sessions, 1 hour TTL)
+  try {
+    const cachedData = await getCachedPatterns<LearnedPattern[]>();
+    if (cachedData && cachedData.length > 0) {
+      patternsCache = cachedData;
+      lastCacheUpdate = now;
+      console.log(`Loaded ${patternsCache.length} patterns from IndexedDB cache`);
+      return patternsCache;
+    }
+  } catch (error) {
+    console.debug("IndexedDB cache miss:", error);
+  }
+
+  // 3. Fetch from database
   try {
     const { data, error } = await supabase
       .from("allergen_patterns")
       .select("ingredient_pattern, allergen, confidence_score, feedback_count")
-      .gte("confidence_score", 0.5) // Only use patterns with reasonable confidence
+      .gte("confidence_score", 0.5)
       .order("confidence_score", { ascending: false });
 
     if (error) {
       console.error("Error loading learned patterns:", error);
-      return patternsCache; // Return stale cache on error
+      return patternsCache;
     }
 
     patternsCache = data || [];
     lastCacheUpdate = now;
-    console.log(`Loaded ${patternsCache.length} learned allergen patterns`);
+    
+    // Save to IndexedDB for future sessions
+    await setCachedPatterns(patternsCache);
+    
+    console.log(`Loaded ${patternsCache.length} patterns from database, cached to IndexedDB`);
     return patternsCache;
   } catch (error) {
     console.error("Error loading learned patterns:", error);
@@ -192,7 +212,8 @@ async function upsertPattern(ingredient: string, allergen: string, confidenceCha
 }
 
 /**
- * Submit feedback and trigger learning
+ * Submit feedback (batch processed hourly via edge function)
+ * No longer triggers immediate learning - more efficient at scale
  */
 export async function submitFeedbackWithLearning(
   dishName: string,
@@ -223,8 +244,9 @@ export async function submitFeedbackWithLearning(
       return false;
     }
 
-    // Trigger learning in background (don't await)
-    processFeedbackAndLearn().catch(console.error);
+    // Feedback is now batch processed hourly by edge function
+    // No immediate processing for better scalability
+    console.log("Feedback submitted, will be processed in next batch");
     
     return true;
   } catch (error) {
