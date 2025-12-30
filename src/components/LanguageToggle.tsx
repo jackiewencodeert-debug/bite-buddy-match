@@ -9,6 +9,19 @@ const languages = [
   { code: "fr", flag: "🇫🇷", name: "Français" },
   { code: "es", flag: "🇪🇸", name: "Español" },
   { code: "de", flag: "🇩🇪", name: "Deutsch" },
+  { code: "id", flag: "🇮🇩", name: "Indonesia" },
+  { code: "tr", flag: "🇹🇷", name: "Türkçe" },
+  { code: "vi", flag: "🇻🇳", name: "Tiếng Việt" },
+  { code: "th", flag: "🇹🇭", name: "ไทย" },
+  { code: "uk", flag: "🇺🇦", name: "Українська" },
+  { code: "pt", flag: "🇵🇹", name: "Português" },
+  { code: "ru", flag: "🇷🇺", name: "Русский" },
+  { code: "hi", flag: "🇮🇳", name: "हिन्दी" },
+  { code: "pl", flag: "🇵🇱", name: "Polski" },
+  { code: "zh", flag: "🇨🇳", name: "中文" },
+  { code: "ja", flag: "🇯🇵", name: "日本語" },
+  { code: "ko", flag: "🇰🇷", name: "한국어" },
+  { code: "ar", flag: "🇸🇦", name: "العربية" },
 ] as const;
 
 interface LanguageToggleProps {
