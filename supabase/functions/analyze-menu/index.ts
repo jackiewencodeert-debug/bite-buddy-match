@@ -59,17 +59,30 @@ function createTimeout(ms: number): Promise<never> {
 // Helper function to fetch with timeout
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  
-  try {
-    const response = await fetch(url, {
+
+  return await new Promise<Response>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      try {
+        controller.abort();
+      } catch {
+        // ignore
+      }
+      reject(new Error(`Request timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    fetch(url, {
       ...options,
       signal: controller.signal,
-    });
-    return response;
-  } finally {
-    clearTimeout(timeoutId);
-  }
+    })
+      .then((res) => {
+        clearTimeout(timeoutId);
+        resolve(res);
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      });
+  });
 }
 
 serve(async (req) => {
@@ -132,11 +145,18 @@ serve(async (req) => {
 
     const systemPrompt = `You are an expert restaurant menu extraction assistant. Return ONLY valid JSON (no markdown).
 
-Rules (must follow):
+Hard requirements:
+- SPEED: you MUST respond quickly; keep output concise.
 - Infer ingredients from dish name + description (culinary knowledge). Never leave ingredients empty for recognizable dishes.
 - Infer allergens from ingredients. Bread/pasta/noodles/flour/wheat/tarwe/meel/spelt/rogge/gerst => gluten.
 - If something is explicitly gluten-free / lactose-free, do NOT add that allergen.
-- Output translations for ALL ${langKeys.length} languages: ${langKeys.join(", ")}.
+
+Translations:
+- Provide name_translations for ALL ${langKeys.length} languages: ${langKeys.join(", ")}.
+- Do NOT translate ingredients/allergens/dietary_info; return them as simple string arrays.
+
+Limits:
+- Extract at most 40 dishes (for speed). If more exist, prioritize the most prominent or first listed.
 
 Return JSON exactly in this shape:
 {
@@ -144,9 +164,9 @@ Return JSON exactly in this shape:
   "dishes": [{
     "name": string,
     "name_translations": { ${langKeys.map((k) => `"${k}": string`).join(", ")} },
-    "ingredients": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
-    "allergens": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
-    "dietary_info": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
+    "ingredients": string[],
+    "allergens": string[],
+    "dietary_info": string[],
     "price": string|null,
     "description": string|null,
     "category": string|null
@@ -191,10 +211,12 @@ ${patternsHint}`;
       }
 
       console.log("Processing item type:", itemType);
+      console.log("Payload bytes (approx):", typeof itemData === "string" ? itemData.length : 0);
 
       // Calculate remaining time for this request (leave 1.5s buffer for response)
       const remainingTime = MAX_EXECUTION_TIME - (Date.now() - startTime) - 1500;
       const aiTimeout = Math.min(remainingTime, 24000);
+      console.log("AI timeout ms:", aiTimeout, "remaining ms:", remainingTime);
 
       if (aiTimeout < 6000) {
         console.log("Not enough time remaining for AI call");
