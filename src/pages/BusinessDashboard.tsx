@@ -30,6 +30,10 @@ const BusinessDashboard = () => {
   const [stats, setStats] = useState<MenuScanStats[]>([]);
   const [topAllergies, setTopAllergies] = useState<MenuScanStats[]>([]);
   const [userType, setUserType] = useState<string>("");
+  // QR Settings
+  const [qrColor, setQrColor] = useState<string>("black");
+  const [qrTextAbove, setQrTextAbove] = useState<string>("");
+  const [qrTextBelow, setQrTextBelow] = useState<string>("");
   const {
     t
   } = useLanguage();
@@ -56,7 +60,7 @@ const BusinessDashboard = () => {
       }
       const {
         data: profile
-      } = await supabase.from("profiles").select("user_type").eq("id", user.id).single();
+      } = await supabase.from("profiles").select("user_type, qr_color, qr_text_above, qr_text_below").eq("id", user.id).single();
       if (profile?.user_type !== "eetgever") {
         toast({
           title: t("business.noAccess"),
@@ -67,6 +71,10 @@ const BusinessDashboard = () => {
         return;
       }
       setUserType(profile.user_type);
+      // Load QR settings
+      setQrColor((profile as any).qr_color || "black");
+      setQrTextAbove((profile as any).qr_text_above || "");
+      setQrTextBelow((profile as any).qr_text_below || "");
       await loadMenusAndStats(user.id);
     } catch (error: any) {
       toast({
@@ -148,7 +156,7 @@ const BusinessDashboard = () => {
   };
   const downloadQRCode = (menu: any) => {
     const menuData = menu.menu_data as { name?: string } | null;
-    const menuName = menuData?.name || t("business.untitledMenu");
+    const menuDisplayName = menuData?.name || t("business.untitledMenu");
     
     // Create a temporary container for the QR code
     const tempDiv = document.createElement('div');
@@ -156,58 +164,79 @@ const BusinessDashboard = () => {
     tempDiv.style.left = '-9999px';
     document.body.appendChild(tempDiv);
     
-    // Render QR code to the temp container
-    const qrUrl = `${window.location.origin}/menu/${menu.qr_code}`;
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '256');
-    svg.setAttribute('height', '256');
-    svg.setAttribute('viewBox', '0 0 256 256');
-    tempDiv.appendChild(svg);
-    
-    // Use canvas to convert SVG to image
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    
-    // Create QR code image
-    const qrContainer = document.createElement('div');
-    document.body.appendChild(qrContainer);
-    
     // Use react-qr-code's SVG output
     const qrSvg = document.querySelector(`[data-qr-menu-id="${menu.id}"]`) as SVGElement;
     
-    if (qrSvg && ctx) {
-      const svgData = new XMLSerializer().serializeToString(qrSvg);
+    if (qrSvg) {
+      // Clone and modify SVG for correct color
+      const clonedSvg = qrSvg.cloneNode(true) as SVGElement;
+      
+      // Change QR code color based on settings
+      const paths = clonedSvg.querySelectorAll('path');
+      paths.forEach(path => {
+        if (path.getAttribute('fill') === '#000000' || path.getAttribute('fill') === 'black') {
+          path.setAttribute('fill', qrColor === 'white' ? '#FFFFFF' : '#000000');
+        }
+      });
+      
+      // Also check for rect elements
+      const rects = clonedSvg.querySelectorAll('rect');
+      rects.forEach(rect => {
+        const fill = rect.getAttribute('fill');
+        if (fill === '#000000' || fill === 'black') {
+          rect.setAttribute('fill', qrColor === 'white' ? '#FFFFFF' : '#000000');
+        }
+      });
+      
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
       
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      
       const img = new Image();
       img.onload = () => {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, 256, 256);
-        
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-        
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const qrSize = 80;
-        const xPos = (pageWidth - qrSize) / 2;
-        
-        pdf.setFontSize(24);
-        pdf.text(menuName, pageWidth / 2, 40, { align: 'center' });
-        
-        const imgData = canvas.toDataURL('image/png');
-        pdf.addImage(imgData, 'PNG', xPos, 60, qrSize, qrSize);
-        
-        pdf.setFontSize(12);
-        pdf.text(t("business.scanToView"), pageWidth / 2, 155, { align: 'center' });
-        
-        pdf.save(`${menuName.replace(/[^a-zA-Z0-9]/g, '_')}_QR.pdf`);
+        if (ctx) {
+          // Transparent background (don't fill)
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, 256, 256);
+          
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const qrSize = 80;
+          const xPos = (pageWidth - qrSize) / 2;
+          
+          // Calculate vertical positioning
+          let currentY = 60;
+          
+          // Add text above QR code if set
+          if (qrTextAbove) {
+            pdf.setFontSize(18);
+            pdf.text(qrTextAbove, pageWidth / 2, currentY, { align: 'center' });
+            currentY += 15;
+          }
+          
+          // Add QR code image with transparent background
+          const imgData = canvas.toDataURL('image/png');
+          pdf.addImage(imgData, 'PNG', xPos, currentY, qrSize, qrSize);
+          currentY += qrSize + 10;
+          
+          // Add text below QR code if set
+          if (qrTextBelow) {
+            pdf.setFontSize(18);
+            pdf.text(qrTextBelow, pageWidth / 2, currentY, { align: 'center' });
+          }
+          
+          pdf.save(`${menuDisplayName.replace(/[^a-zA-Z0-9]/g, '_')}_QR.pdf`);
+        }
         
         URL.revokeObjectURL(url);
       };
@@ -215,7 +244,6 @@ const BusinessDashboard = () => {
     }
     
     document.body.removeChild(tempDiv);
-    document.body.removeChild(qrContainer);
   };
 
   const handleMethodSelect = async (method: "scan" | "manual") => {

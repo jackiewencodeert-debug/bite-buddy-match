@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Shield, Plus, X, Camera, Home } from "lucide-react";
+import { ArrowLeft, Shield, Plus, X, Camera, Home, QrCode } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +71,10 @@ const Profile = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showAllergyPicker, setShowAllergyPicker] = useState(false);
+  // QR Settings for business users
+  const [qrColor, setQrColor] = useState<string>("black");
+  const [qrTextAbove, setQrTextAbove] = useState<string>("");
+  const [qrTextBelow, setQrTextBelow] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -108,17 +112,23 @@ const Profile = () => {
         return;
       }
 
-      // Load user profile to check user_type and business warnings
+      // Load user profile to check user_type, business warnings, and QR settings
       const { data: profile } = await supabase
         .from("profiles")
-        .select("user_type, business_allergen_warnings")
+        .select("user_type, business_allergen_warnings, qr_color, qr_text_above, qr_text_below")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setUserType(profile.user_type);
-        if (profile.user_type === "eetgever" && profile.business_allergen_warnings) {
-          setBusinessAllergenWarnings(profile.business_allergen_warnings);
+        if (profile.user_type === "eetgever") {
+          if (profile.business_allergen_warnings) {
+            setBusinessAllergenWarnings(profile.business_allergen_warnings);
+          }
+          // Load QR settings
+          setQrColor((profile as any).qr_color || "black");
+          setQrTextAbove((profile as any).qr_text_above || "");
+          setQrTextBelow((profile as any).qr_text_below || "");
         }
       }
 
@@ -225,17 +235,19 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    // Validate at least 1 allergy or 1 preference is selected
-    const hasAllergy = selectedAllergies.length > 0 || customAllergies.length > 0;
-    const hasPreference = selectedPreferences.length > 0;
-    
-    if (!hasAllergy && !hasPreference) {
-      toast({
-        title: t("profile.validationError"),
-        description: t("profile.selectAtLeastOne"),
-        variant: "destructive",
-      });
-      return;
+    // Only validate allergies/preferences for non-business users
+    if (userType !== "eetgever") {
+      const hasAllergy = selectedAllergies.length > 0 || customAllergies.length > 0;
+      const hasPreference = selectedPreferences.length > 0;
+      
+      if (!hasAllergy && !hasPreference) {
+        toast({
+          title: t("profile.validationError"),
+          description: t("profile.selectAtLeastOne"),
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setSaving(true);
@@ -302,11 +314,16 @@ const Profile = () => {
         if (error) throw error;
       }
 
-      // Update business allergen warnings if user is a business
+      // Update business settings if user is a business
       if (userType === "eetgever") {
         await supabase
           .from("profiles")
-          .update({ business_allergen_warnings: businessAllergenWarnings })
+          .update({ 
+            business_allergen_warnings: businessAllergenWarnings,
+            qr_color: qrColor,
+            qr_text_above: qrTextAbove,
+            qr_text_below: qrTextBelow
+          })
           .eq("id", user.id);
       }
 
@@ -564,45 +581,109 @@ const Profile = () => {
             )}
 
             {userType === "eetgever" && !isGuest && (
-              <Card className="p-6 border-warning/50 bg-warning/5">
+              <Card className="p-6">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                  ⚠️ Bedrijf Allergie Waarschuwingen
+                  <QrCode className="h-6 w-6 text-primary" />
+                  {t("profile.qrSettings")}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Selecteer allergenen die je <strong>niet kunt voorkomen</strong> in je keuken. 
-                  Deze worden automatisch aan alle gerechten toegevoegd.
+                  {t("profile.qrSettingsDesc")}
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {allergies.map((allergy) => (
-                    <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Checkbox
-                        id={`business-${allergy.id}`}
-                        checked={businessAllergenWarnings.includes(allergy.id)}
-                        onCheckedChange={() => toggleBusinessAllergen(allergy.id)}
-                      />
-                      <Label
-                        htmlFor={`business-${allergy.id}`}
-                        className="text-base cursor-pointer flex-1"
+                
+                {/* QR Color Selection */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium mb-3 block">
+                      {t("profile.qrColor")}
+                    </Label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setQrColor("black")}
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          qrColor === "black" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        }`}
                       >
-                        {t(allergy.label)}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-                {businessAllergenWarnings.length > 0 && (
-                  <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-                    <p className="text-sm font-semibold text-destructive mb-2">
-                      Actieve waarschuwingen:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {businessAllergenWarnings.map((warning) => (
-                        <Badge key={warning} variant="destructive">
-                          {t(allergies.find(a => a.id === warning)?.label || warning)}
-                        </Badge>
-                      ))}
+                        <div className="w-8 h-8 bg-black rounded"></div>
+                        <span className="font-medium">{t("profile.qrBlack")}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQrColor("white")}
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          qrColor === "white" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-8 h-8 bg-white border border-border rounded"></div>
+                        <span className="font-medium">{t("profile.qrWhite")}</span>
+                      </button>
                     </div>
                   </div>
-                )}
+
+                  {/* Text Above QR */}
+                  <div>
+                    <Label htmlFor="qrTextAbove" className="text-base font-medium mb-2 block">
+                      {t("profile.qrTextAbove")}
+                    </Label>
+                    <Input
+                      id="qrTextAbove"
+                      placeholder={t("profile.qrTextAbovePlaceholder")}
+                      value={qrTextAbove}
+                      onChange={(e) => setQrTextAbove(e.target.value)}
+                      maxLength={100}
+                    />
+                  </div>
+
+                  {/* Text Below QR */}
+                  <div>
+                    <Label htmlFor="qrTextBelow" className="text-base font-medium mb-2 block">
+                      {t("profile.qrTextBelow")}
+                    </Label>
+                    <Input
+                      id="qrTextBelow"
+                      placeholder={t("profile.qrTextBelowPlaceholder")}
+                      value={qrTextBelow}
+                      onChange={(e) => setQrTextBelow(e.target.value)}
+                      maxLength={100}
+                    />
+                  </div>
+
+                  {/* Preview */}
+                  <div className="mt-6 p-4 rounded-lg bg-muted/30 border border-border">
+                    <Label className="text-sm font-medium mb-3 block">{t("profile.qrPreview")}</Label>
+                    <div 
+                      className="flex flex-col items-center gap-2 p-4 rounded-lg"
+                      style={{ backgroundColor: qrColor === "white" ? "#1a1a1a" : "transparent" }}
+                    >
+                      {qrTextAbove && (
+                        <p className={`text-sm font-medium ${qrColor === "white" ? "text-white" : "text-foreground"}`}>
+                          {qrTextAbove}
+                        </p>
+                      )}
+                      <div 
+                        className="w-24 h-24 flex items-center justify-center rounded"
+                        style={{ backgroundColor: qrColor === "white" ? "#1a1a1a" : "transparent" }}
+                      >
+                        <div 
+                          className="w-16 h-16 rounded"
+                          style={{ 
+                            backgroundColor: qrColor === "black" ? "#000" : "#fff",
+                            opacity: 0.8
+                          }}
+                        ></div>
+                      </div>
+                      {qrTextBelow && (
+                        <p className={`text-sm font-medium ${qrColor === "white" ? "text-white" : "text-foreground"}`}>
+                          {qrTextBelow}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </Card>
             )}
 
