@@ -330,7 +330,6 @@ export const dishAllergenMap: Record<string, MajorAllergen[]> = {
   'tzatziki': ['lactose'],
   'spanakopita': ['gluten', 'lactose', 'eieren'],
   'dolmades': [],
-  'baklava': ['noten', 'gluten'],
   'greek salad': ['lactose'],
   
   // Breakfast items
@@ -340,7 +339,6 @@ export const dishAllergenMap: Record<string, MajorAllergen[]> = {
   'scrambled eggs': ['eieren', 'lactose'],
   'granola': ['noten', 'gluten'],
   'muesli': ['noten', 'gluten', 'lactose'],
-  'croissant': ['gluten', 'lactose', 'eieren'],
   
   // Desserts
   'ice cream': ['lactose', 'eieren'],
@@ -351,7 +349,6 @@ export const dishAllergenMap: Record<string, MajorAllergen[]> = {
   'éclair': ['gluten', 'eieren', 'lactose'],
   'crêpe': ['gluten', 'eieren', 'lactose'],
   'sorbet': [],
-  'panna cotta': ['lactose'],
   'flan': ['eieren', 'lactose'],
   'pavlova': ['eieren'],
 };
