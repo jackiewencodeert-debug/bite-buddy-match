@@ -37,6 +37,7 @@ const BusinessDashboard = () => {
   // Dialog states
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [showMethodDialog, setShowMethodDialog] = useState(false);
+  const [showProfileDevDialog, setShowProfileDevDialog] = useState(false);
   const [menuName, setMenuName] = useState("");
   const [creatingMenu, setCreatingMenu] = useState(false);
   useEffect(() => {
@@ -281,7 +282,7 @@ const BusinessDashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/profile")}>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setShowProfileDevDialog(true)}>
             <CardHeader>
               <CardTitle className="text-2xl flex items-center justify-center">
                 <User className="h-8 w-8 text-primary" />
@@ -488,6 +489,24 @@ const BusinessDashboard = () => {
             </div>}
         </DialogContent>
       </Dialog>
+
+      {/* Profile In Development Dialog */}
+      <Dialog open={showProfileDevDialog} onOpenChange={setShowProfileDevDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>In ontwikkeling</DialogTitle>
+            <DialogDescription>
+              Deze functie is nog in ontwikkeling en komt binnenkort beschikbaar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <Button onClick={() => setShowProfileDevDialog(false)}>
+              Sluiten
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
+
 export default BusinessDashboard;
