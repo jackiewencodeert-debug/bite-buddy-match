@@ -381,7 +381,7 @@ const Profile = () => {
       <LanguageToggle />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <Link to="/">
+          <Link to={userType === "eetgever" && !isGuest ? "/business" : "/"}>
             <Button variant="ghost">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("common.back")}
