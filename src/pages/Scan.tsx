@@ -672,7 +672,7 @@ const Scan = () => {
                   </h1>
                   <p className="text-muted-foreground">
                     {multipleImages.length > 0 
-                      ? `${multipleImages.length} van 4 foto${multipleImages.length > 1 ? "'s" : ""} gemaakt`
+                      ? t("scan.photosCount").replace("{count}", String(multipleImages.length))
                       : t("scan.addPhotos")
                     }
                   </p>
@@ -724,7 +724,7 @@ const Scan = () => {
                             <X className="h-4 w-4" />
                           </Button>
                           <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-2 text-sm font-medium">
-                            Foto {index + 1}
+                            {t("scan.photoLabel")} {index + 1}
                           </div>
                         </Card>
                       );
@@ -754,7 +754,7 @@ const Scan = () => {
                         className="flex-1"
                       >
                         <Camera className="mr-2 h-5 w-5" />
-                        Foto toevoegen
+                        {t("scan.addPhoto")}
                       </Button>
                     )}
                     <Button
@@ -770,14 +770,14 @@ const Scan = () => {
                 {/* If no images yet, show message to take photo */}
                 {multipleImages.length === 0 && (
                   <div className="text-center">
-                    <p className="text-muted-foreground mb-4">Maak eerst een foto van het menu</p>
+                    <p className="text-muted-foreground mb-4">{t("scan.takePhotoFirst")}</p>
                     <Button
                       size="lg"
                       onClick={() => setMode("camera")}
                       className="bg-primary hover:bg-primary/90"
                     >
                       <Camera className="mr-2 h-5 w-5" />
-                      Foto maken
+                      {t("scan.takePhoto")}
                     </Button>
                   </div>
                 )}
