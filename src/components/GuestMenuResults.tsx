@@ -10,6 +10,21 @@ interface TranslatedItem {
   fr?: string;
   es?: string;
   de?: string;
+  it?: string;
+  hu?: string;
+  id?: string;
+  tr?: string;
+  vi?: string;
+  th?: string;
+  uk?: string;
+  pt?: string;
+  ru?: string;
+  hi?: string;
+  pl?: string;
+  zh?: string;
+  ja?: string;
+  ko?: string;
+  ar?: string;
 }
 
 interface Dish {
@@ -21,6 +36,21 @@ interface Dish {
     fr?: string;
     es?: string;
     de?: string;
+    it?: string;
+    hu?: string;
+    id?: string;
+    tr?: string;
+    vi?: string;
+    th?: string;
+    uk?: string;
+    pt?: string;
+    ru?: string;
+    hi?: string;
+    pl?: string;
+    zh?: string;
+    ja?: string;
+    ko?: string;
+    ar?: string;
   };
   ingredients: string[];
   ingredients_translations?: TranslatedItem[];
