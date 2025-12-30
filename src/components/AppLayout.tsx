@@ -11,96 +11,86 @@ interface AppLayoutProps {
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
   const [showNavBar, setShowNavBar] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
 
+  // Determine navbar visibility based on current path and user type
+  const checkShowNavBar = async () => {
+    // Prevent multiple simultaneous checks
+    if (isChecking) return;
+    setIsChecking(true);
+
+    try {
+      // Hide on specific pages
+      const hiddenPaths = ["/business", "/admin", "/auth", "/reset-password"];
+      const shouldHideForPath = hiddenPaths.some(path => location.pathname.startsWith(path));
+      
+      if (shouldHideForPath) {
+        setShowNavBar(false);
+        return;
+      }
+
+      // Check if user is business or admin
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        if (profile?.user_type === "eetgever") {
+          setShowNavBar(false);
+          return;
+        }
+
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id);
+        
+        if (roles?.some(r => r.role === "admin")) {
+          setShowNavBar(false);
+          return;
+        }
+      }
+
+      // Default: show navbar for regular users and guests
+      setShowNavBar(true);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  // Run check on mount and whenever path changes
   useEffect(() => {
     checkShowNavBar();
-    
-    // Listen for auth state changes to update navbar visibility
+  }, [location.pathname, location.key]); // location.key changes on every navigation including back/forward
+
+  // Also listen to popstate for browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      // Small delay to ensure location has updated
+      setTimeout(() => {
+        checkShowNavBar();
+      }, 50);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Listen for auth state changes
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        // User logged out, show navbar for guests immediately
-        if (
-          !location.pathname.startsWith("/business") &&
-          !location.pathname.startsWith("/admin") &&
-          !location.pathname.startsWith("/auth") &&
-          !location.pathname.startsWith("/reset-password")
-        ) {
-          setShowNavBar(true);
-        }
-      } else if (session?.user) {
-        // Re-check on other auth events with user data
-        checkShowNavBarForUser(session.user.id);
-      }
+      // Re-check navbar visibility on auth changes
+      setTimeout(() => {
+        checkShowNavBar();
+      }, 0);
     });
 
     return () => subscription.unsubscribe();
   }, [location.pathname]);
-
-  const checkShowNavBarForUser = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("user_type")
-      .eq("id", userId)
-      .single();
-    
-    if (profile?.user_type === "eetgever") {
-      setShowNavBar(false);
-      return;
-    }
-
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    
-    if (roles?.some(r => r.role === "admin")) {
-      setShowNavBar(false);
-      return;
-    }
-
-    setShowNavBar(true);
-  };
-
-  const checkShowNavBar = async () => {
-    // Hide on business and admin pages
-    if (
-      location.pathname.startsWith("/business") ||
-      location.pathname.startsWith("/admin") ||
-      location.pathname.startsWith("/auth") ||
-      location.pathname.startsWith("/reset-password")
-    ) {
-      setShowNavBar(false);
-      return;
-    }
-
-    // Check if user is business or admin
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_type")
-        .eq("id", user.id)
-        .single();
-      
-      if (profile?.user_type === "eetgever") {
-        setShowNavBar(false);
-        return;
-      }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      
-      if (roles?.some(r => r.role === "admin")) {
-        setShowNavBar(false);
-        return;
-      }
-    }
-
-    setShowNavBar(true);
-  };
 
   // Calculate extra padding for bottom nav (h-16 = 4rem) and ad banner (7vh)
   const bottomPadding = showNavBar ? "pb-[calc(4rem+7vh)]" : "";
