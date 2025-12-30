@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3, MessageSquare, Check, X, ThumbsUp, AlertTriangle, LogOut } from "lucide-react";
+import { ArrowLeft, Users, Store, Search, TrendingUp, Calendar, ChevronDown, Eye, ScanLine, BarChart3, MessageSquare, Check, X, ThumbsUp, AlertTriangle, LogOut, RefreshCw, Clock, Database, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -98,6 +98,16 @@ const Admin = () => {
   const [totalMenuScans, setTotalMenuScans] = useState(0);
   const [totalGuestRegistrations, setTotalGuestRegistrations] = useState(0);
 
+  // Batch processing stats
+  const [batchStats, setBatchStats] = useState({
+    pendingFeedback: 0,
+    processedFeedback: 0,
+    totalPatterns: 0,
+    highConfidencePatterns: 0,
+    lastProcessed: null as string | null,
+    isProcessing: false
+  });
+
   // Allergen feedback
   const [feedbackItems, setFeedbackItems] = useState<AllergenFeedbackItem[]>([]);
   const [patterns, setPatterns] = useState<AllergenPattern[]>([]);
@@ -160,6 +170,7 @@ const Admin = () => {
       loadExtraStats();
       loadFeedback();
       loadPatterns();
+      loadBatchStats();
     } catch (error) {
       console.error("Error checking admin:", error);
       navigate("/auth");
@@ -371,6 +382,81 @@ const Admin = () => {
       }
     } catch (error) {
       console.error("Error loading patterns:", error);
+    }
+  };
+
+  const loadBatchStats = async () => {
+    try {
+      // Get pending feedback count
+      const { count: pendingCount } = await supabase
+        .from("allergen_feedback")
+        .select("*", { count: "exact", head: true })
+        .eq("is_processed", false);
+
+      // Get processed feedback count
+      const { count: processedCount } = await supabase
+        .from("allergen_feedback")
+        .select("*", { count: "exact", head: true })
+        .eq("is_processed", true);
+
+      // Get pattern counts
+      const { data: patternData } = await supabase
+        .from("allergen_patterns")
+        .select("confidence_score");
+
+      const totalPatterns = patternData?.length || 0;
+      const highConfidencePatterns = patternData?.filter(p => p.confidence_score >= 0.7).length || 0;
+
+      // Get last processed feedback timestamp
+      const { data: lastProcessed } = await supabase
+        .from("allergen_feedback")
+        .select("created_at")
+        .eq("is_processed", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setBatchStats({
+        pendingFeedback: pendingCount || 0,
+        processedFeedback: processedCount || 0,
+        totalPatterns,
+        highConfidencePatterns,
+        lastProcessed: lastProcessed?.created_at || null,
+        isProcessing: false
+      });
+    } catch (error) {
+      console.error("Error loading batch stats:", error);
+    }
+  };
+
+  const triggerBatchProcessing = async () => {
+    setBatchStats(prev => ({ ...prev, isProcessing: true }));
+    
+    try {
+      const response = await supabase.functions.invoke("process-feedback-batch", {
+        body: { source: "manual" }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Batch verwerking gestart",
+        description: `${response.data?.processed || 0} feedback items verwerkt, ${response.data?.patternsCreated || 0} nieuwe patterns aangemaakt.`,
+      });
+
+      // Reload stats
+      await Promise.all([loadBatchStats(), loadPatterns(), loadFeedback()]);
+    } catch (error) {
+      console.error("Error triggering batch processing:", error);
+      toast({
+        title: "Fout bij batch verwerking",
+        description: "Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      setBatchStats(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
@@ -805,6 +891,83 @@ const Admin = () => {
                   <p className="text-sm text-muted-foreground mt-4 text-center">
                     {t("admin.showingFirst50").replace("{total}", filteredUsers.length.toString())}
                   </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Batch Processing Monitor */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Batch Processing Monitor
+                  </CardTitle>
+                  <Button 
+                    onClick={triggerBatchProcessing}
+                    disabled={batchStats.isProcessing || batchStats.pendingFeedback === 0}
+                    size="sm"
+                  >
+                    {batchStats.isProcessing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Verwerken...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Nu verwerken
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Feedback wordt automatisch elk uur verwerkt. Laatste verwerking: {' '}
+                  {batchStats.lastProcessed 
+                    ? new Date(batchStats.lastProcessed).toLocaleString('nl-NL')
+                    : 'Nog niet verwerkt'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Clock className="h-4 w-4 text-warning" />
+                      <p className="text-2xl font-bold text-warning">{batchStats.pendingFeedback}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Wachtend op verwerking</p>
+                  </div>
+                  <div className="text-center p-4 bg-success/10 border border-success/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Check className="h-4 w-4 text-success" />
+                      <p className="text-2xl font-bold text-success">{batchStats.processedFeedback}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Verwerkt</p>
+                  </div>
+                  <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Database className="h-4 w-4 text-primary" />
+                      <p className="text-2xl font-bold text-primary">{batchStats.totalPatterns}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Totaal patterns</p>
+                  </div>
+                  <div className="text-center p-4 bg-secondary/30 border border-border rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-2xl font-bold">{batchStats.highConfidencePatterns}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Hoge betrouwbaarheid (≥70%)</p>
+                  </div>
+                </div>
+                
+                {batchStats.pendingFeedback > 0 && (
+                  <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-warning" />
+                    <p className="text-sm text-warning">
+                      {batchStats.pendingFeedback} feedback items wachten op verwerking. 
+                      Dit gebeurt automatisch elk uur of klik op "Nu verwerken".
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
