@@ -346,23 +346,26 @@ const Profile = () => {
   };
 
   const handleLogout = async () => {
+    // Always clear all session-related localStorage items
+    localStorage.removeItem("userType");
+    localStorage.removeItem("guestPreferences");
+    localStorage.removeItem("guestExpiry");
+    
     if (isGuest) {
-      // Clear guest data
-      localStorage.removeItem("userType");
-      localStorage.removeItem("guestPreferences");
       toast({
         title: "Sessie beëindigd",
         description: "Je gastvoorkeuren zijn gewist.",
       });
-      navigate("/");
     } else {
       await supabase.auth.signOut();
       toast({
         title: "Uitgelogd",
         description: "Je bent succesvol uitgelogd.",
       });
-      navigate("/");
     }
+    
+    // Navigate to home - Index will auto-login as guest
+    navigate("/");
   };
 
   if (loading) {
