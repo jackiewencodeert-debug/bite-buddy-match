@@ -51,7 +51,7 @@ export const BottomNavBar = ({ onCameraClick, onUploadClick }: BottomNavBarProps
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border safe-area-pb">
+    <nav className="fixed bottom-[7vh] left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border safe-area-pb">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {/* Profile Button - Left */}
         <button

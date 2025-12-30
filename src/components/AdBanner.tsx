@@ -66,13 +66,13 @@ export const AdBanner = () => {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t border-border">
-      <div className="max-w-lg mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t border-border max-h-[7vh] overflow-hidden">
+      <div className="max-w-lg mx-auto h-full">
         <AdSenseAd 
           adSlot="7704507845" 
           adFormat="horizontal" 
           fullWidthResponsive={true}
-          className="w-full"
+          className="w-full max-h-[7vh]"
         />
       </div>
     </div>

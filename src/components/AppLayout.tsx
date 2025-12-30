@@ -57,9 +57,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     setShowNavBar(true);
   };
 
-  // Calculate extra padding for bottom nav and ad banner
+  // Calculate extra padding for bottom nav (h-16 = 4rem) and ad banner (7vh)
   // Ad banner shows for guests AND logged-in regular users
-  const bottomPadding = showNavBar ? "pb-36" : "";
+  const bottomPadding = showNavBar ? "pb-[calc(4rem+7vh)]" : "";
 
   return (
     <div className={`min-h-screen ${bottomPadding}`}>
