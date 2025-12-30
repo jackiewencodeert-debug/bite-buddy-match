@@ -49,10 +49,36 @@ async function getLearnedPatterns(): Promise<Map<string, string[]>> {
   return patterns;
 }
 
+// Helper function to create a timeout promise
+function createTimeout(ms: number): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`Request timeout after ${ms}ms`)), ms);
+  });
+}
+
+// Helper function to fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startTime = Date.now();
+  const MAX_EXECUTION_TIME = 25000; // 25 seconds max
 
   try {
     const { images, isMultiple } = await req.json();
@@ -66,8 +92,15 @@ serve(async (req) => {
       throw new Error("No images provided");
     }
 
-    // Fetch learned patterns for enhanced allergen detection
-    const learnedPatterns = await getLearnedPatterns();
+    // Fetch learned patterns for enhanced allergen detection (with timeout)
+    let learnedPatterns = new Map<string, string[]>();
+    try {
+      const patternsPromise = getLearnedPatterns();
+      learnedPatterns = await Promise.race([patternsPromise, createTimeout(3000)]);
+    } catch (e) {
+      console.log("Skipping patterns due to timeout or error");
+    }
+    
     const patternsHint = learnedPatterns.size > 0 
       ? `\n\nAdditional learned allergen patterns to consider:\n${Array.from(learnedPatterns.entries()).map(([ingredient, allergens]) => `- "${ingredient}" often contains: ${allergens.join(", ")}`).join("\n")}`
       : "";
@@ -172,7 +205,18 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
     let templateStyle: any = null;
     let foundMenu = false;
 
-    for (const item of images) {
+    // Only process the first image/PDF to stay within time limit
+    // For multiple files, we'll process only what we can in the time limit
+    const itemsToProcess = images.slice(0, 1); // Process only first item for speed
+
+    for (const item of itemsToProcess) {
+      // Check if we're running out of time
+      const elapsed = Date.now() - startTime;
+      if (elapsed > MAX_EXECUTION_TIME - 5000) {
+        console.log("Running low on time, stopping processing");
+        break;
+      }
+
       // Parse the item - could be JSON string with type info or legacy base64 image
       let itemData: string;
       let itemType: string;
@@ -189,72 +233,92 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
 
       console.log("Processing item type:", itemType);
 
+      // Calculate remaining time for this request (leave 2s buffer for response)
+      const remainingTime = MAX_EXECUTION_TIME - (Date.now() - startTime) - 2000;
+      const aiTimeout = Math.min(remainingTime, 20000); // Max 20 seconds for AI call
+
+      if (aiTimeout < 5000) {
+        console.log("Not enough time remaining for AI call");
+        break;
+      }
+
       // For PDFs, we send them as documents to the vision model
       // Gemini can process PDF documents directly
       let response;
       
-      if (itemType === 'pdf') {
-        // Send PDF as inline document to Gemini
-        response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content: systemPrompt
-              },
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: "Please analyze this menu PDF document and extract all dishes with their ingredients, allergens, prices, dietary information, and categories. Also extract the menu template styling."
-                  },
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: itemData
+      try {
+        if (itemType === 'pdf') {
+          // Send PDF as inline document to Gemini
+          response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                {
+                  role: "system",
+                  content: systemPrompt
+                },
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Please analyze this menu PDF document and extract all dishes with their ingredients, allergens, prices, dietary information, and categories. Also extract the menu template styling."
+                    },
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: itemData
+                      }
                     }
-                  }
-                ]
-              }
-            ]
-          }),
-        });
-      } else {
-        // Process as image
-        response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content: systemPrompt
-              },
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: itemData
+                  ]
+                }
+              ]
+            }),
+          }, aiTimeout);
+        } else {
+          // Process as image
+          response = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                {
+                  role: "system",
+                  content: systemPrompt
+                },
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: itemData
+                      }
                     }
-                  }
-                ]
-              }
-            ]
-          }),
-        });
+                  ]
+                }
+              ]
+            }),
+          }, aiTimeout);
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+          console.error("AI request timed out after", aiTimeout, "ms");
+          return new Response(
+            JSON.stringify({ error: "Menu analysis timed out. Please try with a smaller image or PDF." }),
+            { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        throw error;
       }
 
       if (!response.ok) {
@@ -279,7 +343,7 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
-      console.log("AI response received, content length:", content?.length || 0);
+      console.log("AI response received, content length:", content?.length || 0, "elapsed:", Date.now() - startTime, "ms");
 
       if (!content) {
         console.log("No content in AI response");
@@ -324,7 +388,8 @@ If ${isMultiple ? 'none of the images are menus' : 'it\'s not a menu'}, return {
       index === self.findIndex((d) => d.name.toLowerCase() === dish.name.toLowerCase())
     );
 
-    console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length, ", categories =", allCategories.length);
+    const totalElapsed = Date.now() - startTime;
+    console.log("Final result: isMenu =", foundMenu, ", dishes =", uniqueDishes.length, ", categories =", allCategories.length, ", totalTime =", totalElapsed, "ms");
 
     return new Response(
       JSON.stringify({
