@@ -382,15 +382,22 @@ const MenuEditor = () => {
       }
 
       if (analysisData.dishes && analysisData.dishes.length > 0) {
+        // Helper function to extract original value from translated item
+        const extractOriginal = (item: any): string => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object' && item.original) return item.original;
+          return String(item);
+        };
+
         // Add analyzed dishes to database
         const dishesToInsert = analysisData.dishes.map((dish: any) => ({
           menu_id: menuId,
           name: dish.name,
           description: dish.description || '',
           price: dish.price || '',
-          ingredients: dish.ingredients || [],
-          allergens: [...new Set([...(dish.allergens || []), ...businessAllergens])],
-          dietary_info: dish.dietary_info || [],
+          ingredients: (dish.ingredients || []).map(extractOriginal),
+          allergens: [...new Set([...(dish.allergens || []).map(extractOriginal), ...businessAllergens])],
+          dietary_info: (dish.dietary_info || []).map(extractOriginal),
         }));
 
         const { error: insertError } = await supabase
