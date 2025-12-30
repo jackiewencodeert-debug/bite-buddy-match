@@ -93,6 +93,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Compte créé!",
     "auth.signUpSuccessDesc": "Vérifiez votre e-mail pour confirmer votre compte.",
     "auth.genericError": "Une erreur s'est produite. Veuillez réessayer.",
+    "auth.noAccount": "Vous n'avez pas de compte?",
+    "auth.signUpLink": "S'inscrire",
+    "auth.alreadyAccount": "Vous avez déjà un compte?",
+    "auth.signInLink": "Se connecter",
   },
   // Spanish
   es: {
@@ -187,6 +191,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "¡Cuenta creada!",
     "auth.signUpSuccessDesc": "Revisa tu correo para confirmar tu cuenta.",
     "auth.genericError": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "auth.noAccount": "¿No tienes cuenta?",
+    "auth.signUpLink": "Regístrate",
+    "auth.alreadyAccount": "¿Ya tienes una cuenta?",
+    "auth.signInLink": "Iniciar sesión",
   },
   // German
   de: {
@@ -281,6 +289,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Konto erstellt!",
     "auth.signUpSuccessDesc": "Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.",
     "auth.genericError": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "auth.noAccount": "Noch kein Konto?",
+    "auth.signUpLink": "Registrieren",
+    "auth.alreadyAccount": "Haben Sie bereits ein Konto?",
+    "auth.signInLink": "Anmelden",
   },
   // Italian
   it: {
@@ -375,6 +387,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Account creato!",
     "auth.signUpSuccessDesc": "Controlla la tua email per confermare il tuo account.",
     "auth.genericError": "Qualcosa è andato storto. Riprova.",
+    "auth.noAccount": "Non hai un account?",
+    "auth.signUpLink": "Registrati",
+    "auth.alreadyAccount": "Hai già un account?",
+    "auth.signInLink": "Accedi",
   },
   // Hungarian
   hu: {
@@ -469,6 +485,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Fiók létrehozva!",
     "auth.signUpSuccessDesc": "Ellenőrizd az e-mailedet a fiók megerősítéséhez.",
     "auth.genericError": "Valami hiba történt. Kérlek, próbáld újra.",
+    "auth.noAccount": "Nincs még fiókod?",
+    "auth.signUpLink": "Regisztráció",
+    "auth.alreadyAccount": "Már van fiókod?",
+    "auth.signInLink": "Bejelentkezés",
   },
   // Indonesian
   id: {
@@ -563,6 +583,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Akun dibuat!",
     "auth.signUpSuccessDesc": "Periksa email Anda untuk mengonfirmasi akun.",
     "auth.genericError": "Terjadi kesalahan. Silakan coba lagi.",
+    "auth.noAccount": "Belum punya akun?",
+    "auth.signUpLink": "Daftar",
+    "auth.alreadyAccount": "Sudah punya akun?",
+    "auth.signInLink": "Masuk",
   },
   // Turkish
   tr: {
@@ -657,6 +681,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Hesap oluşturuldu!",
     "auth.signUpSuccessDesc": "Hesabınızı onaylamak için e-postanızı kontrol edin.",
     "auth.genericError": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "auth.noAccount": "Hesabınız yok mu?",
+    "auth.signUpLink": "Kayıt Ol",
+    "auth.alreadyAccount": "Zaten bir hesabınız var mı?",
+    "auth.signInLink": "Giriş Yap",
   },
   // Vietnamese
   vi: {
@@ -751,6 +779,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Tài khoản đã được tạo!",
     "auth.signUpSuccessDesc": "Kiểm tra email của bạn để xác nhận tài khoản.",
     "auth.genericError": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "auth.noAccount": "Chưa có tài khoản?",
+    "auth.signUpLink": "Đăng ký",
+    "auth.alreadyAccount": "Đã có tài khoản?",
+    "auth.signInLink": "Đăng nhập",
   },
   // Thai
   th: {
@@ -845,6 +877,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "สร้างบัญชีแล้ว!",
     "auth.signUpSuccessDesc": "ตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี",
     "auth.genericError": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+    "auth.noAccount": "ยังไม่มีบัญชี?",
+    "auth.signUpLink": "สมัครสมาชิก",
+    "auth.alreadyAccount": "มีบัญชีอยู่แล้ว?",
+    "auth.signInLink": "เข้าสู่ระบบ",
   },
   // Ukrainian
   uk: {
@@ -939,6 +975,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Обліковий запис створено!",
     "auth.signUpSuccessDesc": "Перевірте свою електронну пошту для підтвердження облікового запису.",
     "auth.genericError": "Щось пішло не так. Будь ласка, спробуйте ще раз.",
+    "auth.noAccount": "Ще немає облікового запису?",
+    "auth.signUpLink": "Зареєструватися",
+    "auth.alreadyAccount": "Вже є обліковий запис?",
+    "auth.signInLink": "Увійти",
   },
   // Portuguese
   pt: {
@@ -1033,6 +1073,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Conta criada!",
     "auth.signUpSuccessDesc": "Verifique seu email para confirmar sua conta.",
     "auth.genericError": "Algo deu errado. Por favor, tente novamente.",
+    "auth.noAccount": "Não tem uma conta?",
+    "auth.signUpLink": "Cadastrar",
+    "auth.alreadyAccount": "Já tem uma conta?",
+    "auth.signInLink": "Entrar",
   },
   // Russian
   ru: {
@@ -1127,6 +1171,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Аккаунт создан!",
     "auth.signUpSuccessDesc": "Проверьте свою почту для подтверждения аккаунта.",
     "auth.genericError": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
+    "auth.noAccount": "Нет аккаунта?",
+    "auth.signUpLink": "Зарегистрироваться",
+    "auth.alreadyAccount": "Уже есть аккаунт?",
+    "auth.signInLink": "Войти",
   },
   // Hindi
   hi: {
@@ -1221,6 +1269,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "खाता बनाया गया!",
     "auth.signUpSuccessDesc": "अपने खाते की पुष्टि के लिए अपना ईमेल देखें।",
     "auth.genericError": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    "auth.noAccount": "खाता नहीं है?",
+    "auth.signUpLink": "साइन अप करें",
+    "auth.alreadyAccount": "पहले से खाता है?",
+    "auth.signInLink": "साइन इन करें",
   },
   // Polish
   pl: {
@@ -1315,6 +1367,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "Konto utworzone!",
     "auth.signUpSuccessDesc": "Sprawdź swój email, aby potwierdzić konto.",
     "auth.genericError": "Coś poszło nie tak. Spróbuj ponownie.",
+    "auth.noAccount": "Nie masz konta?",
+    "auth.signUpLink": "Zarejestruj się",
+    "auth.alreadyAccount": "Masz już konto?",
+    "auth.signInLink": "Zaloguj się",
   },
   // Chinese
   zh: {
@@ -1409,6 +1465,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "账户已创建！",
     "auth.signUpSuccessDesc": "请检查您的电子邮件以确认账户。",
     "auth.genericError": "出现错误。请重试。",
+    "auth.noAccount": "还没有账户？",
+    "auth.signUpLink": "注册",
+    "auth.alreadyAccount": "已有账户？",
+    "auth.signInLink": "登录",
   },
   // Japanese
   ja: {
@@ -1503,6 +1563,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "アカウントが作成されました！",
     "auth.signUpSuccessDesc": "アカウントを確認するためにメールを確認してください。",
     "auth.genericError": "問題が発生しました。もう一度お試しください。",
+    "auth.noAccount": "アカウントをお持ちでないですか？",
+    "auth.signUpLink": "登録",
+    "auth.alreadyAccount": "すでにアカウントをお持ちですか？",
+    "auth.signInLink": "ログイン",
   },
   // Korean
   ko: {
@@ -1597,6 +1661,10 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "계정이 생성되었습니다!",
     "auth.signUpSuccessDesc": "계정을 확인하려면 이메일을 확인하세요.",
     "auth.genericError": "문제가 발생했습니다. 다시 시도해 주세요.",
+    "auth.noAccount": "계정이 없으신가요?",
+    "auth.signUpLink": "가입하기",
+    "auth.alreadyAccount": "이미 계정이 있으신가요?",
+    "auth.signInLink": "로그인",
   },
   // Arabic
   ar: {
@@ -1691,5 +1759,9 @@ export const businessTranslations: Record<string, Record<string, string>> = {
     "auth.signUpSuccess": "تم إنشاء الحساب!",
     "auth.signUpSuccessDesc": "تحقق من بريدك الإلكتروني لتأكيد حسابك.",
     "auth.genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "auth.noAccount": "ليس لديك حساب؟",
+    "auth.signUpLink": "التسجيل",
+    "auth.alreadyAccount": "لديك حساب بالفعل؟",
+    "auth.signInLink": "تسجيل الدخول",
   },
 };
