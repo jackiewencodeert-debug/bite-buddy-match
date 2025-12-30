@@ -3,6 +3,14 @@ import {
   detectAllergensFromIngredients,
   MajorAllergen 
 } from '@/data/allergenDatabase';
+import { 
+  loadLearnedPatterns, 
+  findLearnedAllergens,
+  LearnedPattern 
+} from './feedbackLearningService';
+
+// Cache for learned patterns
+let cachedPatterns: LearnedPattern[] = [];
 
 export interface ParsedDish {
   id: string;
@@ -124,9 +132,21 @@ function extractIngredients(description: string): string[] {
 }
 
 /**
+ * Initialize learned patterns from the database
+ */
+export async function initializeLearnedPatterns(): Promise<void> {
+  cachedPatterns = await loadLearnedPatterns();
+}
+
+/**
  * Parse OCR text into structured menu data
  */
-export function parseMenuFromText(ocrText: string): ParsedMenu {
+export async function parseMenuFromText(ocrText: string): Promise<ParsedMenu> {
+  // Load learned patterns if not cached
+  if (cachedPatterns.length === 0) {
+    cachedPatterns = await loadLearnedPatterns();
+  }
+
   if (!isLikelyMenu(ocrText)) {
     return {
       dishes: [],
@@ -189,10 +209,18 @@ export function parseMenuFromText(ocrText: string): ParsedMenu {
       // Extract ingredients from description
       const ingredients = description ? extractIngredients(description) : [];
       
-      // Detect allergens
+      // Detect allergens from static database
       const dishAllergens = findAllergensForDish(dishName);
       const ingredientAllergens = detectAllergensFromIngredients(ingredients);
-      const allAllergens = [...new Set([...dishAllergens, ...ingredientAllergens])];
+      
+      // Also check learned patterns from user feedback
+      const learnedAllergens: string[] = [];
+      for (const ingredient of ingredients) {
+        const learned = findLearnedAllergens(ingredient, cachedPatterns);
+        learnedAllergens.push(...learned);
+      }
+      
+      const allAllergens = [...new Set([...dishAllergens, ...ingredientAllergens, ...learnedAllergens])];
       
       // Detect dietary info
       const dietaryInfo = detectDietaryInfo(dishName + ' ' + description);

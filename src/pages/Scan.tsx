@@ -383,8 +383,8 @@ const Scan = () => {
         combinedText += `\n--- Pagina ${i + 1} ---\n${result.text}`;
       }
 
-      // Step 2: Parse menu from OCR text locally (FREE!)
-      const parsedMenu = parseMenuFromText(combinedText);
+      // Step 2: Parse menu from OCR text locally (FREE!) - now uses learned patterns
+      const parsedMenu = await parseMenuFromText(combinedText);
 
       if (!parsedMenu.isMenu || parsedMenu.dishes.length === 0) {
         dismiss();
