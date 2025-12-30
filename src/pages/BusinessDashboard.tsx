@@ -6,13 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3, User, Download } from "lucide-react";
+import { Loader2, QrCode, ArrowLeft, TrendingUp, Plus, Camera, Edit3, Eye, BarChart3, User, Download, Trash2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import jsPDF from "jspdf";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 interface MenuScanStats {
   allergie: string;
   count: number;
@@ -43,8 +53,11 @@ const BusinessDashboard = () => {
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [showProfileDevDialog, setShowProfileDevDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [menuToDelete, setMenuToDelete] = useState<any>(null);
   const [menuName, setMenuName] = useState("");
   const [creatingMenu, setCreatingMenu] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   useEffect(() => {
     checkUserTypeAndLoadData();
   }, []);
@@ -140,6 +153,45 @@ const BusinessDashboard = () => {
     await supabase.auth.signOut();
     navigate("/");
   };
+
+  const handleDeleteMenu = async () => {
+    if (!menuToDelete) return;
+    
+    setDeleting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Delete the menu (dishes will be cascade deleted due to foreign key)
+      const { error } = await supabase
+        .from("menus")
+        .delete()
+        .eq("id", menuToDelete.id)
+        .eq("business_user_id", user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setMenus(menus.filter(m => m.id !== menuToDelete.id));
+      
+      toast({
+        title: t("business.menuDeleted"),
+        description: t("business.menuDeletedDesc"),
+      });
+    } catch (error: any) {
+      console.error("Error deleting menu:", error);
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+      setMenuToDelete(null);
+    }
+  };
+
   const handleAddMenu = () => {
     setMenuName("");
     setShowNameDialog(true);
@@ -561,6 +613,17 @@ const BusinessDashboard = () => {
                                 {t("business.downloadMenuWithQR")}
                               </Button>
                             )}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => {
+                                setMenuToDelete(menu);
+                                setShowDeleteDialog(true);
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                             {/* Hidden QR code for PDF generation */}
                             <div className="hidden">
                               <QRCode
@@ -666,6 +729,29 @@ const BusinessDashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Menu Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("business.deleteMenuTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("business.deleteMenuDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteMenu} 
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {t("business.deleteMenu")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 };
 
