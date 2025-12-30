@@ -598,7 +598,7 @@ const MenuEditor = () => {
             <h1 className="text-3xl font-bold mb-2">{t("scan.title")}</h1>
             <p className="text-muted-foreground">
               {multipleImages.length > 0 
-                ? `${multipleImages.length} foto${multipleImages.length > 1 ? "'s" : ""} toegevoegd`
+                ? t("scan.photosAddedCount").replace("{count}", multipleImages.length.toString())
                 : t("scan.addPhotos")
               }
             </p>
@@ -610,7 +610,7 @@ const MenuEditor = () => {
                 <Card key={index} className="overflow-hidden relative group">
                   <img
                     src={image}
-                    alt={`Menu pagina ${index + 1}`}
+                    alt={`${t("scan.menuPage")} ${index + 1}`}
                     className="w-full h-48 object-cover"
                   />
                   <Button
@@ -675,7 +675,7 @@ const MenuEditor = () => {
                 ) : (
                   <>
                     <Camera className="mr-2 h-5 w-5" />
-                    {t("scan.scanButton")} ({multipleImages.length} foto{multipleImages.length > 1 ? "'s" : ""})
+                    {t("scan.scanButton")} ({t("scan.photosAddedCount").replace("{count}", multipleImages.length.toString())})
                   </>
                 )}
               </Button>
