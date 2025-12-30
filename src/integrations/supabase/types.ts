@@ -273,6 +273,9 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          qr_color: string | null
+          qr_text_above: string | null
+          qr_text_below: string | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -281,6 +284,9 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          qr_color?: string | null
+          qr_text_above?: string | null
+          qr_text_below?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
@@ -289,6 +295,9 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          qr_color?: string | null
+          qr_text_above?: string | null
+          qr_text_below?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }

@@ -149,7 +149,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Profile page
     "profile.title": "Mijn Profiel",
     "profile.subtitle": "Stel je allergieën en voorkeuren in voor gepersonaliseerde matches",
-    "profile.businessSubtitle": "Beheer je bedrijfsinstellingen",
+    "profile.businessSubtitle": "Beheer je QR-code instellingen",
     "profile.allergies": "🚫 Allergieën",
     "profile.allergiesDesc": "Selecteer alle allergieën waar we rekening mee moeten houden",
     "profile.addCustom": "Eigen allergie toevoegen",
@@ -174,6 +174,16 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.savedGuestDesc": "Je voorkeuren zijn tijdelijk opgeslagen.",
     "profile.validationError": "Niet compleet",
     "profile.selectAtLeastOne": "Selecteer minstens 1 allergie of 1 voorkeur",
+    "profile.qrSettings": "QR-code Instellingen",
+    "profile.qrSettingsDesc": "Pas de instellingen aan voor het downloaden van je QR-codes",
+    "profile.qrColor": "QR-code kleur",
+    "profile.qrBlack": "Zwart",
+    "profile.qrWhite": "Wit",
+    "profile.qrTextAbove": "Tekst boven QR-code",
+    "profile.qrTextAbovePlaceholder": "Bijv: Scan voor menu",
+    "profile.qrTextBelow": "Tekst onder QR-code",
+    "profile.qrTextBelowPlaceholder": "Bijv: Restaurant naam",
+    "profile.qrPreview": "Voorbeeld",
     
     // Auth page
     "auth.welcome": "Welkom bij Bite Buddy",
@@ -574,7 +584,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Profile page
     "profile.title": "My Profile",
     "profile.subtitle": "Set your allergies and preferences for personalized matches",
-    "profile.businessSubtitle": "Manage your business settings",
+    "profile.businessSubtitle": "Manage your QR code settings",
     "profile.allergies": "🚫 Allergies",
     "profile.allergiesDesc": "Select all allergies we should consider",
     "profile.addCustom": "Add custom allergy",
@@ -599,6 +609,16 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.savedGuestDesc": "Your preferences have been temporarily saved.",
     "profile.validationError": "Incomplete",
     "profile.selectAtLeastOne": "Select at least 1 allergy or 1 preference",
+    "profile.qrSettings": "QR Code Settings",
+    "profile.qrSettingsDesc": "Customize settings for downloading your QR codes",
+    "profile.qrColor": "QR code color",
+    "profile.qrBlack": "Black",
+    "profile.qrWhite": "White",
+    "profile.qrTextAbove": "Text above QR code",
+    "profile.qrTextAbovePlaceholder": "E.g: Scan for menu",
+    "profile.qrTextBelow": "Text below QR code",
+    "profile.qrTextBelowPlaceholder": "E.g: Restaurant name",
+    "profile.qrPreview": "Preview",
     
     // Auth page
     "auth.welcome": "Welcome to Bite Buddy",
