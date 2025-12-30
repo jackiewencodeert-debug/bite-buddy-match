@@ -416,17 +416,26 @@ const MenuEditor = () => {
       if (analysisData.dishes && analysisData.dishes.length > 0) {
         // Helper function to extract original value from translated item
         const extractOriginal = (item: any): string => {
-          if (typeof item === 'string') return item;
-          if (item && typeof item === 'object' && item.original) return item.original;
+          if (typeof item === "string") return item;
+          if (item && typeof item === "object" && item.original) return item.original;
           return String(item);
         };
 
-        // Helper function to preserve translation object or create one from string
-        const preserveTranslation = (item: any): any => {
-          if (typeof item === 'string') {
-            return { original: item };
+        const ingredientTranslations: Record<string, any> = analysisData.translations?.ingredients || {};
+        const allergenTranslations: Record<string, any> = analysisData.translations?.allergens || {};
+        const dietaryTranslations: Record<string, any> = analysisData.translations?.dietary_info || {};
+
+        // Helper function to preserve translation object or create one from string + optional map
+        const preserveTranslation = (item: any, map: Record<string, any>): any => {
+          if (typeof item === "string") {
+            return { original: item, ...(map[item] || {}) };
           }
-          return item;
+          if (item && typeof item === "object") {
+            const original = item.original ? String(item.original) : String(item);
+            return { original, ...(map[original] || {}), ...item };
+          }
+          const original = String(item);
+          return { original, ...(map[original] || {}) };
         };
 
         // Add analyzed dishes to database with translations
@@ -434,14 +443,14 @@ const MenuEditor = () => {
           menu_id: menuId,
           name: dish.name,
           name_translations: dish.name_translations || {},
-          description: dish.description || '',
-          price: dish.price || '',
+          description: dish.description || "",
+          price: dish.price || "",
           ingredients: (dish.ingredients || []).map(extractOriginal),
-          ingredients_translations: (dish.ingredients || []).map(preserveTranslation),
+          ingredients_translations: (dish.ingredients || []).map((i: any) => preserveTranslation(i, ingredientTranslations)),
           allergens: [...new Set([...(dish.allergens || []).map(extractOriginal), ...businessAllergens])],
-          allergens_translations: (dish.allergens || []).map(preserveTranslation),
+          allergens_translations: (dish.allergens || []).map((a: any) => preserveTranslation(a, allergenTranslations)),
           dietary_info: (dish.dietary_info || []).map(extractOriginal),
-          dietary_info_translations: (dish.dietary_info || []).map(preserveTranslation),
+          dietary_info_translations: (dish.dietary_info || []).map((d: any) => preserveTranslation(d, dietaryTranslations)),
         }));
 
         const { error: insertError } = await supabase

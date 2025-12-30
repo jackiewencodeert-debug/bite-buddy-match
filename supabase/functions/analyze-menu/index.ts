@@ -57,32 +57,31 @@ function createTimeout(ms: number): Promise<never> {
 }
 
 // Helper function to fetch with timeout
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
   const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    try {
+      controller.abort();
+    } catch {
+      // ignore
+    }
+  }, timeoutMs);
 
-  return await new Promise<Response>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      try {
-        controller.abort();
-      } catch {
-        // ignore
-      }
-      reject(new Error(`Request timeout after ${timeoutMs}ms`));
-    }, timeoutMs);
-
-    fetch(url, {
-      ...options,
-      signal: controller.signal,
-    })
-      .then((res) => {
-        clearTimeout(timeoutId);
-        resolve(res);
-      })
-      .catch((err) => {
-        clearTimeout(timeoutId);
-        reject(err);
-      });
-  });
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 serve(async (req) => {
@@ -153,11 +152,15 @@ Hard requirements:
 
 Translations (CRITICAL):
 - Provide name_translations for ALL ${langKeys.length} languages: ${langKeys.join(", ")}.
-- ALSO provide ingredients, allergens, and dietary_info as arrays of translation objects.
-- Each item must be an object with "original" (source language) plus translations for all ${langKeys.length} languages.
+- Provide translations dictionaries for ingredients, allergens, and dietary_info for ALL ${langKeys.length} languages.
+- Do NOT repeat translation objects inside each dish; dishes must contain plain string arrays.
+- Only include unique terms that actually appear in dishes.
 
 Limits:
-- Extract at most 40 dishes (for speed). If more exist, prioritize the most prominent or first listed.
+- Extract at most 25 dishes.
+- Ingredients: max 120 unique terms across the whole response.
+- Allergens: max 30 unique terms across the whole response.
+- Dietary info: max 30 unique terms across the whole response.
 
 Return JSON exactly in this shape:
 {
@@ -165,13 +168,18 @@ Return JSON exactly in this shape:
   "dishes": [{
     "name": string,
     "name_translations": { ${langKeys.map((k) => `"${k}": string`).join(", ")} },
-    "ingredients": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
-    "allergens": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
-    "dietary_info": [{ "original": string, ${langKeys.map((k) => `"${k}": string`).join(", ")} }],
+    "ingredients": string[],
+    "allergens": string[],
+    "dietary_info": string[],
     "price": string|null,
     "description": string|null,
     "category": string|null
   }],
+  "translations": {
+    "ingredients": { "<original>": { ${langKeys.map((k) => `"${k}": string`).join(", ")} } },
+    "allergens": { "<original>": { ${langKeys.map((k) => `"${k}": string`).join(", ")} } },
+    "dietary_info": { "<original>": { ${langKeys.map((k) => `"${k}": string`).join(", ")} } }
+  } | null,
   "template": { "categories": string[], "style": { "primaryColor": string, "secondaryColor": string, "fontStyle": string } } | null
 }
 
