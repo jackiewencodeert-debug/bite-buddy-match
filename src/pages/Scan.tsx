@@ -18,6 +18,8 @@ import { AdMobService } from "@/services/admob";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { AdSenseAd } from "@/components/AdSenseAd";
+import { extractTextFromImage, parseImageData, OCRProgress } from "@/services/ocrService";
+import { parseMenuFromText, enhanceDishAllergens } from "@/services/menuParserService";
 
 const Scan = () => {
   const [scanned, setScanned] = useState(false);
@@ -332,12 +334,12 @@ const Scan = () => {
     });
   };
 
-  // Process image(s)
+  // Process image(s) using local OCR and parsing (no credits!)
   const processImage = async () => {
     const { dismiss } = toast({
-      title: "Analyseren...",
-      description: `De AI analyseert je menu. Dit kan even duren.`,
-      duration: 60000, // Long duration, we'll dismiss manually
+      title: t("scan.analyzing") || "Analyseren...",
+      description: t("scan.ocrProcessing") || "Tekst wordt geëxtraheerd uit je menu...",
+      duration: 120000,
     });
 
     try {
@@ -352,33 +354,47 @@ const Scan = () => {
       }
 
       const imagesToProcess = mode === "multiple" ? multipleImages : [capturedImage];
+      
+      // Extract image data from JSON format
+      const imageDataList = imagesToProcess
+        .filter((item): item is string => item !== null)
+        .map(item => {
+          const parsed = parseImageData(item);
+          return parsed.data;
+        });
 
-      // Call the AI edge function to analyze the menu(s)
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
-        body: { 
-          images: imagesToProcess,
-          isMultiple: mode === "multiple"
-        }
-      });
-
-      if (analysisError) {
+      if (imageDataList.length === 0) {
         dismiss();
-        throw analysisError;
-      }
-
-      if (!analysisData.isMenu) {
-        dismiss();
-        setErrorMessage("De afbeelding lijkt geen menu te zijn. Zorg ervoor dat de foto duidelijk en goed verlicht is.");
+        setErrorMessage("Geen afbeeldingen om te verwerken.");
         setMode("error");
         return;
       }
 
-      if (!analysisData.dishes || analysisData.dishes.length === 0) {
+      // Step 1: OCR - Extract text from images locally (FREE!)
+      let combinedText = '';
+      for (let i = 0; i < imageDataList.length; i++) {
+        toast({
+          title: `OCR bezig... (${i + 1}/${imageDataList.length})`,
+          description: "Tekst wordt uit de afbeelding gehaald...",
+          duration: 30000,
+        });
+        
+        const result = await extractTextFromImage(imageDataList[i]);
+        combinedText += `\n--- Pagina ${i + 1} ---\n${result.text}`;
+      }
+
+      // Step 2: Parse menu from OCR text locally (FREE!)
+      const parsedMenu = parseMenuFromText(combinedText);
+
+      if (!parsedMenu.isMenu || parsedMenu.dishes.length === 0) {
         dismiss();
-        setErrorMessage("Er konden geen gerechten worden gevonden op deze afbeelding. Probeer een duidelijkere foto te maken.");
+        setErrorMessage("De afbeelding lijkt geen menu te zijn of er konden geen gerechten worden gevonden. Zorg ervoor dat de foto duidelijk en goed verlicht is.");
         setMode("error");
         return;
       }
+
+      // Enhance dishes with additional allergen detection
+      const enhancedDishes = parsedMenu.dishes.map(dish => enhanceDishAllergens(dish));
 
       dismiss();
 
@@ -410,27 +426,18 @@ const Scan = () => {
         }
       }
 
-      // Process dishes and add IDs
-      const processedDishes = analysisData.dishes.map((dish: any, index: number) => ({
-        ...dish,
-        id: `dish-${index}`,
-      }));
-
-      setAnalyzedDishes(processedDishes);
+      setAnalyzedDishes(enhancedDishes);
       setUserAllergies(allergies);
       setUserPreferences(preferences);
       
       // Store menu template info
-      if (analysisData.template) {
-        setMenuTemplate({
-          categories: analysisData.template.categories || [],
-          style: analysisData.template.style || {}
-        });
-      }
+      setMenuTemplate({
+        categories: parsedMenu.categories || [],
+        style: {}
+      });
 
       // If business user, generate QR code and save to database
       if (userType === "eetgever" && user) {
-
         const generatedQrCode = `MENU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
         // Insert menu and get the ID back
@@ -449,7 +456,7 @@ const Scan = () => {
         }
 
         // Insert all dishes with the menu_id
-        const dishesToInsert = processedDishes.map((dish: any) => ({
+        const dishesToInsert = enhancedDishes.map((dish: any) => ({
           menu_id: menuData.id,
           name: dish.name,
           description: dish.description || '',
@@ -470,24 +477,21 @@ const Scan = () => {
         setQrCode(generatedQrCode);
         toast({
           title: "QR Code Gegenereerd! ✓",
-          description: `${processedDishes.length} gerechten gevonden en opgeslagen.`,
+          description: `${enhancedDishes.length} gerechten gevonden en opgeslagen.`,
         });
       } else {
         toast({
           title: "Menu Geanalyseerd! ✓",
-          description: `${processedDishes.length} gerechten gevonden en vergeleken met je voorkeuren.`,
+          description: `${enhancedDishes.length} gerechten gevonden en vergeleken met je voorkeuren.`,
         });
       }
       
       setScanned(true);
     } catch (error: any) {
       console.error("Error processing scan:", error);
+      dismiss();
       setErrorMessage(
-        error.message.includes("Rate limit") 
-          ? "Er zijn te veel verzoeken gedaan. Probeer het over een paar minuten opnieuw."
-          : error.message.includes("Payment required")
-          ? "Er zijn onvoldoende credits. Voeg credits toe aan je workspace."
-          : "Er ging iets mis bij het analyseren. Controleer je internetverbinding en probeer het opnieuw."
+        "Er ging iets mis bij het analyseren. Zorg dat de foto goed leesbaar is en probeer het opnieuw."
       );
       setMode("error");
     }
