@@ -70,7 +70,7 @@ export const AdBanner = () => {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 bg-background border-t border-border h-[7vh]">
+    <div className="fixed bottom-16 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border h-[7vh] overflow-hidden">
       <div className="max-w-lg mx-auto h-full">
         <AdSenseAd
           adSlot="7704507845"
