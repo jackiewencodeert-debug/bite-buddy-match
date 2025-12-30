@@ -16,9 +16,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     checkShowNavBar();
     
     // Listen for auth state changes to update navbar visibility
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        // User logged out, show navbar for guests
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        // User logged out, show navbar for guests immediately
         if (
           !location.pathname.startsWith("/business") &&
           !location.pathname.startsWith("/admin") &&
@@ -27,14 +27,39 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         ) {
           setShowNavBar(true);
         }
-      } else {
-        // Re-check on other auth events
-        checkShowNavBar();
+      } else if (session?.user) {
+        // Re-check on other auth events with user data
+        checkShowNavBarForUser(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [location.pathname]);
+
+  const checkShowNavBarForUser = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_type")
+      .eq("id", userId)
+      .single();
+    
+    if (profile?.user_type === "eetgever") {
+      setShowNavBar(false);
+      return;
+    }
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    
+    if (roles?.some(r => r.role === "admin")) {
+      setShowNavBar(false);
+      return;
+    }
+
+    setShowNavBar(true);
+  };
 
   const checkShowNavBar = async () => {
     // Hide on business and admin pages
