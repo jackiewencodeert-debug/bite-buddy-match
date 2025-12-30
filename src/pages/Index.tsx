@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Shield, Sparkles, Users, LogOut, Building2, User, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ const Index = () => {
   const [isBusiness, setIsBusiness] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const activeUserIdRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -38,6 +39,7 @@ const Index = () => {
       setIsLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        activeUserIdRef.current = session?.user?.id ?? null;
         setUser(session?.user ?? null);
 
         if (session?.user) {
@@ -49,7 +51,7 @@ const Index = () => {
           // Auto-login as guest if no session and not already a guest
           const currentGuestType = localStorage.getItem("userType");
           if (!currentGuestType) {
-            await autoLoginAsGuest();
+            autoLoginAsGuest();
           }
         }
       } catch (error) {
@@ -62,31 +64,40 @@ const Index = () => {
     initializeUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      activeUserIdRef.current = session?.user?.id ?? null;
       setUser(session?.user ?? null);
+
       if (session?.user) {
         setIsLoading(true);
-        try {
-          await Promise.all([
-            checkUserType(session.user.id),
-            checkAdminRole(session.user.id),
-          ]);
-        } catch (error) {
-          console.error("Error checking user role/type:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        // Reset business and admin state when user logs out
-        setIsBusiness(false);
-        setIsAdmin(false);
+        // Defer async work to avoid doing awaits inside the auth callback
+        setTimeout(() => {
+          Promise.all([
+            checkUserType(session.user!.id),
+            checkAdminRole(session.user!.id),
+          ])
+            .catch((error) => {
+              console.error("Error checking user role/type:", error);
+            })
+            .finally(() => {
+              setIsLoading(false);
+            });
+        }, 0);
 
-        // Auto-login as guest after logout if not already a guest
-        if (event === "SIGNED_OUT") {
-          const currentGuestType = localStorage.getItem("userType");
-          if (!currentGuestType) {
-            await autoLoginAsGuest();
-          }
+        return;
+      }
+
+      // Reset business/admin state when user logs out
+      setIsBusiness(false);
+      setIsAdmin(false);
+
+      // Auto-login as guest after logout if needed
+      if (event === "SIGNED_OUT") {
+        const currentGuestType = localStorage.getItem("userType");
+        if (!currentGuestType) {
+          autoLoginAsGuest();
+        } else if (currentGuestType === "gast") {
+          setIsGuest(true);
         }
       }
     });
@@ -100,7 +111,8 @@ const Index = () => {
       .select("user_type")
       .eq("id", userId)
       .single();
-    
+
+    if (activeUserIdRef.current !== userId) return;
     setIsBusiness(profile?.user_type === "eetgever");
   };
 
@@ -109,27 +121,31 @@ const Index = () => {
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    
+
+    if (activeUserIdRef.current !== userId) return;
     setIsAdmin(roles?.some(r => r.role === "admin") ?? false);
   };
 
-  const autoLoginAsGuest = async () => {
+  const autoLoginAsGuest = () => {
     localStorage.setItem("userType", "gast");
     // Set guest expiry time (12 hours from now)
     const expiryTime = Date.now() + 12 * 60 * 60 * 1000;
     localStorage.setItem("guestExpiry", expiryTime.toString());
-    
-    // Log guest registration to database for admin analytics
-    try {
-      await supabase.from("scans").insert({
-        user_id: null,
-        scan_method: "guest_registration"
-      });
-    } catch (error) {
-      console.error("Error logging guest registration:", error);
-    }
-    
+
+    // Immediately reflect guest state in UI
     setIsGuest(true);
+
+    // Log guest registration to database for admin analytics (non-blocking)
+    void (async () => {
+      try {
+        await supabase.from("scans").insert({
+          user_id: null,
+          scan_method: "guest_registration",
+        });
+      } catch (error) {
+        console.error("Error logging guest registration:", error);
+      }
+    })();
   };
 
   const isLoggedIn = user || isGuest;
@@ -139,18 +155,18 @@ const Index = () => {
     localStorage.removeItem("userType");
     localStorage.removeItem("guestExpiry");
     localStorage.removeItem("guestPreferences");
-    
+
     // Reset all state synchronously BEFORE signOut
     setIsGuest(false);
     setIsBusiness(false);
     setIsAdmin(false);
     setUser(null);
-    
+
     await supabase.auth.signOut();
-    
-    // Force auto-login as guest immediately
-    await autoLoginAsGuest();
-    
+
+    // Force guest preview immediately (non-blocking)
+    autoLoginAsGuest();
+
     toast({
       title: "Uitgelogd",
       description: "Je bent succesvol uitgelogd.",
