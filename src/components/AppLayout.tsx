@@ -1,9 +1,9 @@
 import { useLocation } from "react-router-dom";
 import { BottomNavBar } from "./BottomNavBar";
 import { AdBanner } from "./AdBanner";
-import { TempBanner } from "./TempBanner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import logoWatermark from "@/assets/logo-watermark.png";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -108,9 +108,24 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const bottomPadding = showNavBar ? "pb-[calc(4rem+7vh)]" : "";
 
   return (
-    <div className={`min-h-screen ${bottomPadding}`}>
-      <TempBanner />
-      {children}
+    <div className={`min-h-screen relative ${bottomPadding}`}>
+      {/* Watermark logo */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center opacity-10"
+        aria-hidden="true"
+      >
+        <img 
+          src={logoWatermark} 
+          alt="" 
+          className="w-64 h-64 object-contain"
+        />
+      </div>
+      
+      {/* Main content */}
+      <div className="relative z-10">
+        {children}
+      </div>
+      
       {showNavBar && (
         <>
           <AdBanner />
