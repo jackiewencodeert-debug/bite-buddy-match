@@ -139,14 +139,22 @@ const Index = () => {
     localStorage.removeItem("userType");
     localStorage.removeItem("guestExpiry");
     localStorage.removeItem("guestPreferences");
+    
+    // Reset all state synchronously BEFORE signOut
     setIsGuest(false);
+    setIsBusiness(false);
+    setIsAdmin(false);
+    setUser(null);
     
     await supabase.auth.signOut();
+    
+    // Force auto-login as guest immediately
+    await autoLoginAsGuest();
+    
     toast({
       title: "Uitgelogd",
       description: "Je bent succesvol uitgelogd.",
     });
-    // Auth state change listener will handle auto-login as guest
   };
 
   return (
