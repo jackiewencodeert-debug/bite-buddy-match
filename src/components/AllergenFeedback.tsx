@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { MessageSquare, ThumbsUp, AlertTriangle, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { submitFeedbackWithLearning } from "@/services/feedbackLearningService";
 
 interface TranslatedItem {
   original: string;
@@ -67,23 +67,24 @@ export const AllergenFeedback = ({ dish, userAllergies = [] }: AllergenFeedbackP
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      await supabase.from("allergen_feedback").insert({
-        user_id: user?.id || null,
-        dish_name: dish.name,
-        detected_allergens: allergenStrings,
-        confirmed_allergens: feedbackType === "confirm" ? allergenStrings : [],
-        missed_allergens: missedAllergens,
-        false_positives: falsePositives,
-        ingredients: ingredientStrings,
-        feedback_type: feedbackType === "confirm" ? "confirmation" : "correction",
-      });
+      const success = await submitFeedbackWithLearning(
+        dish.name,
+        ingredientStrings,
+        allergenStrings,
+        feedbackType === "confirm" ? allergenStrings : [],
+        missedAllergens,
+        falsePositives,
+        feedbackType === "confirm" ? "confirmation" : "correction"
+      );
 
-      toast({
-        title: t("feedback.thankYou"),
-        description: t("feedback.thankYouDesc"),
-      });
+      if (success) {
+        toast({
+          title: t("feedback.thankYou"),
+          description: t("feedback.thankYouDesc") + " De app leert van je feedback!",
+        });
+      } else {
+        throw new Error("Feedback submission failed");
+      }
 
       setIsOpen(false);
       setMissedAllergens([]);
