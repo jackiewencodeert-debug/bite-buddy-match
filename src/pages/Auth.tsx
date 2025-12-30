@@ -122,12 +122,50 @@ const Auth = () => {
   }, []);
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/profile");
+    // Check if user is already logged in and redirect appropriately
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Check if user is admin first
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRole) {
+        navigate("/admin");
+        return;
       }
-    });
+
+      // Check user type
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_type")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profile?.user_type === "eetgever") {
+        navigate("/business");
+      } else {
+        // Regular user (eter) - check if preferences exist
+        const { data: preferences } = await supabase
+          .from("preferences")
+          .select("id")
+          .eq("user_id", session.user.id)
+          .limit(1);
+
+        if (!preferences || preferences.length === 0) {
+          navigate("/profile");
+        } else {
+          navigate("/");
+        }
+      }
+    };
+
+    checkExistingSession();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
