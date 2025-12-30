@@ -44,11 +44,11 @@ export const AdSenseAd = ({
   }, [adSlot]);
 
   return (
-    <div className={`adsense-container ${className}`}>
+    <div className={`adsense-container ${className}`} style={{ maxHeight: '7vh', overflow: 'hidden' }}>
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: 'block', minHeight: '250px' }}
+        style={{ display: 'block', maxHeight: '7vh' }}
         data-ad-client="ca-pub-1597606960562339"
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
