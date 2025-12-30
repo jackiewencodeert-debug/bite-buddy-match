@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-menu]
 verify_jwt = true
+
+[functions.process-feedback-batch]
+verify_jwt = false
