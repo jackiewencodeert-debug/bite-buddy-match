@@ -82,25 +82,49 @@ const allLanguages = {
 const langKeys = Object.keys(allLanguages);
 const langList = langKeys.map(k => `"${k}": "${allLanguages[k as keyof typeof allLanguages]} translation"`).join(", ");
 
-const systemPrompt = `You are a menu analysis assistant. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
+const systemPrompt = `You are an expert menu analysis assistant specializing in food ingredient identification and allergen detection. Analyze menu images/documents and extract dish information in a structured format. Return only valid JSON.
+
+CRITICAL INSTRUCTIONS FOR INGREDIENT AND ALLERGEN DETECTION:
+
+1. ALWAYS INFER INGREDIENTS from the dish name and description, even if not explicitly listed:
+   - "Zuurdesembrood" (Sourdough bread) → MUST include ingredients: ["zuurdesem", "tarwemeel", "water", "zout"] and allergen: ["gluten"]
+   - "Pasta carbonara" → MUST include: ["pasta", "ei", "spek", "parmezaanse kaas", "peper"] and allergens: ["gluten", "eieren", "lactose"]
+   - "Kippensoep" → MUST include: ["kip", "bouillon", "wortel", "selderij", "ui"]
+   - "Caesar salade" → MUST include: ["romaine sla", "parmezaanse kaas", "croutons", "caesar dressing", "ansjovis"] and allergens: ["gluten", "lactose", "vis"]
+   - "Biefstuk" → MUST include: ["rundvlees", "kruiden"]
+   - "Pizza margherita" → MUST include: ["pizzadeeg", "tomatensaus", "mozzarella", "basilicum"] and allergens: ["gluten", "lactose"]
+
+2. BREAD AND BAKERY PRODUCTS - These ALWAYS contain gluten unless explicitly labeled gluten-free:
+   - Any bread (brood, zuurdesembrood, focaccia, ciabatta, baguette, toast, etc.) → gluten
+   - Croissants, broodjes, bolletjes → gluten, lactose
+   - Cake, taart, gebak → gluten, often also eieren, lactose
+
+3. COMMON ALLERGEN MAPPINGS - Apply these automatically:
+   - Anything with flour/wheat/tarwe/meel/rogge/gerst/spelt → gluten
+   - Anything with milk/cheese/cream/boter/zuivel → lactose
+   - Anything with egg/ei/mayonaise/aioli → eieren
+   - Anything with soy sauce/sojasaus/tofu/tempeh → soja
+   - Any bread, pasta, couscous, bulgur, noodles → gluten
+   - Wine/wijn, dried fruits/gedroogd fruit → sulfiet
+
+4. EVEN IF THE MENU SHOWS NO INGREDIENTS, you MUST:
+   - Infer typical ingredients based on dish name and culinary knowledge
+   - Add appropriate allergens based on inferred ingredients
+   - Never leave ingredients array empty for recognizable dishes
 
 Analyze ${isMultiple ? 'these images/documents of different menu pages' : 'this image/document'} and determine if ${isMultiple ? 'they are' : 'it is'} restaurant menu(s). If yes, extract ALL dishes with the following information for each dish:
 - name: dish name EXACTLY as it appears on the menu (required)
 - name_translations: REQUIRED object with translations of the dish name in ALL 20 languages: { ${langList} }
 - ingredients: array of ingredient objects, each with translations in ALL 20 languages: [{ "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen", "it": "Pollo", "hu": "Csirke", "id": "Ayam", "tr": "Tavuk", "vi": "Gà", "th": "ไก่", "uk": "Курка", "pt": "Frango", "ru": "Курица", "hi": "मुर्गी", "pl": "Kurczak", "zh": "鸡肉", "ja": "鶏肉", "ko": "닭고기", "ar": "دجاج" }]
+  IMPORTANT: Always infer and include typical ingredients based on dish name/description!
 - allergens: array of allergen objects, each with translations in ALL 20 languages (same format as ingredients)
+  IMPORTANT: Always detect allergens based on inferred ingredients! Common allergens: noten, gluten, lactose, schaaldieren, vis, eieren, soja, sulfiet, pinda's, sesam, selderij, mosterd, weekdieren, lupine
 - dietary_info: array of dietary info objects, each with translations in ALL 20 languages (same format as ingredients)
 - price: price if visible (include € symbol)
 - description: brief description if available
 - category: the section/category this dish belongs to (e.g., "Voorgerechten", "Hoofdgerechten", "Desserts", "Soepen", "Salades", "Drankjes", etc.)
 
 IMPORTANT: ALL translation objects MUST include translations in ALL 20 languages: nl, en, fr, es, de, it, hu, id, tr, vi, th, uk, pt, ru, hi, pl, zh, ja, ko, ar.
-
-Common allergens to detect (with their standard translations):
-- noten/nuts, gluten, lactose, schaaldieren/shellfish, vis/fish, eieren/eggs, soja/soy, sulfiet/sulfite, selderij/celery, mosterd/mustard, sesam/sesame, weekdieren/mollusks, lupine
-
-Common dietary preferences to detect:
-- vegetarisch/vegetarian, veganistisch/vegan, halal, kosher
 
 Also extract menu template information:
 - categories: array of all menu section names/categories found on the menu in order
@@ -114,16 +138,19 @@ Return in this exact JSON format (ALL 20 language translations are REQUIRED):
   "isMenu": true/false,
   "dishes": [
     {
-      "name": "Kippensoep",
-      "name_translations": { "nl": "Kippensoep", "en": "Chicken soup", "fr": "Soupe au poulet", "es": "Sopa de pollo", "de": "Hühnersuppe", "it": "Zuppa di pollo", "hu": "Csirkeleves", "id": "Sup ayam", "tr": "Tavuk çorbası", "vi": "Súp gà", "th": "ซุปไก่", "uk": "Курячий суп", "pt": "Sopa de frango", "ru": "Куриный суп", "hi": "चिकन सूप", "pl": "Zupa z kurczaka", "zh": "鸡汤", "ja": "チキンスープ", "ko": "치킨 수프", "ar": "حساء الدجاج" },
+      "name": "Zuurdesembrood",
+      "name_translations": { "nl": "Zuurdesembrood", "en": "Sourdough bread", "fr": "Pain au levain", "es": "Pan de masa madre", "de": "Sauerteigbrot", "it": "Pane a lievitazione naturale", "hu": "Kovászos kenyér", "id": "Roti sourdough", "tr": "Ekşi mayalı ekmek", "vi": "Bánh mì men chua", "th": "ขนมปังซาวร์โดว์", "uk": "Хліб на заквасці", "pt": "Pão de fermentação natural", "ru": "Хлеб на закваске", "hi": "खट्टी खमीर की रोटी", "pl": "Chleb na zakwasie", "zh": "酸面包", "ja": "サワードウブレッド", "ko": "사워도우 빵", "ar": "خبز العجين المخمر" },
       "ingredients": [
-        { "original": "kip", "nl": "Kip", "en": "Chicken", "fr": "Poulet", "es": "Pollo", "de": "Hähnchen", "it": "Pollo", "hu": "Csirke", "id": "Ayam", "tr": "Tavuk", "vi": "Gà", "th": "ไก่", "uk": "Курка", "pt": "Frango", "ru": "Курица", "hi": "मुर्गी", "pl": "Kurczak", "zh": "鸡肉", "ja": "鶏肉", "ko": "닭고기", "ar": "دجاج" }
+        { "original": "zuurdesem", "nl": "Zuurdesem", "en": "Sourdough starter", "fr": "Levain", "es": "Masa madre", "de": "Sauerteig", "it": "Lievito madre", "hu": "Kovász", "id": "Starter sourdough", "tr": "Ekşi maya", "vi": "Men chua", "th": "แป้งเปรี้ยว", "uk": "Закваска", "pt": "Fermento natural", "ru": "Закваска", "hi": "खट्टी खमीर", "pl": "Zakwas", "zh": "酸面种", "ja": "サワードウスターター", "ko": "사워도우 스타터", "ar": "خميرة العجين المخمر" },
+        { "original": "tarwemeel", "nl": "Tarwemeel", "en": "Wheat flour", "fr": "Farine de blé", "es": "Harina de trigo", "de": "Weizenmehl", "it": "Farina di grano", "hu": "Búzaliszt", "id": "Tepung terigu", "tr": "Buğday unu", "vi": "Bột mì", "th": "แป้งสาลี", "uk": "Пшеничне борошно", "pt": "Farinha de trigo", "ru": "Пшеничная мука", "hi": "गेहूं का आटा", "pl": "Mąka pszenna", "zh": "小麦面粉", "ja": "小麦粉", "ko": "밀가루", "ar": "دقيق القمح" }
       ],
-      "allergens": [],
+      "allergens": [
+        { "original": "gluten", "nl": "Gluten", "en": "Gluten", "fr": "Gluten", "es": "Gluten", "de": "Gluten", "it": "Glutine", "hu": "Glutén", "id": "Gluten", "tr": "Gluten", "vi": "Gluten", "th": "กลูเตน", "uk": "Глютен", "pt": "Glúten", "ru": "Глютен", "hi": "ग्लूटेन", "pl": "Gluten", "zh": "麸质", "ja": "グルテン", "ko": "글루텐", "ar": "الغلوتين" }
+      ],
       "dietary_info": [],
-      "price": "€7,50",
-      "description": "Huisgemaakte kippensoep met verse groenten",
-      "category": "Voorgerechten"
+      "price": "€4,50",
+      "description": "Huisgebakken zuurdesembrood",
+      "category": "Broodjes"
     }
   ],
   "template": {

@@ -440,7 +440,18 @@ const MenuEditor = () => {
   };
 
   const addIngredient = () => {
-    const result = ingredientSchema.safeParse(newIngredient);
+    const trimmedIngredient = newIngredient.trim();
+    
+    if (!trimmedIngredient) {
+      toast({
+        title: t("editor.validationError"),
+        description: "Ingrediënt mag niet leeg zijn",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const result = ingredientSchema.safeParse(trimmedIngredient);
     if (!result.success) {
       toast({
         title: t("editor.validationError"),
@@ -459,10 +470,20 @@ const MenuEditor = () => {
       return;
     }
     
-    setNewDish({
-      ...newDish,
-      ingredients: [...newDish.ingredients, result.data]
-    });
+    // Check for duplicates (case-insensitive)
+    if (newDish.ingredients.some(ing => ing.toLowerCase() === result.data.toLowerCase())) {
+      toast({
+        title: t("editor.validationError"),
+        description: "Dit ingrediënt is al toegevoegd",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setNewDish(prev => ({
+      ...prev,
+      ingredients: [...prev.ingredients, result.data]
+    }));
     setNewIngredient("");
   };
 
