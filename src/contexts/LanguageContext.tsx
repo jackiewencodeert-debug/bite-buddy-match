@@ -437,6 +437,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Bedrijven zijn verantwoordelijk voor correcte allergeninformatie in hun menu's.",
     "statistics.guideline4": "Regelmatige updates van menu-informatie worden aanbevolen om nauwkeurigheid te waarborgen.",
     
+    // Footer
+    "footer.privacy": "Privacybeleid",
+    "footer.terms": "Algemene Voorwaarden",
+    
     // Menu Editor
     "editor.title": "Menu Bewerken",
     "editor.subtitle": "Voeg gerechten toe en specificeer ingrediënten en allergenen",
@@ -927,6 +931,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Businesses are responsible for correct allergen information in their menus.",
     "statistics.guideline4": "Regular updates of menu information are recommended to ensure accuracy.",
     
+    // Footer
+    "footer.privacy": "Privacy Policy",
+    "footer.terms": "Terms of Service",
+    
     // Menu Editor
     "editor.title": "Edit Menu",
     "editor.subtitle": "Add dishes and specify ingredients and allergens",
@@ -1329,6 +1337,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Le aziende sono responsabili delle informazioni corrette sugli allergeni nei loro menu.",
     "statistics.guideline4": "Si raccomandano aggiornamenti regolari delle informazioni del menu per garantire l'accuratezza.",
     
+    // Footer
+    "footer.privacy": "Informativa sulla Privacy",
+    "footer.terms": "Termini di Servizio",
+    
     "common.loading": "Caricamento...",
     "common.error": "Errore",
     "common.success": "Successo",
@@ -1432,6 +1444,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "Az alkalmazás nem helyettesíti a szakmai allergén tanácsadást vagy orvosi diagnózist.",
     "statistics.guideline3": "A vállalkozások felelősek a menüik helyes allergéninformációiért.",
     "statistics.guideline4": "A menüinformációk rendszeres frissítése javasolt a pontosság érdekében.",
+    
+    // Footer
+    "footer.privacy": "Adatvédelmi irányelvek",
+    "footer.terms": "Szolgáltatási feltételek",
     
     "common.loading": "Betöltés...",
     "common.error": "Hiba",
@@ -1547,6 +1563,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Bisnis bertanggung jawab atas informasi alergen yang benar dalam menu mereka.",
     "statistics.guideline4": "Pembaruan rutin informasi menu direkomendasikan untuk memastikan akurasi.",
     
+    // Footer
+    "footer.privacy": "Kebijakan Privasi",
+    "footer.terms": "Ketentuan Layanan",
+    
     // Navigation
     "nav.profile": "Profil",
     "nav.upload": "Unggah",
@@ -1640,6 +1660,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "Uygulama profesyonel alerjen danışmanlığının veya tıbbi teşhisin yerini almaz.",
     "statistics.guideline3": "İşletmeler menülerindeki doğru alerjen bilgilerinden sorumludur.",
     "statistics.guideline4": "Doğruluğu sağlamak için menü bilgilerinin düzenli güncellenmesi önerilir.",
+    
+    // Footer
+    "footer.privacy": "Gizlilik Politikası",
+    "footer.terms": "Hizmet Şartları",
     
     "common.loading": "Yükleniyor...",
     "common.error": "Hata",
@@ -1745,6 +1769,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Doanh nghiệp chịu trách nhiệm về thông tin dị ứng chính xác trong menu.",
     "statistics.guideline4": "Khuyến nghị cập nhật thông tin menu thường xuyên để đảm bảo độ chính xác.",
     
+    // Footer
+    "footer.privacy": "Chính sách quyền riêng tư",
+    "footer.terms": "Điều khoản dịch vụ",
+    
     "common.loading": "Đang tải...",
     "common.error": "Lỗi",
     "common.success": "Thành công",
@@ -1848,6 +1876,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "แอปไม่ได้แทนที่คำแนะนำจากผู้เชี่ยวชาญด้านสารก่อภูมิแพ้หรือการวินิจฉัยทางการแพทย์",
     "statistics.guideline3": "ธุรกิจมีหน้าที่รับผิดชอบข้อมูลสารก่อภูมิแพ้ที่ถูกต้องในเมนู",
     "statistics.guideline4": "แนะนำให้อัปเดตข้อมูลเมนูเป็นประจำเพื่อความถูกต้อง",
+    
+    // Footer
+    "footer.privacy": "นโยบายความเป็นส่วนตัว",
+    "footer.terms": "ข้อกำหนดการให้บริการ",
     
     "common.loading": "กำลังโหลด...",
     "common.error": "ข้อผิดพลาด",
@@ -1953,6 +1985,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Підприємства відповідають за правильну інформацію про алергени в меню.",
     "statistics.guideline4": "Рекомендується регулярно оновлювати інформацію меню для забезпечення точності.",
     
+    // Footer
+    "footer.privacy": "Політика конфіденційності",
+    "footer.terms": "Умови використання",
+    
     "common.loading": "Завантаження...",
     "common.error": "Помилка",
     "common.success": "Успішно",
@@ -2056,6 +2092,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "O aplicativo não substitui aconselhamento profissional sobre alérgenos ou diagnóstico médico.",
     "statistics.guideline3": "As empresas são responsáveis pelas informações corretas sobre alérgenos em seus menus.",
     "statistics.guideline4": "Atualizações regulares das informações do menu são recomendadas para garantir precisão.",
+    
+    // Footer
+    "footer.privacy": "Política de Privacidade",
+    "footer.terms": "Termos de Serviço",
     
     "common.loading": "Carregando...",
     "common.error": "Erro",
@@ -2161,6 +2201,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Предприятия несут ответственность за правильную информацию об аллергенах в меню.",
     "statistics.guideline4": "Рекомендуется регулярно обновлять информацию меню для обеспечения точности.",
     
+    // Footer
+    "footer.privacy": "Политика конфиденциальности",
+    "footer.terms": "Условия использования",
+    
     "common.loading": "Загрузка...",
     "common.error": "Ошибка",
     "common.success": "Успешно",
@@ -2264,6 +2308,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "ऐप पेशेवर एलर्जेन सलाह या चिकित्सा निदान की जगह नहीं लेता है।",
     "statistics.guideline3": "व्यवसाय अपने मेनू में सही एलर्जेन जानकारी के लिए जिम्मेदार हैं।",
     "statistics.guideline4": "सटीकता सुनिश्चित करने के लिए मेनू जानकारी के नियमित अपडेट की सिफारिश की जाती है।",
+    
+    // Footer
+    "footer.privacy": "गोपनीयता नीति",
+    "footer.terms": "सेवा की शर्तें",
     
     "common.loading": "लोड हो रहा है...",
     "common.error": "त्रुटि",
@@ -2369,6 +2417,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "Firmy są odpowiedzialne za prawidłowe informacje o alergenach w swoich menu.",
     "statistics.guideline4": "Zaleca się regularne aktualizacje informacji o menu w celu zapewnienia dokładności.",
     
+    // Footer
+    "footer.privacy": "Polityka Prywatności",
+    "footer.terms": "Regulamin",
+    
     "common.loading": "Ładowanie...",
     "common.error": "Błąd",
     "common.success": "Sukces",
@@ -2473,6 +2525,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "商家有责任在菜单中提供正确的过敏原信息。",
     "statistics.guideline4": "建议定期更新菜单信息以确保准确性。",
     
+    // Footer
+    "footer.privacy": "隐私政策",
+    "footer.terms": "服务条款",
+    
     "common.loading": "加载中...",
     "common.error": "错误",
     "common.success": "成功",
@@ -2572,6 +2628,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "アプリは専門的なアレルゲンアドバイスや医療診断に代わるものではありません。",
     "statistics.guideline3": "事業者はメニューの正確なアレルゲン情報に責任を負います。",
     "statistics.guideline4": "正確性を確保するため、メニュー情報の定期的な更新をお勧めします。",
+    
+    // Footer
+    "footer.privacy": "プライバシーポリシー",
+    "footer.terms": "利用規約",
     
     "common.loading": "読み込み中...",
     "common.error": "エラー",
@@ -2673,6 +2733,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline3": "업체는 메뉴의 정확한 알레르기 정보에 대한 책임이 있습니다.",
     "statistics.guideline4": "정확성을 보장하기 위해 메뉴 정보를 정기적으로 업데이트하는 것이 좋습니다.",
     
+    // Footer
+    "footer.privacy": "개인정보 처리방침",
+    "footer.terms": "이용약관",
+    
     "common.loading": "로딩 중...",
     "common.error": "오류",
     "common.success": "성공",
@@ -2772,6 +2836,10 @@ const translations: Record<Language, Record<string, string>> = {
     "statistics.guideline2": "التطبيق لا يحل محل استشارة المتخصصين في مسببات الحساسية أو التشخيص الطبي.",
     "statistics.guideline3": "الشركات مسؤولة عن المعلومات الصحيحة للمواد المسببة للحساسية في قوائمها.",
     "statistics.guideline4": "يُوصى بالتحديثات المنتظمة لمعلومات القائمة لضمان الدقة.",
+    
+    // Footer
+    "footer.privacy": "سياسة الخصوصية",
+    "footer.terms": "شروط الخدمة",
     
     "common.loading": "جارٍ التحميل...",
     "common.error": "خطأ",
