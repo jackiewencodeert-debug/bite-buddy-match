@@ -12,6 +12,7 @@ import jsPDF from "jspdf";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -471,7 +472,10 @@ const BusinessDashboard = () => {
       </div>;
   }
   return <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/")}>
