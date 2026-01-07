@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppLayout } from "@/components/AppLayout";
+import { CookieBanner } from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import Scan from "./pages/Scan";
 import Profile from "./pages/Profile";
@@ -28,6 +29,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CookieBanner />
         <BrowserRouter>
           <AppLayout>
             <Routes>
