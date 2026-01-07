@@ -113,6 +113,42 @@ export type Database = {
         }
         Relationships: []
       }
+      business_invites: {
+        Row: {
+          business_email: string | null
+          business_name: string
+          claimed_at: string | null
+          claimed_by: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_claimed: boolean
+        }
+        Insert: {
+          business_email?: string | null
+          business_name: string
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_claimed?: boolean
+        }
+        Update: {
+          business_email?: string | null
+          business_name?: string
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_claimed?: boolean
+        }
+        Relationships: []
+      }
       dishes: {
         Row: {
           allergens: string[] | null

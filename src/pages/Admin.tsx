@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { AdminBusinessInvites } from "@/components/AdminBusinessInvites";
 import {
   Select,
   SelectContent,
@@ -894,6 +895,9 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Business Invites Section */}
+            <AdminBusinessInvites />
 
             {/* Batch Processing Monitor */}
             <Card className="border-primary/20 bg-primary/5">
