@@ -2861,3 +2861,174 @@ export function translateAllergen(allergen: string, language: string): string {
   const translations = allergenTranslations[language] || allergenTranslations['en'];
   return translations[normalizedAllergen] || allergen;
 }
+
+// Dietary translations for all languages
+export const dietaryTranslations: Record<string, Record<string, string>> = {
+  en: {
+    "vegetarisch": "Vegetarian",
+    "veganistisch": "Vegan",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Gluten-free",
+    "lactosevrij": "Lactose-free",
+  },
+  nl: {
+    "vegetarisch": "Vegetarisch",
+    "veganistisch": "Veganistisch",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Glutenvrij",
+    "lactosevrij": "Lactosevrij",
+  },
+  fr: {
+    "vegetarisch": "Végétarien",
+    "veganistisch": "Végétalien",
+    "halal": "Halal",
+    "kosher": "Casher",
+    "glutenvrij": "Sans gluten",
+    "lactosevrij": "Sans lactose",
+  },
+  es: {
+    "vegetarisch": "Vegetariano",
+    "veganistisch": "Vegano",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Sin gluten",
+    "lactosevrij": "Sin lactosa",
+  },
+  de: {
+    "vegetarisch": "Vegetarisch",
+    "veganistisch": "Vegan",
+    "halal": "Halal",
+    "kosher": "Koscher",
+    "glutenvrij": "Glutenfrei",
+    "lactosevrij": "Laktosefrei",
+  },
+  it: {
+    "vegetarisch": "Vegetariano",
+    "veganistisch": "Vegano",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Senza glutine",
+    "lactosevrij": "Senza lattosio",
+  },
+  pt: {
+    "vegetarisch": "Vegetariano",
+    "veganistisch": "Vegano",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Sem glúten",
+    "lactosevrij": "Sem lactose",
+  },
+  pl: {
+    "vegetarisch": "Wegetariański",
+    "veganistisch": "Wegański",
+    "halal": "Halal",
+    "kosher": "Koszerny",
+    "glutenvrij": "Bezglutenowy",
+    "lactosevrij": "Bez laktozy",
+  },
+  ru: {
+    "vegetarisch": "Вегетарианский",
+    "veganistisch": "Веганский",
+    "halal": "Халяль",
+    "kosher": "Кошерный",
+    "glutenvrij": "Без глютена",
+    "lactosevrij": "Без лактозы",
+  },
+  uk: {
+    "vegetarisch": "Вегетаріанський",
+    "veganistisch": "Веганський",
+    "halal": "Халяль",
+    "kosher": "Кошерний",
+    "glutenvrij": "Без глютену",
+    "lactosevrij": "Без лактози",
+  },
+  tr: {
+    "vegetarisch": "Vejetaryen",
+    "veganistisch": "Vegan",
+    "halal": "Helal",
+    "kosher": "Koşer",
+    "glutenvrij": "Glutensiz",
+    "lactosevrij": "Laktozsuz",
+  },
+  ar: {
+    "vegetarisch": "نباتي",
+    "veganistisch": "نباتي صرف",
+    "halal": "حلال",
+    "kosher": "كوشير",
+    "glutenvrij": "خالي من الغلوتين",
+    "lactosevrij": "خالي من اللاكتوز",
+  },
+  zh: {
+    "vegetarisch": "素食",
+    "veganistisch": "纯素",
+    "halal": "清真",
+    "kosher": "犹太洁食",
+    "glutenvrij": "无麸质",
+    "lactosevrij": "无乳糖",
+  },
+  ja: {
+    "vegetarisch": "ベジタリアン",
+    "veganistisch": "ビーガン",
+    "halal": "ハラール",
+    "kosher": "コーシャ",
+    "glutenvrij": "グルテンフリー",
+    "lactosevrij": "乳糖フリー",
+  },
+  ko: {
+    "vegetarisch": "채식주의",
+    "veganistisch": "비건",
+    "halal": "할랄",
+    "kosher": "코셔",
+    "glutenvrij": "글루텐 프리",
+    "lactosevrij": "유당 프리",
+  },
+  hi: {
+    "vegetarisch": "शाकाहारी",
+    "veganistisch": "वीगन",
+    "halal": "हलाल",
+    "kosher": "कोशर",
+    "glutenvrij": "ग्लूटेन मुक्त",
+    "lactosevrij": "लैक्टोज मुक्त",
+  },
+  th: {
+    "vegetarisch": "มังสวิรัติ",
+    "veganistisch": "วีแกน",
+    "halal": "ฮาลาล",
+    "kosher": "โคเชอร์",
+    "glutenvrij": "ปราศจากกลูเตน",
+    "lactosevrij": "ปราศจากแลคโตส",
+  },
+  vi: {
+    "vegetarisch": "Ăn chay",
+    "veganistisch": "Thuần chay",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Không chứa gluten",
+    "lactosevrij": "Không chứa lactose",
+  },
+  id: {
+    "vegetarisch": "Vegetarian",
+    "veganistisch": "Vegan",
+    "halal": "Halal",
+    "kosher": "Kosher",
+    "glutenvrij": "Bebas gluten",
+    "lactosevrij": "Bebas laktosa",
+  },
+  hu: {
+    "vegetarisch": "Vegetáriánus",
+    "veganistisch": "Vegán",
+    "halal": "Halal",
+    "kosher": "Kóser",
+    "glutenvrij": "Gluténmentes",
+    "lactosevrij": "Laktózmentes",
+  },
+};
+
+// Helper function to translate dietary info
+export function translateDietary(dietary: string, language: string): string {
+  const normalizedDietary = dietary.toLowerCase();
+  const translations = dietaryTranslations[language] || dietaryTranslations['en'];
+  return translations[normalizedDietary] || dietary;
+}

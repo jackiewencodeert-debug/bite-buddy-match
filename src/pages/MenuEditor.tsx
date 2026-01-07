@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { translateAllergen, translateDietary } from "@/data/businessTranslations";
 import { z } from "zod";
 import QRCode from "react-qr-code";
 import { jsPDF } from "jspdf";
@@ -95,7 +96,7 @@ const MenuEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -872,7 +873,7 @@ const MenuEditor = () => {
               <div className="flex flex-wrap gap-2">
                 {businessAllergens.map((allergen) => (
                   <Badge key={allergen} variant="destructive">
-                    {allergen}
+                    {translateAllergen(allergen, language)}
                   </Badge>
                 ))}
               </div>
@@ -957,7 +958,7 @@ const MenuEditor = () => {
                             onCheckedChange={() => toggleDietaryInfo(preference)}
                           />
                           <Label htmlFor={`dietary-${preference}`} className="cursor-pointer">
-                            {preference}
+                            {translateDietary(preference, language)}
                           </Label>
                         </div>
                       </TooltipTrigger>
@@ -985,7 +986,7 @@ const MenuEditor = () => {
                             disabled={businessAllergens.includes(allergen)}
                           />
                           <Label htmlFor={`allergen-${allergen}`} className="cursor-pointer">
-                            {allergen}
+                            {translateAllergen(allergen, language)}
                           </Label>
                         </div>
                       </TooltipTrigger>
@@ -1032,7 +1033,7 @@ const MenuEditor = () => {
                               .filter(pref => !(pref === "vegetarisch" && dish.dietary_info.includes("veganistisch")))
                               .map((pref, i) => (
                                 <Badge key={i} variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
-                                  {pref}
+                                  {translateDietary(pref, language)}
                                 </Badge>
                               ))}
                           </div>
@@ -1052,7 +1053,7 @@ const MenuEditor = () => {
                         <div className="flex flex-wrap gap-2 mt-2">
                           {dish.allergens.map((allergen, i) => (
                             <Badge key={i} variant="destructive">
-                              {allergen}
+                              {translateAllergen(allergen, language)}
                             </Badge>
                           ))}
                         </div>

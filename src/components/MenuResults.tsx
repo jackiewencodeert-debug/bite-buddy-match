@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
 import { translateItem } from "@/lib/translations";
+import { translateAllergen } from "@/data/businessTranslations";
 
 type DishStatus = "safe" | "caution" | "avoid";
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
@@ -282,7 +283,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
                   )}
                   {dish.foundAllergens && dish.foundAllergens.length > 0 && (
                     <p className="text-sm text-destructive font-medium mb-2">
-                      {t("results.contains")} {dish.foundAllergens.join(", ")}
+                      {t("results.contains")} {dish.foundAllergens.map(a => translateAllergen(a, language)).join(", ")}
                     </p>
                   )}
                   <div className="flex items-center gap-2 flex-wrap">

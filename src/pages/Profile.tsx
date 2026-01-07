@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { translateAllergen } from "@/data/businessTranslations";
 
 const allergies = [
   { id: "noten", label: "allergy.noten" },
@@ -79,7 +80,7 @@ const Profile = () => {
   const [qrPosition, setQrPosition] = useState<string>("bottom-right");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     checkAuth();
