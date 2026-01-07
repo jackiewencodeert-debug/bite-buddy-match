@@ -17,6 +17,9 @@ export const featureTranslations: Record<string, Record<string, string>> = {
     "severity.severe": "Ernstig",
     "severity.selectLevel": "Ernst niveau",
     
+    // Results - severe warning
+    "results.severeWarning": "ERNSTIGE ALLERGIE GEDETECTEERD!",
+    
     // Favorites
     "favorites.added": "Toegevoegd aan favorieten",
     "favorites.removed": "Verwijderd uit favorieten",
@@ -66,6 +69,8 @@ export const featureTranslations: Record<string, Record<string, string>> = {
     "severity.moderate": "Moderate",
     "severity.severe": "Severe",
     "severity.selectLevel": "Severity level",
+    
+    "results.severeWarning": "SEVERE ALLERGY DETECTED!",
     
     "favorites.added": "Added to favorites",
     "favorites.removed": "Removed from favorites",
