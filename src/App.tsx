@@ -20,6 +20,10 @@ import BusinessStatistics from "./pages/BusinessStatistics";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import CCPANotice from "./pages/CCPANotice";
+import Disclaimer from "./pages/Disclaimer";
+import Accessibility from "./pages/Accessibility";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +50,10 @@ const App = () => (
               <Route path="/menu/:menuId/edit" element={<MenuEditor />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/ccpa" element={<CCPANotice />} />
+              <Route path="/disclaimer" element={<Disclaimer />} />
+              <Route path="/accessibility" element={<Accessibility />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
