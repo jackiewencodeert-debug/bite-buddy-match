@@ -1089,6 +1089,16 @@ const translations: Record<Language, Record<string, string>> = {
     // Scan page additional
     "scan.multipleTitle": "Photos Multiples",
     "scan.checkPhoto": "Vérifiez votre photo",
+    
+    // Footer
+    "footer.privacy": "Politique de Confidentialité",
+    "footer.terms": "Conditions d'Utilisation",
+    
+    // Cookie Banner
+    "cookie.title": "Ce site utilise des cookies",
+    "cookie.description": "Nous utilisons des cookies pour améliorer votre expérience et analyser l'application. En savoir plus dans notre",
+    "cookie.accept": "Accepter",
+    "cookie.decline": "Refuser",
   },
   // Spanish translations
   es: {
@@ -1175,6 +1185,16 @@ const translations: Record<Language, Record<string, string>> = {
     // Scan page additional
     "scan.multipleTitle": "Fotos Múltiples",
     "scan.checkPhoto": "Revisa tu foto",
+    
+    // Footer
+    "footer.privacy": "Política de Privacidad",
+    "footer.terms": "Términos de Servicio",
+    
+    // Cookie Banner
+    "cookie.title": "Este sitio utiliza cookies",
+    "cookie.description": "Usamos cookies para mejorar tu experiencia y analizar la aplicación. Lee más en nuestra",
+    "cookie.accept": "Aceptar",
+    "cookie.decline": "Rechazar",
   },
   // German translations
   de: {
@@ -1261,6 +1281,16 @@ const translations: Record<Language, Record<string, string>> = {
     // Scan page additional
     "scan.multipleTitle": "Mehrere Fotos",
     "scan.checkPhoto": "Überprüfen Sie Ihr Foto",
+    
+    // Footer
+    "footer.privacy": "Datenschutzerklärung",
+    "footer.terms": "Nutzungsbedingungen",
+    
+    // Cookie Banner
+    "cookie.title": "Diese Website verwendet Cookies",
+    "cookie.description": "Wir verwenden Cookies, um Ihre Erfahrung zu verbessern und die App zu analysieren. Lesen Sie mehr in unserer",
+    "cookie.accept": "Akzeptieren",
+    "cookie.decline": "Ablehnen",
   },
   // Italian translations
   it: {
@@ -1351,6 +1381,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Informativa sulla Privacy",
     "footer.terms": "Termini di Servizio",
+    
+    // Cookie Banner
+    "cookie.title": "Questo sito utilizza i cookie",
+    "cookie.description": "Utilizziamo i cookie per migliorare la tua esperienza e analizzare l'app. Leggi di più nella nostra",
+    "cookie.accept": "Accetta",
+    "cookie.decline": "Rifiuta",
     
     "common.loading": "Caricamento...",
     "common.error": "Errore",
@@ -1459,6 +1495,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Adatvédelmi irányelvek",
     "footer.terms": "Szolgáltatási feltételek",
+    
+    // Cookie Banner
+    "cookie.title": "Ez a weboldal sütiket használ",
+    "cookie.description": "Sütiket használunk az élmény javítására és az alkalmazás elemzésére. Olvass többet a",
+    "cookie.accept": "Elfogadás",
+    "cookie.decline": "Elutasítás",
     
     "common.loading": "Betöltés...",
     "common.error": "Hiba",
@@ -1578,6 +1620,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Kebijakan Privasi",
     "footer.terms": "Ketentuan Layanan",
     
+    // Cookie Banner
+    "cookie.title": "Situs web ini menggunakan cookie",
+    "cookie.description": "Kami menggunakan cookie untuk meningkatkan pengalaman Anda dan menganalisis aplikasi. Baca lebih lanjut di",
+    "cookie.accept": "Terima",
+    "cookie.decline": "Tolak",
+    
     // Navigation
     "nav.profile": "Profil",
     "nav.upload": "Unggah",
@@ -1675,6 +1723,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Gizlilik Politikası",
     "footer.terms": "Hizmet Şartları",
+    
+    // Cookie Banner
+    "cookie.title": "Bu web sitesi çerez kullanıyor",
+    "cookie.description": "Deneyiminizi geliştirmek ve uygulamayı analiz etmek için çerezler kullanıyoruz. Daha fazla bilgi için",
+    "cookie.accept": "Kabul Et",
+    "cookie.decline": "Reddet",
     
     "common.loading": "Yükleniyor...",
     "common.error": "Hata",
@@ -1784,6 +1838,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Chính sách quyền riêng tư",
     "footer.terms": "Điều khoản dịch vụ",
     
+    // Cookie Banner
+    "cookie.title": "Trang web này sử dụng cookie",
+    "cookie.description": "Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn và phân tích ứng dụng. Đọc thêm trong",
+    "cookie.accept": "Chấp nhận",
+    "cookie.decline": "Từ chối",
+    
     "common.loading": "Đang tải...",
     "common.error": "Lỗi",
     "common.success": "Thành công",
@@ -1891,6 +1951,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "นโยบายความเป็นส่วนตัว",
     "footer.terms": "ข้อกำหนดการให้บริการ",
+    
+    // Cookie Banner
+    "cookie.title": "เว็บไซต์นี้ใช้คุกกี้",
+    "cookie.description": "เราใช้คุกกี้เพื่อปรับปรุงประสบการณ์และวิเคราะห์แอป อ่านเพิ่มเติมใน",
+    "cookie.accept": "ยอมรับ",
+    "cookie.decline": "ปฏิเสธ",
     
     "common.loading": "กำลังโหลด...",
     "common.error": "ข้อผิดพลาด",
@@ -2000,6 +2066,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Політика конфіденційності",
     "footer.terms": "Умови використання",
     
+    // Cookie Banner
+    "cookie.title": "Цей сайт використовує файли cookie",
+    "cookie.description": "Ми використовуємо файли cookie для покращення вашого досвіду та аналізу додатку. Дізнайтеся більше в нашій",
+    "cookie.accept": "Прийняти",
+    "cookie.decline": "Відхилити",
+    
     "common.loading": "Завантаження...",
     "common.error": "Помилка",
     "common.success": "Успішно",
@@ -2107,6 +2179,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Política de Privacidade",
     "footer.terms": "Termos de Serviço",
+    
+    // Cookie Banner
+    "cookie.title": "Este site usa cookies",
+    "cookie.description": "Usamos cookies para melhorar sua experiência e analisar o aplicativo. Leia mais em nossa",
+    "cookie.accept": "Aceitar",
+    "cookie.decline": "Recusar",
     
     "common.loading": "Carregando...",
     "common.error": "Erro",
@@ -2216,6 +2294,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Политика конфиденциальности",
     "footer.terms": "Условия использования",
     
+    // Cookie Banner
+    "cookie.title": "Этот сайт использует файлы cookie",
+    "cookie.description": "Мы используем файлы cookie для улучшения вашего опыта и анализа приложения. Подробнее в нашей",
+    "cookie.accept": "Принять",
+    "cookie.decline": "Отклонить",
+    
     "common.loading": "Загрузка...",
     "common.error": "Ошибка",
     "common.success": "Успешно",
@@ -2323,6 +2407,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "गोपनीयता नीति",
     "footer.terms": "सेवा की शर्तें",
+    
+    // Cookie Banner
+    "cookie.title": "यह वेबसाइट कुकीज़ का उपयोग करती है",
+    "cookie.description": "हम आपके अनुभव को बेहतर बनाने और ऐप का विश्लेषण करने के लिए कुकीज़ का उपयोग करते हैं। हमारी में और पढ़ें",
+    "cookie.accept": "स्वीकार करें",
+    "cookie.decline": "अस्वीकार करें",
     
     "common.loading": "लोड हो रहा है...",
     "common.error": "त्रुटि",
@@ -2432,6 +2522,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Polityka Prywatności",
     "footer.terms": "Regulamin",
     
+    // Cookie Banner
+    "cookie.title": "Ta strona używa plików cookie",
+    "cookie.description": "Używamy plików cookie, aby poprawić twoje doświadczenie i analizować aplikację. Przeczytaj więcej w naszej",
+    "cookie.accept": "Akceptuj",
+    "cookie.decline": "Odrzuć",
+    
     "common.loading": "Ładowanie...",
     "common.error": "Błąd",
     "common.success": "Sukces",
@@ -2540,6 +2636,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "隐私政策",
     "footer.terms": "服务条款",
     
+    // Cookie Banner
+    "cookie.title": "本网站使用cookies",
+    "cookie.description": "我们使用cookies来改善您的体验并分析应用。请阅读我们的",
+    "cookie.accept": "接受",
+    "cookie.decline": "拒绝",
+    
     "common.loading": "加载中...",
     "common.error": "错误",
     "common.success": "成功",
@@ -2643,6 +2745,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "プライバシーポリシー",
     "footer.terms": "利用規約",
+    
+    // Cookie Banner
+    "cookie.title": "このウェブサイトはCookieを使用しています",
+    "cookie.description": "体験を向上させ、アプリを分析するためにCookieを使用しています。詳しくは",
+    "cookie.accept": "承諾する",
+    "cookie.decline": "拒否する",
     
     "common.loading": "読み込み中...",
     "common.error": "エラー",
@@ -2748,6 +2856,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "개인정보 처리방침",
     "footer.terms": "이용약관",
     
+    // Cookie Banner
+    "cookie.title": "이 웹사이트는 쿠키를 사용합니다",
+    "cookie.description": "경험을 개선하고 앱을 분석하기 위해 쿠키를 사용합니다. 자세히 읽어보세요",
+    "cookie.accept": "수락",
+    "cookie.decline": "거부",
+    
     "common.loading": "로딩 중...",
     "common.error": "오류",
     "common.success": "성공",
@@ -2851,6 +2965,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "سياسة الخصوصية",
     "footer.terms": "شروط الخدمة",
+    
+    // Cookie Banner
+    "cookie.title": "يستخدم هذا الموقع ملفات تعريف الارتباط",
+    "cookie.description": "نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتحليل التطبيق. اقرأ المزيد في",
+    "cookie.accept": "قبول",
+    "cookie.decline": "رفض",
     
     "common.loading": "جارٍ التحميل...",
     "common.error": "خطأ",
