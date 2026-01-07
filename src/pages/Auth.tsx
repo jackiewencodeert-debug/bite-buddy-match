@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { z } from "zod";
@@ -19,6 +19,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 // Validation schema - error messages are handled via translations in component
 const createAuthSchema = (t: (key: string) => string) => z.object({
@@ -36,6 +42,15 @@ const Auth = () => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Code login state
+  const [authTab, setAuthTab] = useState<"credentials" | "code">("credentials");
+  const [businessCode, setBusinessCode] = useState("");
+  const [codeStep, setCodeStep] = useState<"enter" | "password">("enter");
+  const [codeEmail, setCodeEmail] = useState("");
+  const [codePassword, setCodePassword] = useState("");
+  const [foundInvite, setFoundInvite] = useState<any>(null);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -170,6 +185,118 @@ const Auth = () => {
     checkExistingSession();
   }, [navigate]);
 
+  const handleCodeVerify = async () => {
+    if (!businessCode.trim()) {
+      toast({
+        title: t("auth.invalidCode"),
+        description: t("auth.codeNotFound"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Check if code exists and is not claimed
+      const { data: invite, error } = await supabase
+        .from("business_invites")
+        .select("*")
+        .eq("code", businessCode.trim().toUpperCase())
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!invite) {
+        toast({
+          title: t("auth.invalidCode"),
+          description: t("auth.codeNotFound"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (invite.is_claimed) {
+        toast({
+          title: t("auth.invalidCode"),
+          description: t("auth.codeAlreadyClaimed"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Code is valid and not claimed, proceed to password step
+      setFoundInvite(invite);
+      setCodeEmail(invite.business_email || `${invite.code.toLowerCase()}@business.bitebuddymatch.nl`);
+      setCodeStep("password");
+    } catch (error: any) {
+      toast({
+        title: t("auth.invalidCode"),
+        description: error.message || t("auth.codeNotFound"),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCodeClaim = async () => {
+    if (!codePassword || codePassword.length < 6) {
+      toast({
+        title: t("auth.validationError"),
+        description: t("auth.passwordTooShort"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create the user account
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: codeEmail,
+        password: codePassword,
+        options: {
+          data: {
+            user_type: "eetgever",
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (signUpData.user) {
+        // Mark the invite as claimed
+        const { error: updateError } = await supabase
+          .from("business_invites")
+          .update({
+            is_claimed: true,
+            claimed_at: new Date().toISOString(),
+            claimed_by: signUpData.user.id,
+          })
+          .eq("id", foundInvite.id);
+
+        if (updateError) {
+          console.error("Error updating invite:", updateError);
+        }
+
+        toast({
+          title: t("auth.claimSuccess"),
+          description: t("auth.claimSuccessDesc"),
+        });
+
+        navigate("/business");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || t("auth.genericError"),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -299,118 +426,238 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t("auth.userType")}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant={userType === "eter" ? "default" : "outline"}
-                    onClick={() => setUserType("eter")}
-                    disabled={loading}
-                    className="w-full flex flex-col h-auto py-4"
-                  >
-                    <span className="font-semibold">{t("auth.diner")}</span>
-                    <span className="text-xs mt-1 opacity-80">{t("auth.dinerDesc")}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={userType === "eetgever" ? "default" : "outline"}
-                    onClick={() => setUserType("eetgever")}
-                    disabled={loading}
-                    className="w-full flex flex-col h-auto py-4"
-                  >
-                    <span className="font-semibold">{t("auth.business")}</span>
-                    <span className="text-xs mt-1 opacity-80">{t("auth.businessDesc")}</span>
-                  </Button>
-                </div>
-              </div>
-            )}
-            {(isLogin || (!isLogin && userType !== "gast")) && (
-              <>
+          {isLogin && (
+            <Tabs value={authTab} onValueChange={(v) => setAuthTab(v as "credentials" | "code")} className="mb-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="credentials">{t("auth.email")}</TabsTrigger>
+                <TabsTrigger value="code">
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  {t("auth.codeLogin")}
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="code" className="mt-4 space-y-4">
+                {codeStep === "enter" ? (
+                  <>
+                    <p className="text-sm text-muted-foreground text-center">
+                      {t("auth.codeLoginDesc")}
+                    </p>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder={t("auth.codePlaceholder")}
+                        value={businessCode}
+                        onChange={(e) => setBusinessCode(e.target.value.toUpperCase())}
+                        className="text-center font-mono text-lg tracking-widest"
+                        maxLength={20}
+                        disabled={loading}
+                      />
+                    </div>
+                    <Button 
+                      onClick={handleCodeVerify} 
+                      disabled={loading || !businessCode.trim()} 
+                      className="w-full"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t("common.loading")}
+                        </>
+                      ) : (
+                        t("auth.loginWithCode")
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center mb-4">
+                      <p className="font-medium">{foundInvite?.business_name}</p>
+                      <p className="text-sm text-muted-foreground">{t("auth.setPasswordDesc")}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t("auth.email")}</label>
+                      <Input
+                        value={codeEmail}
+                        onChange={(e) => setCodeEmail(e.target.value)}
+                        type="email"
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t("auth.setPassword")}</label>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={codePassword}
+                          onChange={(e) => setCodePassword(e.target.value)}
+                          disabled={loading}
+                          minLength={6}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCodeStep("enter");
+                          setFoundInvite(null);
+                          setCodePassword("");
+                        }}
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        {t("scan.back")}
+                      </Button>
+                      <Button 
+                        onClick={handleCodeClaim} 
+                        disabled={loading || codePassword.length < 6} 
+                        className="flex-1"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t("common.loading")}
+                          </>
+                        ) : (
+                          t("auth.signUp")
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+          
+          {(authTab === "credentials" || !isLogin) && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
-                    {t("auth.email")}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder={t("auth.emailPlaceholder")}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    required
-                    disabled={loading}
-                    className={errors.email ? "border-destructive" : ""}
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
-                  )}
+                  <label className="text-sm font-medium">{t("auth.userType")}</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={userType === "eter" ? "default" : "outline"}
+                      onClick={() => setUserType("eter")}
+                      disabled={loading}
+                      className="w-full flex flex-col h-auto py-4"
+                    >
+                      <span className="font-semibold">{t("auth.diner")}</span>
+                      <span className="text-xs mt-1 opacity-80">{t("auth.dinerDesc")}</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={userType === "eetgever" ? "default" : "outline"}
+                      onClick={() => setUserType("eetgever")}
+                      disabled={loading}
+                      className="w-full flex flex-col h-auto py-4"
+                    >
+                      <span className="font-semibold">{t("auth.business")}</span>
+                      <span className="text-xs mt-1 opacity-80">{t("auth.businessDesc")}</span>
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">
-                    {t("auth.password")}
-                  </label>
-                  <div className="relative">
+              )}
+              {(isLogin || (!isLogin && userType !== "gast")) && (
+                <>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">
+                      {t("auth.email")}
+                    </label>
                     <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
+                      id="email"
+                      type="email"
+                      placeholder={t("auth.emailPlaceholder")}
+                      value={email}
                       onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                        setEmail(e.target.value);
+                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
                       required
                       disabled={loading}
-                      minLength={6}
-                      className={`pr-10 ${errors.password ? "border-destructive" : ""}`}
+                      className={errors.email ? "border-destructive" : ""}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
-                  {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password}</p>
-                  )}
-                  {isLogin && (
-                    <button
-                      type="button"
-                      onClick={() => setShowResetDialog(true)}
-                      className="text-sm text-primary hover:underline"
-                      disabled={loading}
-                    >
-                      {t("auth.forgotPassword")}
-                    </button>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t("common.loading")}
-                    </>
-                  ) : isLogin ? (
-                    t("auth.signIn")
-                  ) : (
-                    t("auth.signUp")
-                  )}
-                </Button>
-              </>
-            )}
-          </form>
+                  <div className="space-y-2">
+                    <label htmlFor="password" className="text-sm font-medium">
+                      {t("auth.password")}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                        }}
+                        required
+                        disabled={loading}
+                        minLength={6}
+                        className={`pr-10 ${errors.password ? "border-destructive" : ""}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-sm text-destructive">{errors.password}</p>
+                    )}
+                    {isLogin && (
+                      <button
+                        type="button"
+                        onClick={() => setShowResetDialog(true)}
+                        className="text-sm text-primary hover:underline"
+                        disabled={loading}
+                      >
+                        {t("auth.forgotPassword")}
+                      </button>
+                    )}
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("common.loading")}
+                      </>
+                    ) : isLogin ? (
+                      t("auth.signIn")
+                    ) : (
+                      t("auth.signUp")
+                    )}
+                  </Button>
+                </>
+              )}
+            </form>
+          )}
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setAuthTab("credentials");
+                setCodeStep("enter");
+                setBusinessCode("");
+                setFoundInvite(null);
+              }}
               className="text-primary hover:underline"
               disabled={loading}
             >
