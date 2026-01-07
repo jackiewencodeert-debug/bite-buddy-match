@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { translateAllergen, translateDietary } from "@/data/businessTranslations";
+import { translateAllergen, translateDietary, translateIngredient } from "@/data/businessTranslations";
 import { z } from "zod";
 import QRCode from "react-qr-code";
 import { jsPDF } from "jspdf";
@@ -1045,7 +1045,7 @@ const MenuEditor = () => {
                       <div className="flex flex-wrap gap-2 mt-2">
                         {dish.ingredients.map((ing, i) => (
                           <Badge key={i} variant="outline">
-                            {ing}
+                            {translateIngredient(ing, language)}
                           </Badge>
                         ))}
                       </div>
