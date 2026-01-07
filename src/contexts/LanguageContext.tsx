@@ -1103,6 +1103,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Politique de Confidentialité",
     "footer.terms": "Conditions d'Utilisation",
+    "footer.disclaimer": "Avertissement",
+    "footer.cookiePolicy": "Politique de Cookies",
+    "footer.accessibility": "Accessibilité",
+    "footer.ccpa": "Confidentialité Californie",
+    "footer.lgpd": "Droits LGPD",
     
     // Cookie Banner
     "cookie.title": "Ce site utilise des cookies",
@@ -1199,6 +1204,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Política de Privacidad",
     "footer.terms": "Términos de Servicio",
+    "footer.disclaimer": "Descargo de Responsabilidad",
+    "footer.cookiePolicy": "Política de Cookies",
+    "footer.accessibility": "Accesibilidad",
+    "footer.ccpa": "Privacidad de California",
+    "footer.lgpd": "Derechos LGPD",
     
     // Cookie Banner
     "cookie.title": "Este sitio utiliza cookies",
@@ -1295,6 +1305,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Datenschutzerklärung",
     "footer.terms": "Nutzungsbedingungen",
+    "footer.disclaimer": "Haftungsausschluss",
+    "footer.cookiePolicy": "Cookie-Richtlinie",
+    "footer.accessibility": "Barrierefreiheit",
+    "footer.ccpa": "Kalifornien Datenschutz",
+    "footer.lgpd": "LGPD-Rechte",
     
     // Cookie Banner
     "cookie.title": "Diese Website verwendet Cookies",
@@ -1391,6 +1406,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Informativa sulla Privacy",
     "footer.terms": "Termini di Servizio",
+    "footer.disclaimer": "Disclaimer",
+    "footer.cookiePolicy": "Politica dei Cookie",
+    "footer.accessibility": "Accessibilità",
+    "footer.ccpa": "Privacy California",
+    "footer.lgpd": "Diritti LGPD",
     
     // Cookie Banner
     "cookie.title": "Questo sito utilizza i cookie",
@@ -1505,6 +1525,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Adatvédelmi irányelvek",
     "footer.terms": "Szolgáltatási feltételek",
+    "footer.disclaimer": "Jogi nyilatkozat",
+    "footer.cookiePolicy": "Cookie szabályzat",
+    "footer.accessibility": "Akadálymentesség",
+    "footer.ccpa": "Kaliforniai adatvédelem",
+    "footer.lgpd": "LGPD jogok",
     
     // Cookie Banner
     "cookie.title": "Ez a weboldal sütiket használ",
@@ -1629,6 +1654,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Kebijakan Privasi",
     "footer.terms": "Ketentuan Layanan",
+    "footer.disclaimer": "Penafian",
+    "footer.cookiePolicy": "Kebijakan Cookie",
+    "footer.accessibility": "Aksesibilitas",
+    "footer.ccpa": "Privasi California",
+    "footer.lgpd": "Hak LGPD",
     
     // Cookie Banner
     "cookie.title": "Situs web ini menggunakan cookie",
@@ -1733,6 +1763,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Gizlilik Politikası",
     "footer.terms": "Hizmet Şartları",
+    "footer.disclaimer": "Sorumluluk Reddi",
+    "footer.cookiePolicy": "Çerez Politikası",
+    "footer.accessibility": "Erişilebilirlik",
+    "footer.ccpa": "Kaliforniya Gizliliği",
+    "footer.lgpd": "LGPD Hakları",
     
     // Cookie Banner
     "cookie.title": "Bu web sitesi çerez kullanıyor",
@@ -1847,6 +1882,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Chính sách quyền riêng tư",
     "footer.terms": "Điều khoản dịch vụ",
+    "footer.disclaimer": "Tuyên bố miễn trừ",
+    "footer.cookiePolicy": "Chính sách Cookie",
+    "footer.accessibility": "Khả năng truy cập",
+    "footer.ccpa": "Quyền riêng tư California",
+    "footer.lgpd": "Quyền LGPD",
     
     // Cookie Banner
     "cookie.title": "Trang web này sử dụng cookie",
@@ -1961,6 +2001,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "นโยบายความเป็นส่วนตัว",
     "footer.terms": "ข้อกำหนดการให้บริการ",
+    "footer.disclaimer": "ข้อจำกัดความรับผิดชอบ",
+    "footer.cookiePolicy": "นโยบายคุกกี้",
+    "footer.accessibility": "การเข้าถึง",
+    "footer.ccpa": "ความเป็นส่วนตัวแคลิฟอร์เนีย",
+    "footer.lgpd": "สิทธิ์ LGPD",
     
     // Cookie Banner
     "cookie.title": "เว็บไซต์นี้ใช้คุกกี้",
@@ -2075,6 +2120,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Політика конфіденційності",
     "footer.terms": "Умови використання",
+    "footer.disclaimer": "Відмова від відповідальності",
+    "footer.cookiePolicy": "Політика файлів Cookie",
+    "footer.accessibility": "Доступність",
+    "footer.ccpa": "Конфіденційність Каліфорнії",
+    "footer.lgpd": "Права LGPD",
     
     // Cookie Banner
     "cookie.title": "Цей сайт використовує файли cookie",
@@ -2189,6 +2239,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Política de Privacidade",
     "footer.terms": "Termos de Serviço",
+    "footer.disclaimer": "Isenção de Responsabilidade",
+    "footer.cookiePolicy": "Política de Cookies",
+    "footer.accessibility": "Acessibilidade",
+    "footer.ccpa": "Privacidade da Califórnia",
+    "footer.lgpd": "Direitos LGPD",
     
     // Cookie Banner
     "cookie.title": "Este site usa cookies",
@@ -2303,6 +2358,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Политика конфиденциальности",
     "footer.terms": "Условия использования",
+    "footer.disclaimer": "Отказ от ответственности",
+    "footer.cookiePolicy": "Политика файлов Cookie",
+    "footer.accessibility": "Доступность",
+    "footer.ccpa": "Конфиденциальность Калифорнии",
+    "footer.lgpd": "Права LGPD",
     
     // Cookie Banner
     "cookie.title": "Этот сайт использует файлы cookie",
@@ -2417,6 +2477,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "गोपनीयता नीति",
     "footer.terms": "सेवा की शर्तें",
+    "footer.disclaimer": "अस्वीकरण",
+    "footer.cookiePolicy": "कुकी नीति",
+    "footer.accessibility": "पहुंच योग्यता",
+    "footer.ccpa": "कैलिफोर्निया गोपनीयता",
+    "footer.lgpd": "LGPD अधिकार",
     
     // Cookie Banner
     "cookie.title": "यह वेबसाइट कुकीज़ का उपयोग करती है",
@@ -2531,6 +2596,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Polityka Prywatności",
     "footer.terms": "Regulamin",
+    "footer.disclaimer": "Zastrzeżenie",
+    "footer.cookiePolicy": "Polityka Cookies",
+    "footer.accessibility": "Dostępność",
+    "footer.ccpa": "Prywatność Kalifornii",
+    "footer.lgpd": "Prawa LGPD",
     
     // Cookie Banner
     "cookie.title": "Ta strona używa plików cookie",
@@ -2645,6 +2715,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "隐私政策",
     "footer.terms": "服务条款",
+    "footer.disclaimer": "免责声明",
+    "footer.cookiePolicy": "Cookie政策",
+    "footer.accessibility": "无障碍",
+    "footer.ccpa": "加州隐私",
+    "footer.lgpd": "LGPD权利",
     
     // Cookie Banner
     "cookie.title": "本网站使用cookies",
@@ -2755,6 +2830,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "プライバシーポリシー",
     "footer.terms": "利用規約",
+    "footer.disclaimer": "免責事項",
+    "footer.cookiePolicy": "Cookieポリシー",
+    "footer.accessibility": "アクセシビリティ",
+    "footer.ccpa": "カリフォルニアプライバシー",
+    "footer.lgpd": "LGPD権利",
     
     // Cookie Banner
     "cookie.title": "このウェブサイトはCookieを使用しています",
@@ -2865,6 +2945,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "개인정보 처리방침",
     "footer.terms": "이용약관",
+    "footer.disclaimer": "면책 조항",
+    "footer.cookiePolicy": "쿠키 정책",
+    "footer.accessibility": "접근성",
+    "footer.ccpa": "캘리포니아 개인정보 보호",
+    "footer.lgpd": "LGPD 권리",
     
     // Cookie Banner
     "cookie.title": "이 웹사이트는 쿠키를 사용합니다",
@@ -2975,6 +3060,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "سياسة الخصوصية",
     "footer.terms": "شروط الخدمة",
+    "footer.disclaimer": "إخلاء المسؤولية",
+    "footer.cookiePolicy": "سياسة ملفات تعريف الارتباط",
+    "footer.accessibility": "إمكانية الوصول",
+    "footer.ccpa": "خصوصية كاليفورنيا",
+    "footer.lgpd": "حقوق LGPD",
     
     // Cookie Banner
     "cookie.title": "يستخدم هذا الموقع ملفات تعريف الارتباط",
