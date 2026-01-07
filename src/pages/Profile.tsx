@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { translateAllergen } from "@/data/businessTranslations";
 
 const allergies = [
@@ -415,7 +416,10 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <Link to={userType === "eetgever" && !isGuest ? "/business" : "/"}>
