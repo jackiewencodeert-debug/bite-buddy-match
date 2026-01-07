@@ -22,6 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { translateAllergen } from "@/data/businessTranslations";
+import { AllergySeveritySelect, AllergySeverity } from "@/components/AllergySeveritySelect";
 
 const allergies = [
   { id: "noten", label: "allergy.noten" },
@@ -62,6 +63,7 @@ interface CustomAllergy {
 
 const Profile = () => {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const [allergySeverities, setAllergySeverities] = useState<Record<string, AllergySeverity>>({});
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
   const [customAllergies, setCustomAllergies] = useState<CustomAllergy[]>([]);
   const [businessAllergenWarnings, setBusinessAllergenWarnings] = useState<string[]>([]);
@@ -157,9 +159,18 @@ const Profile = () => {
               characteristics: p.characteristics || [],
             }));
 
+          // Build severity map from loaded preferences
+          const severityMap: Record<string, AllergySeverity> = {};
+          prefs
+            .filter((p) => p.preference_type === "allergie")
+            .forEach((p) => {
+              severityMap[p.preference_value] = (p.severity as AllergySeverity) || "moderate";
+            });
+
           setSelectedAllergies(allergiesList);
           setSelectedPreferences(prefsList);
           setCustomAllergies(customList);
+          setAllergySeverities(severityMap);
         }
 
         return;
@@ -177,6 +188,7 @@ const Profile = () => {
           setSelectedAllergies(prefs.allergies || []);
           setSelectedPreferences(prefs.preferences || []);
           setCustomAllergies(prefs.customAllergies || []);
+          setAllergySeverities(prefs.allergySeverities || {});
         }
 
         return;
@@ -274,7 +286,8 @@ const Profile = () => {
         const guestPrefs = {
           allergies: selectedAllergies,
           preferences: selectedPreferences,
-          customAllergies: customAllergies
+          customAllergies: customAllergies,
+          allergySeverities: allergySeverities
         };
         localStorage.setItem("guestPreferences", JSON.stringify(guestPrefs));
         
@@ -297,20 +310,22 @@ const Profile = () => {
         .delete()
         .eq("user_id", user.id);
 
-      // Insert standard allergies
+      // Insert standard allergies with severity
       const allergyInserts = selectedAllergies.map(allergy => ({
         user_id: user.id,
         preference_type: "allergie",
         preference_value: allergy,
-        characteristics: null
+        characteristics: null,
+        severity: allergySeverities[allergy] || "moderate"
       }));
 
-      // Insert custom allergies with characteristics
+      // Insert custom allergies with characteristics and severity
       const customAllergyInserts = customAllergies.map(allergy => ({
         user_id: user.id,
         preference_type: "allergie",
         preference_value: allergy.name,
-        characteristics: allergy.characteristics
+        characteristics: allergy.characteristics,
+        severity: allergySeverities[allergy.name] || "moderate"
       }));
 
       // Insert dietary preferences
@@ -363,9 +378,23 @@ const Profile = () => {
   };
 
   const toggleAllergy = (id: string) => {
-    setSelectedAllergies(prev =>
-      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
-    );
+    setSelectedAllergies(prev => {
+      if (prev.includes(id)) {
+        // Remove severity when unchecking
+        const newSeverities = { ...allergySeverities };
+        delete newSeverities[id];
+        setAllergySeverities(newSeverities);
+        return prev.filter(a => a !== id);
+      } else {
+        // Set default severity when checking
+        setAllergySeverities(prev => ({ ...prev, [id]: "moderate" }));
+        return [...prev, id];
+      }
+    });
+  };
+
+  const updateSeverity = (allergyId: string, severity: AllergySeverity) => {
+    setAllergySeverities(prev => ({ ...prev, [allergyId]: severity }));
   };
 
   const togglePreference = (id: string) => {
@@ -479,47 +508,64 @@ const Profile = () => {
                 </p>
                 
                 {/* Standard 8 allergies - always visible */}
-                <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {allergies.map((allergy) => (
-                    <div key={allergy.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Checkbox
-                        id={allergy.id}
-                        checked={selectedAllergies.includes(allergy.id)}
-                        onCheckedChange={() => toggleAllergy(allergy.id)}
-                      />
-                      <Label
-                        htmlFor={allergy.id}
-                        className="text-base cursor-pointer flex-1"
-                      >
-                        {t(allergy.label)}
-                      </Label>
+                    <div key={allergy.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id={allergy.id}
+                          checked={selectedAllergies.includes(allergy.id)}
+                          onCheckedChange={() => toggleAllergy(allergy.id)}
+                        />
+                        <Label
+                          htmlFor={allergy.id}
+                          className="text-base cursor-pointer"
+                        >
+                          {t(allergy.label)}
+                        </Label>
+                      </div>
+                      {selectedAllergies.includes(allergy.id) && (
+                        <AllergySeveritySelect
+                          value={allergySeverities[allergy.id] || "moderate"}
+                          onChange={(severity) => updateSeverity(allergy.id, severity)}
+                          compact
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
 
-                {/* Display custom allergies as badges */}
+                {/* Display custom allergies with severity */}
                 {customAllergies.length > 0 && (
-                  <div className="mb-4 space-y-2">
+                  <div className="mb-4 space-y-3">
                     <Label className="text-sm font-medium">{t("profile.yourAllergies")}</Label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2">
                       {customAllergies.map((allergy) => (
-                        <Badge
+                        <div
                           key={allergy.name}
-                          variant="secondary"
-                          className="px-3 py-2 text-sm flex items-center gap-2"
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
                         >
-                          <span className="font-medium">{allergy.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({allergy.characteristics.join(", ")})
-                          </span>
-                          <button
-                            onClick={() => removeCustomAllergy(allergy.name)}
-                            className="ml-1 hover:text-destructive"
-                            aria-label={`Verwijder ${allergy.name}`}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="font-medium truncate">{allergy.name}</span>
+                            <span className="text-xs text-muted-foreground truncate">
+                              ({allergy.characteristics.join(", ")})
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 ml-2">
+                            <AllergySeveritySelect
+                              value={allergySeverities[allergy.name] || "moderate"}
+                              onChange={(severity) => updateSeverity(allergy.name, severity)}
+                              compact
+                            />
+                            <button
+                              onClick={() => removeCustomAllergy(allergy.name)}
+                              className="p-1 hover:text-destructive transition-colors"
+                              aria-label={`Verwijder ${allergy.name}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
