@@ -2,6 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
+import { FavoriteButton } from "./FavoriteButton";
+import { ShareResults } from "./ShareResults";
+import { IngredientDetail } from "./IngredientDetail";
+import { AlternativeSuggestions } from "./AlternativeSuggestions";
+import { CrossContaminationWarning } from "./CrossContaminationWarning";
 import { translateItem } from "@/lib/translations";
 import { translateAllergen, translateIngredient } from "@/data/businessTranslations";
 
@@ -35,6 +40,7 @@ interface TranslatedItem {
 interface Dish {
   id: string;
   name: string;
+  menu_id?: string;
   name_translations?: {
     nl?: string;
     en?: string;
@@ -63,6 +69,8 @@ interface Dish {
   allergens_translations?: TranslatedItem[];
   dietary_info?: (string | TranslatedItem)[];
   dietary_info_translations?: TranslatedItem[];
+  cross_contamination_risk?: string[];
+  category?: string;
   status?: DishStatus;
   foundAllergens?: string[];
   price?: string;
@@ -73,6 +81,8 @@ interface MenuResultsProps {
   dishes: Dish[];
   userAllergies?: string[];
   userPreferences?: string[];
+  menuName?: string;
+  menuId?: string;
   menuStyle?: {
     primaryColor?: string;
     secondaryColor?: string;
@@ -103,7 +113,14 @@ const getStatusColor = (status: DishStatus) => {
   }
 };
 
-export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], menuStyle }: MenuResultsProps) => {
+export const MenuResults = ({ 
+  dishes, 
+  userAllergies = [], 
+  userPreferences = [], 
+  menuName = "Menu",
+  menuId,
+  menuStyle 
+}: MenuResultsProps) => {
   const { t, language } = useLanguage();
   const lang = language as LangCode;
 
@@ -200,7 +217,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
     if (dish.status) return dish;
     
     // Check if any dish allergens match user allergies
-    const foundAllergens = dish.allergens?.filter((allergen, idx) => {
+    const foundAllergens = dish.allergens?.filter((allergen) => {
       const originalAllergen = getOriginal(allergen);
       return userAllergies.some(userAllergy => 
         originalAllergen.toLowerCase().includes(userAllergy.toLowerCase()) ||
@@ -208,9 +225,19 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
       );
     }).map((allergen) => getOriginal(allergen)) || [];
 
+    // Check cross-contamination risks
+    const hasCrossContaminationRisk = dish.cross_contamination_risk?.some(risk =>
+      userAllergies.some(allergy => 
+        risk.toLowerCase().includes(allergy.toLowerCase()) ||
+        allergy.toLowerCase().includes(risk.toLowerCase())
+      )
+    );
+
     let status: DishStatus = "safe";
     if (foundAllergens.length > 0) {
       status = "avoid";
+    } else if (hasCrossContaminationRisk) {
+      status = "caution";
     }
 
     return { ...dish, status, foundAllergens };
@@ -233,6 +260,16 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
         <p className="text-muted-foreground">
           {t("results.found").replace("{count}", String(dishes.length))}
         </p>
+        
+        {/* Share button */}
+        <div className="mt-4">
+          <ShareResults 
+            menuName={menuName}
+            safeCount={statusCounts.safe || 0}
+            cautionCount={statusCounts.caution || 0}
+            avoidCount={statusCounts.avoid || 0}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -247,52 +284,94 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
                   {getStatusEmoji(dish.status!)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-semibold mb-2">{getDishDisplayName(dish)}</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xl font-semibold">{getDishDisplayName(dish)}</h3>
+                    {/* Favorite button */}
+                    {menuId && (
+                      <FavoriteButton 
+                        dishId={dish.id} 
+                        menuId={dish.menu_id || menuId} 
+                        dishName={dish.name}
+                      />
+                    )}
+                  </div>
+                  
                   {dish.description && (
                     <p className="text-sm text-muted-foreground mb-2">{dish.description}</p>
                   )}
+                  
+                  {/* Ingredients with click-to-detail */}
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {dish.ingredients.map((_, idx) => (
-                      <Badge
-                        key={`ingredient-${idx}`}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {getTranslatedIngredient(dish, idx)}
-                      </Badge>
-                    ))}
+                    {dish.ingredients.map((ingredient, idx) => {
+                      const originalIngredient = getOriginal(ingredient);
+                      const matchedAllergens = dish.foundAllergens?.filter(allergen =>
+                        originalIngredient.toLowerCase().includes(allergen.toLowerCase())
+                      ) || [];
+                      
+                      return (
+                        <IngredientDetail
+                          key={`ingredient-${idx}`}
+                          ingredient={getTranslatedIngredient(dish, idx)}
+                          matchedAllergens={matchedAllergens}
+                          allAllergens={dish.allergens?.map(a => getOriginal(a)) || []}
+                          userAllergies={userAllergies}
+                        />
+                      );
+                    })}
                   </div>
-                    {dish.allergens && dish.allergens.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        <span className="text-xs text-muted-foreground mr-1">{t("results.allergens") || "Allergenen"}:</span>
-                        {dish.allergens.map((allergen, idx) => {
-                          const originalAllergen = getOriginal(allergen);
-                          const isMatching = dish.foundAllergens?.some(
-                            fa => fa.toLowerCase() === originalAllergen.toLowerCase()
-                          );
-                          return (
-                            <Badge
-                              key={`allergen-${idx}`}
-                              variant="outline"
-                              className={`text-xs ${isMatching ? 'bg-destructive/20 text-destructive border-destructive/30' : 'bg-warning/10 text-warning border-warning/20'}`}
-                            >
-                              {getTranslatedAllergen(dish, idx)}
-                            </Badge>
-                          );
-                        })}
+                  
+                  {/* Allergens */}
+                  {dish.allergens && dish.allergens.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <span className="text-xs text-muted-foreground mr-1">{t("results.allergens") || "Allergenen"}:</span>
+                      {dish.allergens.map((allergen, idx) => {
+                        const originalAllergen = getOriginal(allergen);
+                        const isMatching = dish.foundAllergens?.some(
+                          fa => fa.toLowerCase() === originalAllergen.toLowerCase()
+                        );
+                        return (
+                          <Badge
+                            key={`allergen-${idx}`}
+                            variant="outline"
+                            className={`text-xs ${isMatching ? 'bg-destructive/20 text-destructive border-destructive/30' : 'bg-warning/10 text-warning border-warning/20'}`}
+                          >
+                            {getTranslatedAllergen(dish, idx)}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   )}
+                  
+                  {/* Found allergens warning */}
                   {dish.foundAllergens && dish.foundAllergens.length > 0 && (
                     <p className="text-sm text-destructive font-medium mb-2">
                       {t("results.contains")} {dish.foundAllergens.map(a => translateAllergen(a, language)).join(", ")}
                     </p>
                   )}
+                  
+                  {/* Cross contamination warning */}
+                  {dish.cross_contamination_risk && dish.cross_contamination_risk.length > 0 && (
+                    <div className="mb-2">
+                      <CrossContaminationWarning 
+                        risks={dish.cross_contamination_risk}
+                        userAllergies={userAllergies}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Status and feedback */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge className={getStatusColor(dish.status!)}>
                       {getStatusText(dish.status!)}
                     </Badge>
                     <AllergenFeedback dish={dish} userAllergies={userAllergies} />
                   </div>
+                  
+                  {/* Alternative suggestions for avoided dishes */}
+                  <AlternativeSuggestions 
+                    currentDish={dish}
+                    allDishes={dishesWithStatus}
+                  />
                 </div>
               </div>
               {dish.price && (
@@ -305,6 +384,7 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
         ))}
       </div>
 
+      {/* Summary cards */}
       <div className="mt-8 grid md:grid-cols-3 gap-4">
         <Card className="p-4 bg-success/5 border-success/20">
           <div className="flex items-center gap-3">

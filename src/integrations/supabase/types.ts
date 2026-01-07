@@ -153,7 +153,9 @@ export type Database = {
         Row: {
           allergens: string[] | null
           allergens_translations: Json | null
+          category: string | null
           created_at: string
+          cross_contamination_risk: string[] | null
           description: string | null
           dietary_info: string[] | null
           dietary_info_translations: Json | null
@@ -170,7 +172,9 @@ export type Database = {
         Insert: {
           allergens?: string[] | null
           allergens_translations?: Json | null
+          category?: string | null
           created_at?: string
+          cross_contamination_risk?: string[] | null
           description?: string | null
           dietary_info?: string[] | null
           dietary_info_translations?: Json | null
@@ -187,7 +191,9 @@ export type Database = {
         Update: {
           allergens?: string[] | null
           allergens_translations?: Json | null
+          category?: string | null
           created_at?: string
+          cross_contamination_risk?: string[] | null
           description?: string | null
           dietary_info?: string[] | null
           dietary_info_translations?: Json | null
@@ -204,6 +210,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "dishes_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          dish_id: string
+          id: string
+          menu_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dish_id: string
+          id?: string
+          menu_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dish_id?: string
+          id?: string
+          menu_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "menus"
@@ -295,6 +340,7 @@ export type Database = {
           id: string
           preference_type: string
           preference_value: string
+          severity: string | null
           user_id: string
         }
         Insert: {
@@ -303,6 +349,7 @@ export type Database = {
           id?: string
           preference_type: string
           preference_value: string
+          severity?: string | null
           user_id: string
         }
         Update: {
@@ -311,6 +358,7 @@ export type Database = {
           id?: string
           preference_type?: string
           preference_value?: string
+          severity?: string | null
           user_id?: string
         }
         Relationships: []
