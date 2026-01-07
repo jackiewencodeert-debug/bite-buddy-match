@@ -440,6 +440,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Privacybeleid",
     "footer.terms": "Algemene Voorwaarden",
+    "footer.disclaimer": "Disclaimer",
+    "footer.cookiePolicy": "Cookiebeleid",
+    "footer.accessibility": "Toegankelijkheid",
+    "footer.ccpa": "California Privacy",
+    "footer.lgpd": "LGPD Rechten",
     
     // Cookie Banner
     "cookie.title": "Deze website gebruikt cookies",
@@ -940,6 +945,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Privacy Policy",
     "footer.terms": "Terms of Service",
+    "footer.disclaimer": "Disclaimer",
+    "footer.cookiePolicy": "Cookie Policy",
+    "footer.accessibility": "Accessibility",
+    "footer.ccpa": "California Privacy",
+    "footer.lgpd": "LGPD Rights",
     // Cookie Banner
     "cookie.title": "This website uses cookies",
     "cookie.description": "We use cookies to improve your experience and analyze the app. Read more in our",
