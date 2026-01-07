@@ -87,14 +87,22 @@ export const getRegionInfo = (region: Region): RegionInfo => {
   }
 };
 
-export const useRegion = () => {
-  const [regionInfo, setRegionInfo] = useState<RegionInfo>(() => 
-    getRegionInfo(detectRegion())
-  );
+export const useRegion = (): RegionInfo => {
+  const [regionInfo, setRegionInfo] = useState<RegionInfo>({
+    region: "other",
+    requiresGDPR: false,
+    requiresCCPA: false,
+    requiresLGPD: false,
+    requiresAccessibility: false,
+  });
 
   useEffect(() => {
-    const region = detectRegion();
-    setRegionInfo(getRegionInfo(region));
+    try {
+      const region = detectRegion();
+      setRegionInfo(getRegionInfo(region));
+    } catch (error) {
+      console.error("Error detecting region:", error);
+    }
   }, []);
 
   return regionInfo;

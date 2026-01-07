@@ -33,8 +33,8 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <CookieBanner />
         <BrowserRouter>
+          <CookieBanner />
           <AppLayout>
             <Routes>
               <Route path="/" element={<Index />} />
