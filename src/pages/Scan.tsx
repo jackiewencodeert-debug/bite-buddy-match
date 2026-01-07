@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdMobService } from "@/services/admob";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { extractTextFromImage, parseImageData, OCRProgress } from "@/services/ocrService";
 import { parseMenuFromText, enhanceDishAllergens } from "@/services/menuParserService";
@@ -551,7 +552,10 @@ const Scan = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
       
       <div className="container mx-auto px-4 py-8">
         <Link to="/">
