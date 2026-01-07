@@ -278,6 +278,8 @@ const MenuView = () => {
                   <MenuResults 
                     dishes={dishes} 
                     userAllergies={[...userAllergies, ...userCustomAllergies.map((ca: any) => ca.name)]}
+                    menuName={menu?.menu_data?.name || "Menu"}
+                    menuId={menu?.id}
                   />
                 )}
               </>

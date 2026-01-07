@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { businessTranslations } from "@/data/businessTranslations";
+import { featureTranslations } from "@/data/featureTranslations";
 
 type Language = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
 
@@ -3187,11 +3188,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string): string => {
-    // Check business translations first, then main translations
+    // Check feature translations first
+    const langFeatureTranslations = featureTranslations[language as keyof typeof featureTranslations];
+    if (langFeatureTranslations && (langFeatureTranslations as Record<string, string>)[key]) {
+      return (langFeatureTranslations as Record<string, string>)[key];
+    }
+    // Check business translations
     const langBusinessTranslations = businessTranslations[language];
     if (langBusinessTranslations && langBusinessTranslations[key]) {
       return langBusinessTranslations[key];
     }
+    // Fall back to main translations
     return translations[language][key] || translations["en"][key] || translations["nl"][key] || key;
   };
 
