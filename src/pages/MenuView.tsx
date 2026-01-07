@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { GuestMenuResults } from "@/components/GuestMenuResults";
 import { MenuResults } from "@/components/MenuResults";
+import { Confetti } from "@/components/Confetti";
 
 const MenuView = () => {
   const { qrCode } = useParams();
@@ -24,6 +25,7 @@ const MenuView = () => {
   const [userCustomAllergies, setUserCustomAllergies] = useState<any[]>([]);
   const [scanning, setScanning] = useState(false);
   const [matchResults, setMatchResults] = useState<any>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -167,6 +169,7 @@ const MenuView = () => {
       });
 
       setMatchResults(results);
+      setShowConfetti(true);
 
       // Log scan to database (only if logged in user, not guest)
       if (!user.isGuest) {
@@ -203,6 +206,12 @@ const MenuView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
+      {showConfetti && (
+        <Confetti 
+          duration={8000} 
+          onComplete={() => setShowConfetti(false)} 
+        />
+      )}
       <LanguageToggle />
       <div className="max-w-2xl mx-auto space-y-6">
         <Button variant="ghost" onClick={() => navigate("/")}>
