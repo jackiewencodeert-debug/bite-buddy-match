@@ -15,6 +15,7 @@ import { MenuResults } from "@/components/MenuResults";
 import { Confetti } from "@/components/Confetti";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useOfflineMenu } from "@/hooks/useOfflineMenu";
+import { AllergySeverity } from "@/components/AllergySeveritySelect";
 
 const MenuView = () => {
   const { qrCode } = useParams();
@@ -25,6 +26,7 @@ const MenuView = () => {
   const [dishes, setDishes] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [userAllergies, setUserAllergies] = useState<string[]>([]);
+  const [userAllergiesWithSeverity, setUserAllergiesWithSeverity] = useState<{name: string; severity: AllergySeverity}[]>([]);
   const [userCustomAllergies, setUserCustomAllergies] = useState<any[]>([]);
   const [scanning, setScanning] = useState(false);
   const [matchResults, setMatchResults] = useState<any>(null);
@@ -139,8 +141,17 @@ const MenuView = () => {
         const prefs = JSON.parse(guestPrefs);
         const allergies = prefs.allergies || [];
         const customAllergies = prefs.customAllergies || [];
+        const severities = prefs.allergySeverities || {};
+        
+        // Build allergies with severity
+        const allergiesWithSeverity: {name: string; severity: AllergySeverity}[] = [
+          ...allergies.map((a: string) => ({ name: a, severity: (severities[a] || "moderate") as AllergySeverity })),
+          ...customAllergies.map((ca: any) => ({ name: ca.name, severity: (severities[ca.name] || "moderate") as AllergySeverity }))
+        ];
+        
         setUserAllergies(allergies);
         setUserCustomAllergies(customAllergies);
+        setUserAllergiesWithSeverity(allergiesWithSeverity);
         setUser({ isGuest: true });
       }
     } else {
@@ -148,10 +159,10 @@ const MenuView = () => {
       setUser(currentUser);
 
       if (currentUser) {
-        // Load user preferences
+        // Load user preferences with severity
         const { data: prefsData } = await supabase
           .from("preferences")
-          .select("preference_type, preference_value, characteristics")
+          .select("preference_type, preference_value, characteristics, severity")
           .eq("user_id", currentUser.id);
 
         if (prefsData) {
@@ -164,8 +175,18 @@ const MenuView = () => {
               name: p.preference_value,
               characteristics: p.characteristics
             }));
+          
+          // Build allergies with severity
+          const allergiesWithSeverity: {name: string; severity: AllergySeverity}[] = prefsData
+            .filter(p => p.preference_type === "allergie")
+            .map(p => ({
+              name: p.preference_value,
+              severity: (p.severity || "moderate") as AllergySeverity
+            }));
+          
           setUserAllergies(allergies);
           setUserCustomAllergies(customAllergies);
+          setUserAllergiesWithSeverity(allergiesWithSeverity);
         }
       }
     }
@@ -366,6 +387,7 @@ const MenuView = () => {
                   <MenuResults 
                     dishes={dishes} 
                     userAllergies={[...userAllergies, ...userCustomAllergies.map((ca: any) => ca.name)]}
+                    userAllergiesWithSeverity={userAllergiesWithSeverity}
                     menuName={menu?.menu_data?.name || "Menu"}
                     menuId={menu?.id}
                   />

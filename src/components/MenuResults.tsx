@@ -7,8 +7,10 @@ import { ShareResults } from "./ShareResults";
 import { IngredientDetail } from "./IngredientDetail";
 import { AlternativeSuggestions } from "./AlternativeSuggestions";
 import { CrossContaminationWarning } from "./CrossContaminationWarning";
+import { SeverityBadge, AllergySeverity } from "./AllergySeveritySelect";
 import { translateItem } from "@/lib/translations";
 import { translateAllergen, translateIngredient } from "@/data/businessTranslations";
+import { AlertTriangle, Skull } from "lucide-react";
 
 type DishStatus = "safe" | "caution" | "avoid";
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
@@ -77,9 +79,15 @@ interface Dish {
   description?: string;
 }
 
+interface UserAllergyWithSeverity {
+  name: string;
+  severity: AllergySeverity;
+}
+
 interface MenuResultsProps {
   dishes: Dish[];
   userAllergies?: string[];
+  userAllergiesWithSeverity?: UserAllergyWithSeverity[];
   userPreferences?: string[];
   menuName?: string;
   menuId?: string;
@@ -116,6 +124,7 @@ const getStatusColor = (status: DishStatus) => {
 export const MenuResults = ({ 
   dishes, 
   userAllergies = [], 
+  userAllergiesWithSeverity = [],
   userPreferences = [], 
   menuName = "Menu",
   menuId,
@@ -123,6 +132,28 @@ export const MenuResults = ({
 }: MenuResultsProps) => {
   const { t, language } = useLanguage();
   const lang = language as LangCode;
+
+  // Helper to get severity for an allergen
+  const getAllergySeverity = (allergen: string): AllergySeverity | null => {
+    const match = userAllergiesWithSeverity.find(a => 
+      a.name.toLowerCase() === allergen.toLowerCase() ||
+      allergen.toLowerCase().includes(a.name.toLowerCase()) ||
+      a.name.toLowerCase().includes(allergen.toLowerCase())
+    );
+    return match?.severity || null;
+  };
+
+  // Get highest severity among found allergens
+  const getHighestSeverity = (foundAllergens: string[]): AllergySeverity | null => {
+    const severities = foundAllergens
+      .map(a => getAllergySeverity(a))
+      .filter((s): s is AllergySeverity => s !== null);
+    
+    if (severities.includes("severe")) return "severe";
+    if (severities.includes("moderate")) return "moderate";
+    if (severities.includes("mild")) return "mild";
+    return null;
+  };
 
   // Get translated dish name with original if different
   const getDishDisplayName = (dish: Dish) => {
@@ -273,15 +304,24 @@ export const MenuResults = ({
       </div>
 
       <div className="grid gap-4">
-        {dishesWithStatus.map((dish) => (
+        {dishesWithStatus.map((dish) => {
+          const highestSeverity = dish.foundAllergens ? getHighestSeverity(dish.foundAllergens) : null;
+          const isSevere = highestSeverity === "severe";
+          
+          return (
           <Card
             key={dish.id}
-            className="p-6 hover:shadow-hover transition-all"
+            className={`p-6 hover:shadow-hover transition-all ${
+              isSevere ? 'ring-2 ring-red-500 bg-red-500/5' : ''
+            }`}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4 flex-1">
-                <div className="text-4xl flex-shrink-0">
+                <div className="text-4xl flex-shrink-0 relative">
                   {getStatusEmoji(dish.status!)}
+                  {isSevere && (
+                    <Skull className="absolute -top-1 -right-1 h-4 w-4 text-red-500" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
@@ -342,11 +382,33 @@ export const MenuResults = ({
                     </div>
                   )}
                   
-                  {/* Found allergens warning */}
+                  {/* Found allergens warning with severity */}
                   {dish.foundAllergens && dish.foundAllergens.length > 0 && (
-                    <p className="text-sm text-destructive font-medium mb-2">
-                      {t("results.contains")} {dish.foundAllergens.map(a => translateAllergen(a, language)).join(", ")}
-                    </p>
+                    <div className={`mb-3 p-3 rounded-lg ${isSevere ? 'bg-red-500/10 border border-red-500/30' : 'bg-destructive/10'}`}>
+                      {isSevere && (
+                        <div className="flex items-center gap-2 mb-2 text-red-600 dark:text-red-400 font-bold">
+                          <Skull className="h-5 w-5" />
+                          <span>{t("results.severeWarning") || "ERNSTIGE ALLERGIE GEDETECTEERD!"}</span>
+                        </div>
+                      )}
+                      <p className={`text-sm font-medium ${isSevere ? 'text-red-600 dark:text-red-400' : 'text-destructive'}`}>
+                        {t("results.contains")} {dish.foundAllergens.map(a => {
+                          const severity = getAllergySeverity(a);
+                          const translatedAllergen = translateAllergen(a, language);
+                          return severity ? `${translatedAllergen} (${t(`severity.${severity}`)})` : translatedAllergen;
+                        }).join(", ")}
+                      </p>
+                      {/* Show severity badges */}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {dish.foundAllergens.map((allergen, idx) => {
+                          const severity = getAllergySeverity(allergen);
+                          if (!severity) return null;
+                          return (
+                            <SeverityBadge key={idx} severity={severity} />
+                          );
+                        })}
+                      </div>
+                    </div>
                   )}
                   
                   {/* Cross contamination warning */}
@@ -381,7 +443,7 @@ export const MenuResults = ({
               )}
             </div>
           </Card>
-        ))}
+        )})}
       </div>
 
       {/* Summary cards */}
