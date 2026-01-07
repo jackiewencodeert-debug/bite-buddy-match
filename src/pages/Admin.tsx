@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdminBusinessInvites } from "@/components/AdminBusinessInvites";
 import {
   Select,
@@ -576,7 +577,10 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-6">
           <Link to="/">

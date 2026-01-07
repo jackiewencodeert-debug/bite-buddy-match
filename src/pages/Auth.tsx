@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { z } from "zod";
 import {
   AlertDialog,
@@ -407,7 +408,10 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex items-center justify-center p-4">
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
       <div className="absolute top-4 left-4">
         <Link to="/">
           <Button variant="ghost">
