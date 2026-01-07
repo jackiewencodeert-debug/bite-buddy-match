@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
 import { translateItem } from "@/lib/translations";
-import { translateAllergen } from "@/data/businessTranslations";
+import { translateAllergen, translateIngredient } from "@/data/businessTranslations";
 
 type DishStatus = "safe" | "caution" | "avoid";
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
@@ -134,7 +134,8 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
     if (typeof item === "object" && item.original) {
       const translated = item[lang];
       if (typeof translated === "string") return translated;
-      return translateItem(item.original, lang);
+      // Use translateIngredient as fallback
+      return translateIngredient(item.original, language);
     }
 
     // Check ingredients_translations array
@@ -142,11 +143,11 @@ export const MenuResults = ({ dishes, userAllergies = [], userPreferences = [], 
     if (translation) {
       const translated = translation[lang];
       if (typeof translated === "string") return translated;
-      return translateItem(translation.original, lang);
+      return translateIngredient(translation.original, language);
     }
 
-    // Plain string - use fallback dictionary
-    return translateItem(String(item), lang);
+    // Plain string - use translateIngredient for better translation
+    return translateIngredient(String(item), language);
   };
 
   const getTranslatedAllergen = (dish: Dish, index: number): string => {
