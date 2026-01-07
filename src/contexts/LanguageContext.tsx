@@ -441,6 +441,12 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.privacy": "Privacybeleid",
     "footer.terms": "Algemene Voorwaarden",
     
+    // Cookie Banner
+    "cookie.title": "Deze website gebruikt cookies",
+    "cookie.description": "Wij gebruiken cookies om je ervaring te verbeteren en de app te analyseren. Lees meer in ons",
+    "cookie.accept": "Accepteren",
+    "cookie.decline": "Weigeren",
+    
     // Menu Editor
     "editor.title": "Menu Bewerken",
     "editor.subtitle": "Voeg gerechten toe en specificeer ingrediënten en allergenen",
@@ -934,6 +940,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.privacy": "Privacy Policy",
     "footer.terms": "Terms of Service",
+    // Cookie Banner
+    "cookie.title": "This website uses cookies",
+    "cookie.description": "We use cookies to improve your experience and analyze the app. Read more in our",
+    "cookie.accept": "Accept",
+    "cookie.decline": "Decline",
     
     // Menu Editor
     "editor.title": "Edit Menu",
