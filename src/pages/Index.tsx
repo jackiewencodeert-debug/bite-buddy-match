@@ -405,6 +405,23 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* Footer with Legal Links */}
+      <footer className="border-t border-border bg-card/50">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+            <span>© 2025 BiteBuddyMatch</span>
+            <span className="hidden sm:inline">•</span>
+            <Link to="/privacy" className="hover:text-primary transition-colors">
+              {t("footer.privacy")}
+            </Link>
+            <span className="hidden sm:inline">•</span>
+            <Link to="/terms" className="hover:text-primary transition-colors">
+              {t("footer.terms")}
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
