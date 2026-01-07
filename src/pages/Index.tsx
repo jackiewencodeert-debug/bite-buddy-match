@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { RegionalFooter } from "@/components/RegionalFooter";
 
 const Index = () => {
@@ -185,6 +186,7 @@ const Index = () => {
               <span>{isBusiness ? "BiteBuddyMatch" : t("index.title")}</span>
             </div>
             <LanguageToggle fixed={false} />
+            <ThemeToggle />
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
