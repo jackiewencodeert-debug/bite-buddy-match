@@ -9,9 +9,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { GuestMenuResults } from "@/components/GuestMenuResults";
 import { MenuResults } from "@/components/MenuResults";
 import { Confetti } from "@/components/Confetti";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { useOfflineMenu } from "@/hooks/useOfflineMenu";
 
 const MenuView = () => {
   const { qrCode } = useParams();
@@ -26,7 +29,18 @@ const MenuView = () => {
   const [scanning, setScanning] = useState(false);
   const [matchResults, setMatchResults] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Offline support
+  const { 
+    isOfflineMode, 
+    isCached, 
+    cacheMenu, 
+    getCachedData 
+  } = useOfflineMenu({ 
+    menuId: menu?.id || '', 
+    language: language as any 
+  });
 
   useEffect(() => {
     loadMenuAndUser();
@@ -34,7 +48,31 @@ const MenuView = () => {
 
   const loadMenuAndUser = async () => {
     try {
-      // Load menu
+      // Check if offline first
+      if (!navigator.onLine) {
+        // Try to load from cache
+        const cachedMenuId = localStorage.getItem(`menu-qr-${qrCode}`);
+        if (cachedMenuId) {
+          const cached = await getCachedData();
+          if (cached) {
+            setMenu({ id: cachedMenuId, menu_data: cached.menuData });
+            setDishes(cached.dishes);
+            loadUserPreferences();
+            setLoading(false);
+            return;
+          }
+        }
+        
+        toast({
+          title: t("offline.offlineMode"),
+          description: t("offline.noCache"),
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Load menu online
       const { data: menuData } = await supabase
         .from("menus")
         .select("*")
@@ -52,6 +90,9 @@ const MenuView = () => {
       }
 
       setMenu(menuData);
+      
+      // Store QR -> menu ID mapping for offline use
+      localStorage.setItem(`menu-qr-${qrCode}`, menuData.id);
 
       // Load dishes for this menu
       const { data: dishesData } = await supabase
@@ -60,47 +101,24 @@ const MenuView = () => {
         .eq("menu_id", menuData.id);
 
       setDishes(dishesData || []);
-
-      // Check if user is logged in or guest
-      const guestType = localStorage.getItem("userType");
-      if (guestType === "gast") {
-        // Load guest preferences from localStorage
-        const guestPrefs = localStorage.getItem("guestPreferences");
-        if (guestPrefs) {
-          const prefs = JSON.parse(guestPrefs);
-          const allergies = prefs.allergies || [];
-          const customAllergies = prefs.customAllergies || [];
-          setUserAllergies(allergies);
-          setUserCustomAllergies(customAllergies);
-          setUser({ isGuest: true });
-        }
-      } else {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        setUser(currentUser);
-
-        if (currentUser) {
-          // Load user preferences
-          const { data: prefsData } = await supabase
-            .from("preferences")
-            .select("preference_type, preference_value, characteristics")
-            .eq("user_id", currentUser.id);
-
-          if (prefsData) {
-            const allergies = prefsData
-              .filter(p => p.preference_type === "allergie" && !p.characteristics)
-              .map(p => p.preference_value);
-            const customAllergies = prefsData
-              .filter(p => p.preference_type === "allergie" && p.characteristics)
-              .map(p => ({
-                name: p.preference_value,
-                characteristics: p.characteristics
-              }));
-            setUserAllergies(allergies);
-            setUserCustomAllergies(customAllergies);
+      
+      // Load user preferences
+      await loadUserPreferences();
+    } catch (error: any) {
+      // If error and offline, try cache
+      if (!navigator.onLine) {
+        const cachedMenuId = localStorage.getItem(`menu-qr-${qrCode}`);
+        if (cachedMenuId) {
+          const cached = await getCachedData();
+          if (cached) {
+            setMenu({ id: cachedMenuId, menu_data: cached.menuData });
+            setDishes(cached.dishes);
+            await loadUserPreferences();
+            return;
           }
         }
       }
-    } catch (error: any) {
+      
       toast({
         title: t("menuView.errorLoading"),
         description: error.message,
@@ -108,6 +126,62 @@ const MenuView = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserPreferences = async () => {
+    // Check if user is logged in or guest
+    const guestType = localStorage.getItem("userType");
+    if (guestType === "gast") {
+      // Load guest preferences from localStorage
+      const guestPrefs = localStorage.getItem("guestPreferences");
+      if (guestPrefs) {
+        const prefs = JSON.parse(guestPrefs);
+        const allergies = prefs.allergies || [];
+        const customAllergies = prefs.customAllergies || [];
+        setUserAllergies(allergies);
+        setUserCustomAllergies(customAllergies);
+        setUser({ isGuest: true });
+      }
+    } else {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Load user preferences
+        const { data: prefsData } = await supabase
+          .from("preferences")
+          .select("preference_type, preference_value, characteristics")
+          .eq("user_id", currentUser.id);
+
+        if (prefsData) {
+          const allergies = prefsData
+            .filter(p => p.preference_type === "allergie" && !p.characteristics)
+            .map(p => p.preference_value);
+          const customAllergies = prefsData
+            .filter(p => p.preference_type === "allergie" && p.characteristics)
+            .map(p => ({
+              name: p.preference_value,
+              characteristics: p.characteristics
+            }));
+          setUserAllergies(allergies);
+          setUserCustomAllergies(customAllergies);
+        }
+      }
+    }
+  };
+
+  const handleSaveOffline = async () => {
+    if (!menu || dishes.length === 0) return;
+    
+    try {
+      await cacheMenu(dishes, menu.menu_data);
+      toast({
+        title: t("offline.availableOffline"),
+        description: t("offline.saveOffline"),
+      });
+    } catch (error) {
+      console.error("Error caching menu:", error);
     }
   };
 
@@ -171,8 +245,8 @@ const MenuView = () => {
       setMatchResults(results);
       setShowConfetti(true);
 
-      // Log scan to database (only if logged in user, not guest)
-      if (!user.isGuest) {
+      // Log scan to database (only if logged in user, not guest, and online)
+      if (!user.isGuest && navigator.onLine) {
         await supabase.from("menu_scans").insert({
           menu_id: menu.id,
           scanner_user_id: user.id,
@@ -212,12 +286,26 @@ const MenuView = () => {
           onComplete={() => setShowConfetti(false)} 
         />
       )}
-      <LanguageToggle />
+      <div className="flex items-center gap-2 fixed top-4 right-4 z-50">
+        <ThemeToggle />
+        <LanguageToggle fixed={false} />
+      </div>
+      
       <div className="max-w-2xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("menuView.backToHome")}
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={() => navigate("/")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("menuView.backToHome")}
+          </Button>
+          
+          {/* Offline indicator */}
+          <OfflineIndicator 
+            isOffline={isOfflineMode}
+            isCached={isCached}
+            onSaveOffline={handleSaveOffline}
+            showSaveButton={dishes.length > 0}
+          />
+        </div>
 
         <Alert className="border-warning/50 bg-warning/10">
           <AlertTriangle className="h-4 w-4 text-warning" />

@@ -1,7 +1,16 @@
-// New feature translations for severity, favorites, sharing, etc.
+// New feature translations for severity, favorites, sharing, offline, etc.
 
-export const featureTranslations = {
+export const featureTranslations: Record<string, Record<string, string>> = {
   nl: {
+    // Offline
+    "offline.offlineMode": "Offline modus",
+    "offline.usingCached": "Gebruik opgeslagen menu",
+    "offline.saveOffline": "Opslaan voor offline",
+    "offline.saving": "Opslaan...",
+    "offline.availableOffline": "Beschikbaar offline",
+    "offline.cachedMenus": "Opgeslagen menu's",
+    "offline.noCache": "Geen opgeslagen menu's",
+    
     // Severity levels
     "severity.mild": "Mild",
     "severity.moderate": "Matig",
@@ -44,6 +53,15 @@ export const featureTranslations = {
     "alternatives.try": "Probeer in plaats daarvan",
   },
   en: {
+    // Offline
+    "offline.offlineMode": "Offline mode",
+    "offline.usingCached": "Using saved menu",
+    "offline.saveOffline": "Save for offline",
+    "offline.saving": "Saving...",
+    "offline.availableOffline": "Available offline",
+    "offline.cachedMenus": "Saved menus",
+    "offline.noCache": "No saved menus",
+    
     "severity.mild": "Mild",
     "severity.moderate": "Moderate",
     "severity.severe": "Severe",
