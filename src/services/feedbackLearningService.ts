@@ -38,20 +38,23 @@ export async function loadLearnedPatterns(): Promise<LearnedPattern[]> {
     console.debug("IndexedDB cache miss:", error);
   }
 
-  // 3. Fetch from database
+  // 3. Fetch from database using secure function
   try {
     const { data, error } = await supabase
-      .from("allergen_patterns")
-      .select("ingredient_pattern, allergen, confidence_score, feedback_count")
-      .gte("confidence_score", 0.5)
-      .order("confidence_score", { ascending: false });
+      .rpc("get_allergen_patterns");
 
     if (error) {
       console.error("Error loading learned patterns:", error);
       return patternsCache;
     }
 
-    patternsCache = data || [];
+    // Map the result to include feedback_count (default to 0 since function doesn't expose it)
+    patternsCache = (data || []).map((p: any) => ({
+      ingredient_pattern: p.ingredient_pattern,
+      allergen: p.allergen,
+      confidence_score: p.confidence_score,
+      feedback_count: 0
+    }));
     lastCacheUpdate = now;
     
     // Save to IndexedDB for future sessions

@@ -450,6 +450,14 @@ export type Database = {
     }
     Functions: {
       claim_invite_code: { Args: { invite_code: string }; Returns: boolean }
+      get_allergen_patterns: {
+        Args: never
+        Returns: {
+          allergen: string
+          confidence_score: number
+          ingredient_pattern: string
+        }[]
+      }
       get_public_menu: {
         Args: { menu_qr_code: string }
         Returns: {
