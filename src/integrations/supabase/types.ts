@@ -449,6 +449,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_invite_code: { Args: { invite_code: string }; Returns: boolean }
+      get_public_menu: {
+        Args: { menu_qr_code: string }
+        Returns: {
+          created_at: string
+          id: string
+          menu_data: Json
+          menu_image_url: string
+          qr_code: string
+        }[]
+      }
       has_role:
         | {
             Args: {
@@ -458,6 +469,15 @@ export type Database = {
             Returns: boolean
           }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      verify_invite_code: {
+        Args: { invite_code: string }
+        Returns: {
+          business_name: string
+          code: string
+          id: string
+          is_claimed: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
