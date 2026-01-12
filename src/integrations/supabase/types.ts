@@ -215,13 +215,6 @@ export type Database = {
             referencedRelation: "menus"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "dishes_menu_id_fkey"
-            columns: ["menu_id"]
-            isOneToOne: false
-            referencedRelation: "public_menus"
-            referencedColumns: ["id"]
-          },
         ]
       }
       favorites: {
@@ -261,13 +254,6 @@ export type Database = {
             referencedRelation: "menus"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "favorites_menu_id_fkey"
-            columns: ["menu_id"]
-            isOneToOne: false
-            referencedRelation: "public_menus"
-            referencedColumns: ["id"]
-          },
         ]
       }
       menu_scans: {
@@ -301,13 +287,6 @@ export type Database = {
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "menus"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "menu_scans_menu_id_fkey"
-            columns: ["menu_id"]
-            isOneToOne: false
-            referencedRelation: "public_menus"
             referencedColumns: ["id"]
           },
           {
@@ -467,30 +446,7 @@ export type Database = {
       }
     }
     Views: {
-      public_menus: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          menu_data: Json | null
-          menu_image_url: string | null
-          qr_code: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          menu_data?: Json | null
-          menu_image_url?: string | null
-          qr_code?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          menu_data?: Json | null
-          menu_image_url?: string | null
-          qr_code?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       claim_invite_code: { Args: { invite_code: string }; Returns: boolean }
