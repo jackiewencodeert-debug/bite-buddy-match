@@ -198,16 +198,13 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      // Check if code exists and is not claimed
-      const { data: invite, error } = await supabase
-        .from("business_invites")
-        .select("*")
-        .eq("code", businessCode.trim().toUpperCase())
-        .maybeSingle();
+      // Check if code exists and is not claimed using secure function
+      const { data: inviteResult, error } = await supabase
+        .rpc("verify_invite_code", { invite_code: businessCode.trim().toUpperCase() });
 
       if (error) throw error;
 
-      if (!invite) {
+      if (!inviteResult || inviteResult.length === 0) {
         toast({
           title: t("auth.invalidCode"),
           description: t("auth.codeNotFound"),
@@ -215,6 +212,8 @@ const Auth = () => {
         });
         return;
       }
+
+      const invite = inviteResult[0];
 
       if (invite.is_claimed) {
         toast({
@@ -226,8 +225,9 @@ const Auth = () => {
       }
 
       // Code is valid and not claimed, proceed to password step
+      // Note: business_email is no longer exposed by the secure function
       setFoundInvite(invite);
-      setCodeEmail(invite.business_email || `${invite.code.toLowerCase()}@business.bitebuddymatch.nl`);
+      setCodeEmail(`${invite.code.toLowerCase()}@business.bitebuddymatch.nl`);
       setCodeStep("password");
     } catch (error: any) {
       toast({
@@ -266,18 +266,12 @@ const Auth = () => {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Mark the invite as claimed
-        const { error: updateError } = await supabase
-          .from("business_invites")
-          .update({
-            is_claimed: true,
-            claimed_at: new Date().toISOString(),
-            claimed_by: signUpData.user.id,
-          })
-          .eq("id", foundInvite.id);
+        // Mark the invite as claimed using secure function
+        const { data: claimResult, error: claimError } = await supabase
+          .rpc("claim_invite_code", { invite_code: foundInvite.code });
 
-        if (updateError) {
-          console.error("Error updating invite:", updateError);
+        if (claimError) {
+          console.error("Error claiming invite:", claimError);
         }
 
         toast({

@@ -74,14 +74,11 @@ const MenuView = () => {
         return;
       }
 
-      // Load menu online
-      const { data: menuData } = await supabase
-        .from("menus")
-        .select("*")
-        .eq("qr_code", qrCode)
-        .single();
+      // Load menu online using secure function that doesn't expose business_user_id
+      const { data: menuResult, error: menuError } = await supabase
+        .rpc("get_public_menu", { menu_qr_code: qrCode });
 
-      if (!menuData) {
+      if (menuError || !menuResult || menuResult.length === 0) {
         toast({
           title: t("menuView.menuNotFound"),
           description: t("menuView.invalidQR"),
@@ -91,18 +88,21 @@ const MenuView = () => {
         return;
       }
 
-      setMenu(menuData);
+      const menuData = menuResult[0];
+      setMenu({
+        id: menuData.menu_id,
+        menu_data: menuData.menu_data,
+        qr_code: menuData.qr_code,
+        menu_image_url: menuData.menu_image_url,
+        created_at: menuData.created_at
+      });
       
       // Store QR -> menu ID mapping for offline use
-      localStorage.setItem(`menu-qr-${qrCode}`, menuData.id);
+      localStorage.setItem(`menu-qr-${qrCode}`, menuData.menu_id);
 
-      // Load dishes for this menu
-      const { data: dishesData } = await supabase
-        .from("dishes")
-        .select("*")
-        .eq("menu_id", menuData.id);
-
-      setDishes(dishesData || []);
+      // Dishes are included in the secure function response
+      const dishesData = Array.isArray(menuData.dishes) ? menuData.dishes : [];
+      setDishes(dishesData as any[]);
       
       // Load user preferences
       await loadUserPreferences();
