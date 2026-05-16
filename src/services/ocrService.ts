@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { TextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
 import Tesseract from 'tesseract.js';
 
 export interface OCRResult {
@@ -11,30 +13,49 @@ export interface OCRProgress {
 }
 
 /**
- * Extract text from an image using Tesseract.js OCR
- * Supports multiple languages for menu recognition
+ * Extract text from an image.
+ *
+ * - Native platforms (iOS/Android): on-device ML Kit text recognition. Free,
+ *   fast (~200ms typical), no network. Accuracy in Latin scripts is
+ *   significantly higher than Tesseract for menu fonts.
+ * - Web: Tesseract.js fallback. Slower (~5-15s) but works offline in browser.
+ *
+ * imageData accepts a data URL (data:image/jpeg;base64,...). On native the
+ * plugin needs raw base64, so we strip the prefix.
  */
 export async function extractTextFromImage(
   imageData: string,
   onProgress?: (progress: OCRProgress) => void
 ): Promise<OCRResult> {
+  // Native ML Kit path — used on iOS + Android
+  if (Capacitor.isNativePlatform()) {
+    try {
+      onProgress?.({ status: 'recognizing', progress: 0.5 });
+      const base64 = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+      const result = await TextRecognition.detectText({ base64 });
+      onProgress?.({ status: 'done', progress: 1 });
+      // ML Kit returns blocks; join into single string preserving line order.
+      const text = (result.blocks ?? []).map((b: any) => b.text).join('\n');
+      return { text, confidence: 1 };
+    } catch (err) {
+      console.warn('Native ML Kit OCR failed, falling back to Tesseract:', err);
+      // fall through
+    }
+  }
+
+  // Web / fallback path — Tesseract.js
   try {
-    // Use multiple languages for better menu recognition
-    // nld = Dutch, eng = English, deu = German, fra = French
-    const result = await Tesseract.recognize(
-      imageData,
-      'nld+eng+deu+fra',
-      {
-        logger: (m) => {
-          if (onProgress && m.status) {
-            onProgress({
-              status: m.status,
-              progress: m.progress || 0
-            });
-          }
+    // Multilingual model — nld primary, plus eng/deu/fra for border-region menus
+    const result = await Tesseract.recognize(imageData, 'nld+eng+deu+fra', {
+      logger: (m) => {
+        if (onProgress && m.status) {
+          onProgress({
+            status: m.status,
+            progress: m.progress || 0
+          });
         }
       }
-    );
+    });
 
     return {
       text: result.data.text,
