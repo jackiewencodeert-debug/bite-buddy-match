@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { TextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
+import { CapacitorPluginMlKitTextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
 import Tesseract from 'tesseract.js';
 
 export interface OCRResult {
@@ -31,12 +31,10 @@ export async function extractTextFromImage(
   if (Capacitor.isNativePlatform()) {
     try {
       onProgress?.({ status: 'recognizing', progress: 0.5 });
-      const base64 = imageData.includes(',') ? imageData.split(',')[1] : imageData;
-      const result = await TextRecognition.detectText({ base64 });
+      const base64Image = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+      const result = await CapacitorPluginMlKitTextRecognition.detectText({ base64Image });
       onProgress?.({ status: 'done', progress: 1 });
-      // ML Kit returns blocks; join into single string preserving line order.
-      const text = (result.blocks ?? []).map((b: any) => b.text).join('\n');
-      return { text, confidence: 1 };
+      return { text: result.text ?? '', confidence: 1 };
     } catch (err) {
       console.warn('Native ML Kit OCR failed, falling back to Tesseract:', err);
       // fall through

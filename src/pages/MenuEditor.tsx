@@ -26,6 +26,8 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { translateAllergen, translateDietary, translateIngredient } from "@/data/businessTranslations";
+import { extractTextFromImage } from "@/services/ocrService";
+import { parseMenuFromText, enhanceDishAllergens } from "@/services/menuParserService";
 import { z } from "zod";
 import QRCode from "react-qr-code";
 import { jsPDF } from "jspdf";
@@ -414,14 +416,46 @@ const MenuEditor = () => {
           .eq("id", menuId);
       }
 
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-menu', {
-        body: { 
-          images: multipleImages,
-          isMultiple: multipleImages.length > 1
-        }
-      });
+      // Zero-AI pipeline: local OCR -> rule-based parser -> curated DB match
+      let combinedText = '';
+      for (let i = 0; i < multipleImages.length; i++) {
+        const ocr = await extractTextFromImage(multipleImages[i]);
+        combinedText += `\n--- Pagina ${i + 1} ---\n${ocr.text}`;
+      }
 
-      if (analysisError) throw analysisError;
+      const parsedMenu = await parseMenuFromText(combinedText);
+      const parsedDishes = parsedMenu.dishes.map((d: any) => enhanceDishAllergens(d));
+
+      // Enrich allergens from curated DB where available (best-effort)
+      let enrichedDishes = parsedDishes;
+      try {
+        const { data: matchData } = await supabase.functions.invoke('match-menu', {
+          body: {
+            dishes: parsedDishes.map((d: any) => ({
+              name: d.name,
+              description: d.description,
+              raw_text: d.name,
+            })),
+          },
+        });
+        if (matchData?.results) {
+          enrichedDishes = parsedDishes.map((d: any, i: number) => {
+            const m = matchData.results[i] || {};
+            return {
+              ...d,
+              allergens: m.source === 'verified' && m.allergens?.length ? m.allergens : d.allergens,
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('match-menu unavailable, using local parser results only:', e);
+      }
+
+      const analysisData: any = {
+        isMenu: parsedMenu.isMenu && enrichedDishes.length > 0,
+        dishes: enrichedDishes,
+        translations: { ingredients: {}, allergens: {}, dietary_info: {} },
+      };
 
       if (!analysisData.isMenu) {
         toast({

@@ -10,7 +10,34 @@ import { CrossContaminationWarning } from "./CrossContaminationWarning";
 import { SeverityBadge, AllergySeverity } from "./AllergySeveritySelect";
 import { translateItem } from "@/lib/translations";
 import { translateAllergen, translateIngredient } from "@/data/businessTranslations";
-import { AlertTriangle, Skull } from "lucide-react";
+import { AlertTriangle, Skull, CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
+
+export type MatchSource = "verified" | "ingredient_inferred" | "unknown";
+
+function VerificationBadge({ source }: { source?: MatchSource }) {
+  if (source === "verified") {
+    return (
+      <div className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full text-xs font-medium">
+        <CheckCircle className="w-3.5 h-3.5" />
+        <span>Geverifieerd door restaurant</span>
+      </div>
+    );
+  }
+  if (source === "ingredient_inferred") {
+    return (
+      <div className="inline-flex items-center gap-1.5 text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full text-xs font-medium">
+        <AlertCircle className="w-3.5 h-3.5" />
+        <span>Op basis van herkende ingrediënten</span>
+      </div>
+    );
+  }
+  return (
+    <div className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 px-2.5 py-1 rounded-full text-xs font-medium">
+      <HelpCircle className="w-3.5 h-3.5" />
+      <span>Onbekend gerecht — vraag het restaurant</span>
+    </div>
+  );
+}
 
 type DishStatus = "safe" | "caution" | "avoid";
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
@@ -77,11 +104,23 @@ interface Dish {
   foundAllergens?: string[];
   price?: string;
   description?: string;
+  // Zero-AI match-menu enrichment
+  source?: MatchSource;
+  confidence?: "high" | "medium";
+  similarity?: number;
+  matched_ingredients?: string[];
 }
 
 interface UserAllergyWithSeverity {
   name: string;
   severity: AllergySeverity;
+}
+
+interface MatchSummary {
+  total: number;
+  verified: number;
+  ingredient_inferred: number;
+  unknown: number;
 }
 
 interface MenuResultsProps {
@@ -97,6 +136,7 @@ interface MenuResultsProps {
     fontStyle?: string;
     backgroundColor?: string;
   };
+  matchSummary?: MatchSummary;
 }
 
 const getStatusEmoji = (status: DishStatus) => {
@@ -121,14 +161,15 @@ const getStatusColor = (status: DishStatus) => {
   }
 };
 
-export const MenuResults = ({ 
-  dishes, 
-  userAllergies = [], 
+export const MenuResults = ({
+  dishes,
+  userAllergies = [],
   userAllergiesWithSeverity = [],
-  userPreferences = [], 
+  userPreferences = [],
   menuName = "Menu",
   menuId,
-  menuStyle 
+  menuStyle,
+  matchSummary,
 }: MenuResultsProps) => {
   const { t, language } = useLanguage();
   const lang = language as LangCode;
@@ -303,6 +344,17 @@ export const MenuResults = ({
         </div>
       </div>
 
+      {matchSummary && matchSummary.total > 0 && (
+        <div className="mb-4 rounded-lg border bg-card p-4 text-sm">
+          <p>
+            <strong>{matchSummary.verified}</strong> van <strong>{matchSummary.total}</strong>{" "}
+            geverifieerd,{" "}
+            <strong>{matchSummary.ingredient_inferred}</strong> op basis van ingrediënten,{" "}
+            <strong>{matchSummary.unknown}</strong> onbekend
+          </p>
+        </div>
+      )}
+
       <div className="grid gap-4">
         {dishesWithStatus.map((dish) => {
           const highestSeverity = dish.foundAllergens ? getHighestSeverity(dish.foundAllergens) : null;
@@ -339,7 +391,13 @@ export const MenuResults = ({
                   {dish.description && (
                     <p className="text-sm text-muted-foreground mb-2">{dish.description}</p>
                   )}
-                  
+
+                  {dish.source && (
+                    <div className="mb-3">
+                      <VerificationBadge source={dish.source} />
+                    </div>
+                  )}
+
                   {/* Ingredients with click-to-detail */}
                   <div className="flex flex-wrap gap-2 mb-3">
                     {dish.ingredients.map((ingredient, idx) => {

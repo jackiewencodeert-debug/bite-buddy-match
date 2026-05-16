@@ -37,6 +37,7 @@ const Scan = () => {
   const [pendingMode, setPendingMode] = useState<"camera" | "upload" | "multiple" | null>(null);
   const [adCountdown, setAdCountdown] = useState(5);
   const [analyzedDishes, setAnalyzedDishes] = useState<any[]>([]);
+  const [matchSummary, setMatchSummary] = useState<any>(undefined);
   const [menuTemplate, setMenuTemplate] = useState<{ categories?: string[]; style?: any }>({});
   const [userAllergies, setUserAllergies] = useState<string[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
@@ -425,6 +426,39 @@ const Scan = () => {
       // Enhance dishes with additional allergen detection
       const enhancedDishes = parsedMenu.dishes.map(dish => enhanceDishAllergens(dish));
 
+      // Step 3: Match against curated DB for verified allergens (zero-AI)
+      let matchSummary: any = undefined;
+      let mergedDishes = enhancedDishes;
+      try {
+        const { data: matchData, error: matchErr } = await supabase.functions.invoke('match-menu', {
+          body: {
+            dishes: enhancedDishes.map((d: any) => ({
+              name: d.name,
+              description: d.description,
+              raw_text: d.name,
+            })),
+          },
+        });
+        if (!matchErr && matchData?.results) {
+          matchSummary = matchData.summary;
+          mergedDishes = enhancedDishes.map((d: any, i: number) => {
+            const m = matchData.results[i] || {};
+            return {
+              ...d,
+              source: m.source,
+              confidence: m.confidence,
+              similarity: m.similarity,
+              matched_ingredients: m.matched_ingredients,
+              // If DB has verified allergens, prefer those over locally-parsed ones
+              allergens: m.source === 'verified' && m.allergens?.length ? m.allergens : d.allergens,
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('match-menu unavailable, using local parser only:', e);
+      }
+      setMatchSummary(matchSummary);
+
       dismiss();
 
       // Get user allergies and preferences
@@ -455,7 +489,7 @@ const Scan = () => {
         }
       }
 
-      setAnalyzedDishes(enhancedDishes);
+      setAnalyzedDishes(mergedDishes);
       setUserAllergies(allergies);
       setUserPreferences(preferences);
       
@@ -873,11 +907,12 @@ const Scan = () => {
                 menuStyle={menuTemplate.style}
               />
             ) : (
-              <MenuResults 
+              <MenuResults
                 dishes={analyzedDishes}
                 userAllergies={userAllergies}
                 userPreferences={userPreferences}
                 menuStyle={menuTemplate.style}
+                matchSummary={matchSummary}
               />
             )}
           </>
