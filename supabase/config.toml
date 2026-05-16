@@ -3,7 +3,7 @@ project_id = "rpmsztjsvbtigdtbtcnm"
 [functions.send-verification-email]
 verify_jwt = false
 
-[functions.analyze-menu]
+[functions.match-menu]
 verify_jwt = true
 
 [functions.process-feedback-batch]
