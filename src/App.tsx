@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
+import AdminMenuImport from "./pages/AdminMenuImport";
 import BusinessDashboard from "./pages/BusinessDashboard";
 import MenuView from "./pages/MenuView";
 import MenuEditor from "./pages/MenuEditor";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/import" element={<AdminMenuImport />} />
               <Route path="/business" element={<BusinessDashboard />} />
               <Route path="/business/statistics" element={<BusinessStatistics />} />
               <Route path="/menu/:qrCode" element={<MenuView />} />
