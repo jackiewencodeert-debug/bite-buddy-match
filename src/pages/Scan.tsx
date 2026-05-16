@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Camera, Upload, ArrowLeft, X, RotateCcw } from "lucide-react";
+import { Camera as CapCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MenuResults } from "@/components/MenuResults";
 import { GuestMenuResults } from "@/components/GuestMenuResults";
@@ -203,31 +204,46 @@ const Scan = () => {
     }
   };
 
-  // Start camera
+  // Native camera via Capacitor (werkt op iOS device én Simulator via Photos fallback)
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false,
+      const image = await CapCamera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+        promptLabelHeader: "Menu scannen",
+        promptLabelPhoto: "Kies uit galerij",
+        promptLabelPicture: "Maak foto",
+        promptLabelCancel: "Annuleren",
       });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setCameraActive(true);
+
+      if (!image.dataUrl) {
+        setMode("select");
+        return;
       }
-    } catch (error) {
-      console.error("Camera access error:", error);
+
+      const imageItem = JSON.stringify({ data: image.dataUrl, type: "image" });
+      setMultipleImages(prev => [...prev, imageItem]);
+      setMode("multiple");
+    } catch (error: any) {
+      // User cancelled — geen toast, gewoon terug naar select
+      const message = String(error?.message ?? error ?? "");
+      if (message.toLowerCase().includes("cancel") || message.toLowerCase().includes("denied")) {
+        setMode("select");
+        return;
+      }
+      console.error("Camera error:", error);
       toast({
         title: "Camera Error",
-        description: "Kon geen toegang krijgen tot de camera. Controleer je permissies.",
+        description: "Kon geen foto maken. Controleer camera-/foto-permissies in Instellingen.",
         variant: "destructive",
       });
       setMode("select");
     }
   };
 
-  // Stop camera
+  // Geen actieve stream meer (native plugin sluit zichzelf) — behouden als no-op safety hook
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -632,65 +648,9 @@ const Scan = () => {
               </div>
             )}
 
-            {mode === "camera" && !capturedImage && (
-              <div className="fixed inset-0 z-50 bg-black">
-                {/* Back button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    stopCamera();
-                    if (multipleImages.length > 0) {
-                      setMode("multiple");
-                    } else {
-                      resetScan();
-                    }
-                  }}
-                  className="absolute top-4 left-4 z-50 text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full h-12 w-12"
-                >
-                  <ArrowLeft className="h-6 w-6" />
-                </Button>
-
-                {/* Full screen camera */}
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Bottom controls - only capture button */}
-                {cameraActive && (
-                  <div className="absolute bottom-0 left-0 right-0 pb-8 pt-6 bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="flex items-center justify-center">
-                      {/* Center button - Capture */}
-                      <button
-                        onClick={() => {
-                          if (videoRef.current) {
-                            const canvas = document.createElement("canvas");
-                            canvas.width = videoRef.current.videoWidth;
-                            canvas.height = videoRef.current.videoHeight;
-                            const ctx = canvas.getContext("2d");
-                            
-                            if (ctx) {
-                              ctx.drawImage(videoRef.current, 0, 0);
-                              const imageData = canvas.toDataURL("image/jpeg", 0.9);
-                              const imageItem = JSON.stringify({ data: imageData, type: 'image' });
-                              
-                              // Add to multiple images array
-                              setMultipleImages(prev => [...prev, imageItem]);
-                              stopCamera();
-                              setMode("multiple");
-                            }
-                          }
-                        }}
-                        className="w-20 h-20 rounded-full bg-white border-4 border-white/50 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg"
-                      >
-                        <div className="w-16 h-16 rounded-full bg-white" />
-                      </button>
-                    </div>
-                  </div>
-                )}
+            {mode === "camera" && (
+              <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+                <p className="text-white text-lg">Camera wordt geopend…</p>
               </div>
             )}
 

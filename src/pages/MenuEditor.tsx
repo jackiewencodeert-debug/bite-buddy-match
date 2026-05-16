@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Plus, X, Save, Camera, Upload, Edit3, QrCode, RotateCcw, Settings, Trash2, Pencil, Download } from "lucide-react";
+import { Camera as CapCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 import {
   Tooltip,
   TooltipContent,
@@ -195,24 +196,41 @@ const MenuEditor = () => {
     }
   };
 
-  // Camera functions
+  // Native camera via Capacitor (werkt op iOS device én Simulator via Photos fallback)
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false,
+      const image = await CapCamera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+        promptLabelHeader: "Menu scannen",
+        promptLabelPhoto: "Kies uit galerij",
+        promptLabelPicture: "Maak foto",
+        promptLabelCancel: "Annuleren",
       });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setCameraActive(true);
+
+      if (!image.dataUrl) {
+        setMode("scan");
+        return;
       }
-    } catch (error) {
-      console.error("Camera access error:", error);
+
+      setMultipleImages(prev => [...prev, image.dataUrl as string]);
+      setMode("scan");
+      toast({
+        title: "Foto toegevoegd!",
+        description: `Totaal: ${multipleImages.length + 1} foto's`,
+      });
+    } catch (error: any) {
+      const message = String(error?.message ?? error ?? "");
+      if (message.toLowerCase().includes("cancel") || message.toLowerCase().includes("denied")) {
+        setMode("scan");
+        return;
+      }
+      console.error("Camera error:", error);
       toast({
         title: t("common.error"),
-        description: "Kon geen toegang krijgen tot de camera.",
+        description: "Kon geen foto maken. Controleer camera-/foto-permissies in Instellingen.",
         variant: "destructive",
       });
       setMode("editor");
@@ -775,56 +793,11 @@ const MenuEditor = () => {
     );
   }
 
-  // Camera mode view
+  // Camera mode — native iOS picker neemt het over via startCamera()
   if (mode === "camera") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4">
-        <LanguageToggle />
-        
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold mb-2">{t("scan.makePhoto")}</h1>
-            <p className="text-muted-foreground">{t("scan.position")}</p>
-          </div>
-
-          <Card className="overflow-hidden">
-            <div className="relative bg-black aspect-[4/3]">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              
-              {cameraActive && (
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-                  <div className="flex justify-center gap-4">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={() => {
-                        stopCamera();
-                        setMode("scan");
-                      }}
-                      className="bg-background/20 backdrop-blur-sm hover:bg-background/40"
-                    >
-                      <X className="mr-2 h-5 w-5" />
-                      {t("common.cancel")}
-                    </Button>
-                    <Button
-                      size="lg"
-                      onClick={capturePhoto}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      <Camera className="mr-2 h-5 w-5" />
-                      {t("scan.takePhoto")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 flex items-center justify-center">
+        <p className="text-lg text-muted-foreground">Camera wordt geopend…</p>
       </div>
     );
   }
