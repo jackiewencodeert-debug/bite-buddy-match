@@ -1,34 +1,30 @@
-## Plan: Seed `ingredient_allergens` met ±320 Nederlandse ingrediënten
+## Plan: Afronden seed + verificatie + Claude cowork samenvatting
 
-Voer de aangeleverde INSERT uit via de Lovable data-insert tool. Idempotent via `ON CONFLICT (ingredient_name) DO NOTHING`, dus veilig her-runbaar.
+### Stap 1 — Uitvoeren `dish_aliases` insert
+Voer de voorbereide `INSERT INTO dish_aliases ... WHERE NOT EXISTS` query uit (~150 aliases, idempotent via NOT EXISTS join op `curated_dishes.name`).
 
-### Wat het doet
+### Stap 2 — Verificatie (read-only)
+Run deze checks via `supabase--read_query`:
+- `SELECT COUNT(*) FROM dish_aliases;` — verwacht ≥150
+- `SELECT COUNT(*) FROM curated_dishes WHERE verified = true;` — verwacht 146
+- `SELECT COUNT(*) FROM restaurants;` — verwacht 151
+- `SELECT * FROM fuzzy_dish_match('snert', 0.4);` — moet Erwtensoep returnen
+- `SELECT * FROM fuzzy_dish_match('carbonara', 0.4);` — moet Spaghetti Carbonara returnen
+- `SELECT * FROM fuzzy_dish_match('pad thai', 0.4);` — moet Pad Thai kip returnen
+- `SELECT COUNT(*) FROM ingredient_allergens;` — verwacht 368
 
-- Voegt ingrediënten toe met velden: `ingredient_name`, `ingredient_aliases`, `allergens` (EU-14), `notes`
-- Dekt alle 14 EU-allergenen + vleesopties zonder allergeen + groente/fruit/kruiden/specerijen + bereide gerechten (frikandel, bitterbal, quiche...) + dranken
-- Stage-2 inference in `match-menu` edge function gebruikt deze tabel direct
+### Stap 3 — Edge function end-to-end test
+`supabase--test_edge_functions` op `match-menu` met sample input (bv. `{"dishes":[{"name":"Spaghetti Carbonara"},{"name":"Pad Thai"}]}`) om te bevestigen dat Stage-1 (fuzzy) en Stage-2 (ingredient inference) werken.
 
-### Opmerkingen op de data
+### Stap 4 — Samenvatting voor Claude cowork
+Lever een markdown-blok met:
+- **Database state**: alle counts (restaurants, curated_menus, curated_dishes, dish_aliases, ingredient_allergens)
+- **RPC's**: `fuzzy_dish_match`, `is_admin`, `has_role` — status + test resultaten
+- **Storage buckets**: `menu-uploads` (private), `menu-images` (public)
+- **Edge functions**: `match-menu` (nieuw, deployed), `analyze-menu` (legacy, blijft staan)
+- **Migraties uitgevoerd**: 00_schema, 01_ingredients, 02_restaurants, 03_menu_dishes, 04_aliases
+- **RLS**: public read op alle curated_* + ingredient_allergens + dish_aliases; admin write
+- **Bekende gaps / TODO voor Claude**: bv. frontend integratie van `match-menu`, fallback naar Gemini bij low-confidence matches, eter UI om matches te tonen
+- **Niets aangeraakt**: bestaande `menus`, `dishes`, `profiles`, auth flows blijven intact
 
-- **Telling**: comment zegt "369", echte unieke rijen ≈ **319** (kop telt ongeveer 322 entries; 'seitan' staat 2× in lijst, 2e wordt door ON CONFLICT genegeerd; 'kappertjes' staat als hoofdrij én als alias bij 'kapper'). Geen probleem — ON CONFLICT handelt dat netjes af.
-- **Geheugenregel-conflict**: 'kikkererwten' heeft note "Wel basis voor falafel/hummus" — suggereert dat gluten-/lactose-info ergens bedoeld is, maar onze diëten zijn beperkt tot Vegetarisch/Veganistisch/Kosher/Halal. Allergenen blijven correct (EU-14), geen actie.
-- **Note bij `kikkererwten`** lijkt half-zin ("Wel basis voor..."). Laat ik staan — admin kan later editen.
-
-### Verificatie na insert
-
-```
-SELECT COUNT(*) FROM ingredient_allergens;
-SELECT allergen, COUNT(*) FROM (
-  SELECT unnest(allergens) AS allergen FROM ingredient_allergens
-) t GROUP BY allergen ORDER BY 2 DESC;
-```
-
-Verwacht: ~315-320 rijen, en alle 14 EU-allergenen aanwezig.
-
-### Niet in scope
-
-- Geen wijzigingen aan tabellen / RLS / edge functions
-- Geen frontend-edits
-- Geen seed van `curated_dishes` of `restaurants` (komt later via admin import-UI)
-
-Akkoord = ik draai de insert en lever de COUNT-output.
+Geen frontend code wijzigingen in deze loop — puur data seed + verificatie + handoff doc.
