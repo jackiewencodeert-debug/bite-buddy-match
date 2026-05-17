@@ -926,6 +926,7 @@ const Scan = () => {
                 dishes={analyzedDishes}
                 categories={menuTemplate.categories}
                 menuStyle={menuTemplate.style}
+                matchSummary={matchSummary}
               />
             ) : (
               <MenuResults
