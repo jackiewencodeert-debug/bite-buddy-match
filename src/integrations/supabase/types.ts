@@ -275,6 +275,42 @@ export type Database = {
           },
         ]
       }
+      dish_match_events: {
+        Row: {
+          created_at: string
+          dishes: Json
+          id: string
+          ingredient_inferred_count: number
+          menu_id: string | null
+          total_count: number
+          unknown_count: number
+          user_id: string | null
+          verified_count: number
+        }
+        Insert: {
+          created_at?: string
+          dishes?: Json
+          id?: string
+          ingredient_inferred_count?: number
+          menu_id?: string | null
+          total_count?: number
+          unknown_count?: number
+          user_id?: string | null
+          verified_count?: number
+        }
+        Update: {
+          created_at?: string
+          dishes?: Json
+          id?: string
+          ingredient_inferred_count?: number
+          menu_id?: string | null
+          total_count?: number
+          unknown_count?: number
+          user_id?: string | null
+          verified_count?: number
+        }
+        Relationships: []
+      }
       dishes: {
         Row: {
           allergens: string[] | null
