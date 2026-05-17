@@ -463,7 +463,7 @@ const Scan = () => {
       // Voedt cold-start analyse + curatie-prioritering. Falen mag niet de scan-flow breken.
       if (matchSummary) {
         try {
-          await (supabase as any).from('dish_match_events').insert({
+          await supabase.from('dish_match_events').insert({
             user_id: user?.id ?? null,
             total_count: matchSummary.total,
             verified_count: matchSummary.verified,
@@ -926,6 +926,7 @@ const Scan = () => {
                 dishes={analyzedDishes}
                 categories={menuTemplate.categories}
                 menuStyle={menuTemplate.style}
+                matchSummary={matchSummary}
               />
             ) : (
               <MenuResults
