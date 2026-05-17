@@ -459,6 +459,27 @@ const Scan = () => {
       }
       setMatchSummary(matchSummary);
 
+      // Telemetry: one event per scan with aggregate counts (guest OR logged-in).
+      // Voedt cold-start analyse + curatie-prioritering. Falen mag niet de scan-flow breken.
+      if (matchSummary) {
+        try {
+          await (supabase as any).from('dish_match_events').insert({
+            user_id: user?.id ?? null,
+            total_count: matchSummary.total,
+            verified_count: matchSummary.verified,
+            ingredient_inferred_count: matchSummary.ingredient_inferred,
+            unknown_count: matchSummary.unknown,
+            dishes: mergedDishes.map((d: any) => ({
+              name: d.name,
+              source: d.source ?? 'unknown',
+              confidence: d.similarity ?? null,
+            })),
+          });
+        } catch (telemetryErr) {
+          console.warn('Telemetry insert failed (non-fatal):', telemetryErr);
+        }
+      }
+
       dismiss();
 
       // Get user allergies and preferences
