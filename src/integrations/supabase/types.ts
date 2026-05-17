@@ -149,6 +149,132 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_dishes: {
+        Row: {
+          allergens: string[] | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          dietary_tags: string[] | null
+          id: string
+          ingredients: string[] | null
+          menu_id: string | null
+          name: string
+          price_eur: number | null
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dietary_tags?: string[] | null
+          id?: string
+          ingredients?: string[] | null
+          menu_id?: string | null
+          name: string
+          price_eur?: number | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dietary_tags?: string[] | null
+          id?: string
+          ingredients?: string[] | null
+          menu_id?: string | null
+          name?: string
+          price_eur?: number | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_dishes_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "curated_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curated_menus: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          name: string | null
+          restaurant_id: string | null
+          source_type: string | null
+          source_url: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          restaurant_id?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          restaurant_id?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_menus_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dish_aliases: {
+        Row: {
+          alias_name: string
+          dish_id: string | null
+          id: string
+        }
+        Insert: {
+          alias_name: string
+          dish_id?: string | null
+          id?: string
+        }
+        Update: {
+          alias_name?: string
+          dish_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dish_aliases_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "curated_dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dishes: {
         Row: {
           allergens: string[] | null
@@ -255,6 +381,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ingredient_allergens: {
+        Row: {
+          allergens: string[]
+          created_at: string | null
+          id: number
+          ingredient_aliases: string[] | null
+          ingredient_name: string
+          notes: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          allergens: string[]
+          created_at?: string | null
+          id?: number
+          ingredient_aliases?: string[] | null
+          ingredient_name: string
+          notes?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          allergens?: string[]
+          created_at?: string | null
+          id?: number
+          ingredient_aliases?: string[] | null
+          ingredient_name?: string
+          notes?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
       }
       menu_scans: {
         Row: {
@@ -402,6 +558,54 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurants: {
+        Row: {
+          address: string | null
+          city: string
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          updated_at: string | null
+          verified: boolean | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       scans: {
         Row: {
           created_at: string
@@ -450,6 +654,17 @@ export type Database = {
     }
     Functions: {
       claim_invite_code: { Args: { invite_code: string }; Returns: boolean }
+      fuzzy_dish_match: {
+        Args: { search_text: string; threshold?: number }
+        Returns: {
+          allergens: string[]
+          description: string
+          id: string
+          ingredients: string[]
+          name: string
+          similarity_score: number
+        }[]
+      }
       get_allergen_patterns: {
         Args: never
         Returns: {
@@ -478,6 +693,9 @@ export type Database = {
             Returns: boolean
           }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_admin: { Args: { uid: string }; Returns: boolean }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       verify_invite_code: {
         Args: { invite_code: string }
         Returns: {
