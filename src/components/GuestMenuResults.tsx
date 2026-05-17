@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AllergenFeedback } from "./AllergenFeedback";
 import { translateItem } from "@/lib/translations";
+import { SourceBadge, type Source } from "./SourceBadge";
+import { ScanResultSummary, type ScanSummary } from "./ScanResultSummary";
 
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
 
@@ -64,6 +66,9 @@ interface Dish {
   price?: string;
   description?: string;
   category?: string;
+  source?: Source;
+  confidence?: "high" | "medium";
+  similarity?: number;
 }
 
 interface GuestMenuResultsProps {
@@ -75,9 +80,10 @@ interface GuestMenuResultsProps {
     backgroundColor?: string;
   };
   categories?: string[];
+  matchSummary?: ScanSummary;
 }
 
-export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuResultsProps) => {
+export const GuestMenuResults = ({ dishes, menuStyle, categories, matchSummary }: GuestMenuResultsProps) => {
   const { t, language } = useLanguage();
   const lang = language as LangCode;
 
@@ -198,6 +204,10 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
         </p>
       </div>
 
+      {matchSummary && matchSummary.total > 0 && (
+        <ScanResultSummary summary={matchSummary} />
+      )}
+
       {groupedDishes.map((group, groupIndex) => (
         <div key={groupIndex} className="mb-8">
           {group.category && (
@@ -243,6 +253,11 @@ export const GuestMenuResults = ({ dishes, menuStyle, categories }: GuestMenuRes
                     </div>
                     {dish.description && (
                       <p className="text-sm text-muted-foreground mb-3">{dish.description}</p>
+                    )}
+                    {dish.source && (
+                      <div className="mb-3">
+                        <SourceBadge source={dish.source} />
+                      </div>
                     )}
                     <div className="flex flex-wrap gap-2 mb-3">
                       {dish.ingredients.map((_, idx) => (
