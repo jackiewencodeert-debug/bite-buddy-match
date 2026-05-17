@@ -10,34 +10,12 @@ import { CrossContaminationWarning } from "./CrossContaminationWarning";
 import { SeverityBadge, AllergySeverity } from "./AllergySeveritySelect";
 import { translateItem } from "@/lib/translations";
 import { translateAllergen, translateIngredient } from "@/data/businessTranslations";
-import { AlertTriangle, Skull, CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
+import { AlertTriangle, Skull } from "lucide-react";
+import { SourceBadge, type Source } from "./SourceBadge";
+import { ScanResultSummary, type ScanSummary } from "./ScanResultSummary";
 
-export type MatchSource = "verified" | "ingredient_inferred" | "unknown";
-
-function VerificationBadge({ source }: { source?: MatchSource }) {
-  if (source === "verified") {
-    return (
-      <div className="inline-flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full text-xs font-medium">
-        <CheckCircle className="w-3.5 h-3.5" />
-        <span>Geverifieerd door restaurant</span>
-      </div>
-    );
-  }
-  if (source === "ingredient_inferred") {
-    return (
-      <div className="inline-flex items-center gap-1.5 text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full text-xs font-medium">
-        <AlertCircle className="w-3.5 h-3.5" />
-        <span>Op basis van herkende ingrediënten</span>
-      </div>
-    );
-  }
-  return (
-    <div className="inline-flex items-center gap-1.5 text-red-700 bg-red-50 px-2.5 py-1 rounded-full text-xs font-medium">
-      <HelpCircle className="w-3.5 h-3.5" />
-      <span>Onbekend gerecht — vraag het restaurant</span>
-    </div>
-  );
-}
+// Re-export so callers that imported MatchSource from MenuResults keep working
+export type MatchSource = Source;
 
 type DishStatus = "safe" | "caution" | "avoid";
 type LangCode = "nl" | "en" | "fr" | "es" | "de" | "it" | "hu" | "id" | "tr" | "vi" | "th" | "uk" | "pt" | "ru" | "hi" | "pl" | "zh" | "ja" | "ko" | "ar";
@@ -116,13 +94,6 @@ interface UserAllergyWithSeverity {
   severity: AllergySeverity;
 }
 
-interface MatchSummary {
-  total: number;
-  verified: number;
-  ingredient_inferred: number;
-  unknown: number;
-}
-
 interface MenuResultsProps {
   dishes: Dish[];
   userAllergies?: string[];
@@ -136,7 +107,7 @@ interface MenuResultsProps {
     fontStyle?: string;
     backgroundColor?: string;
   };
-  matchSummary?: MatchSummary;
+  matchSummary?: ScanSummary;
 }
 
 const getStatusEmoji = (status: DishStatus) => {
@@ -345,14 +316,7 @@ export const MenuResults = ({
       </div>
 
       {matchSummary && matchSummary.total > 0 && (
-        <div className="mb-4 rounded-lg border bg-card p-4 text-sm">
-          <p>
-            <strong>{matchSummary.verified}</strong> van <strong>{matchSummary.total}</strong>{" "}
-            geverifieerd,{" "}
-            <strong>{matchSummary.ingredient_inferred}</strong> op basis van ingrediënten,{" "}
-            <strong>{matchSummary.unknown}</strong> onbekend
-          </p>
-        </div>
+        <ScanResultSummary summary={matchSummary} />
       )}
 
       <div className="grid gap-4">
@@ -394,7 +358,7 @@ export const MenuResults = ({
 
                   {dish.source && (
                     <div className="mb-3">
-                      <VerificationBadge source={dish.source} />
+                      <SourceBadge source={dish.source} />
                     </div>
                   )}
 
